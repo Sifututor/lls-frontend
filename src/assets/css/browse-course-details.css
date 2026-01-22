@@ -1,0 +1,701 @@
+/* ==================== BROWSE COURSE PAGE - FIXED 320PX NO OVERFLOW ==================== */
+
+/* Page Wrapper - FIX overflow */
+.browse-page-wrapper {
+  padding: 20px;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  margin-top: 80px;
+}
+
+/* ==================== MAIN GRID - TWO COLUMNS (FIXED) ==================== */
+.browse-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* LEFT SECTION - Image 2 PURA */
+.browse-left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* RIGHT SECTION - Image 1 PURA (FIXED 320PX) */
+.browse-right-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+}
+
+.browse-instructor-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.browse-instructor-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.browse-rating-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.browse-rating-star {
+  display: flex;
+  align-items: center;
+}
+
+.browse-duration-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.browse-instructor-row span {
+    color: #fafafa;
+    font-size: 16px;
+}
+
+/* ==================== STATS BAR ==================== */
+.browse-stats-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #FAFAFA;
+    padding: 18px 20px;
+    border-radius: 20px;
+    border: 1px solid #CFCFCF;
+}
+
+.browse-stats-row {
+  display: flex;
+  gap: 30px;
+}
+
+.browse-stat-item {
+  text-align: left;
+}
+
+.browse-stat-label {
+    font-size: 16px;
+    color: #9A9A9A;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.browse-stat-value {
+  font-size: 18px;
+  font-weight: 500;
+  color: #163300;
+}
+
+.browse-actions-row {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-browse-save {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1.5px solid #CFCFCF;
+    background: #F1F1F1;
+    color: #163300;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-browse-save:hover {
+  background: #F9FAFB;
+  border-color: #9CA3AF;
+}
+
+.btn-browse-save.saved {
+  background: #E8F5E9;
+  border-color: #4CAF50;
+  color: #2E7D32;
+}
+
+.btn-browse-enroll {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: none;
+    background: #9FE870;
+    color: #163300;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-browse-enroll:hover {
+  background: #163300;
+  color: #9FE870;
+}
+
+/* ==================== ABOUT SECTION ==================== */
+.browse-about-section {
+    background: #FAFAFA;
+    padding: 18px 20px;
+    border-radius: 20px;
+    border: 1px solid #CFCFCF;
+}
+
+.browse-section-title {
+    font-size: 22px;
+    font-weight: 500;
+    color: #163300;
+    margin: 0 0 15px 0;
+}
+
+.browse-about-description {
+    font-size: 16px;
+    color: #163300;
+    margin: 0 0 15px 0;
+    font-weight: 400;
+}
+
+.browse-about-subtitle {
+    font-size: 16px;
+    color: #163300;
+    margin: 0 0 15px 0;
+    font-weight: 400;
+}
+
+.browse-learning-points {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.browse-learning-point {
+  padding-left: 20px;
+  position: relative;
+  font-size: 16px;
+  color: #163300;
+  font-weight: 400;
+}
+
+.browse-learning-point::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #163300;
+  font-weight: 500;
+  font-size: 18px;
+}
+
+/* ==================== COURSE CONTENT ACCORDION ==================== */
+.browse-content-section {
+ background: #FAFAFA;
+    padding: 18px 20px;
+    border-radius: 20px;
+    border: 1px solid #CFCFCF;
+}
+
+.browse-section-title {
+  font-size: 22px;
+  font-weight: 500;
+  color: #163300;
+  margin: 0 0 20px 0;
+}
+
+/* Simple List - No Accordion */
+.browse-content-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.browse-content-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+background: #FAFAFA;
+    padding: 18px 20px;
+    border-radius: 20px;
+    border: 1px solid #CFCFCF;
+  transition: all 0.2s;
+}
+
+.browse-content-item:hover {
+  border-color: #65B741;
+  background: #F9FAFB;
+}
+
+.browse-content-icon {
+  flex-shrink: 0;
+}
+
+.browse-chapter-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #223D0D;
+  color: #9FE870;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.browse-content-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.browse-content-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 4px 0;
+}
+
+.browse-content-subtitle {
+  font-size: 15px;
+  color: #9A9A9A;
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Remove old accordion styles if not needed */
+.browse-content-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.browse-content-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.browse-content-header:hover {
+  background: #F9FAFB;
+}
+
+.browse-content-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+  background: #fff;
+  color: #374151;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.browse-content-toggle:hover {
+  background: #F9FAFB;
+  border-color: #65B741;
+}
+
+.browse-content-body {
+  padding: 0 20px 20px 84px;
+  color: #6B7280;
+  font-size: 14px;
+}
+
+/* ==================== SIDEBAR CARDS ==================== */
+.browse-sidebar-card {
+    background: #223D0D;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.browse-sidebar-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #FAFAFA;
+    margin-bottom: 20px;
+}
+
+/* ==================== UPCOMING CLASS (DARK GREEN) ==================== */
+.browse-upcoming-card {
+    background: #163300;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.browse-upcoming-thumbnail {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: #1E3A0F;
+  position: relative;
+}
+
+.browse-upcoming-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+
+.browse-upcoming-datetime {
+    font-size: 16px;
+    color: #9A9A9A;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.browse-upcoming-title {
+    font-size: 21px;
+    font-weight: 500;
+    color: #FAFAFA;
+    margin: 0 0 10px 0;
+}
+
+
+.btn-browse-notify {
+    width: 100%;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #CFCFCF;
+    background: #F1F1F1;
+    color: #163300;
+    font-size: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-browse-notify:hover {
+  background: #163300;
+  color: #fafafa ;
+ 
+}
+
+.browse-premium-note {
+    font-size: 16px;
+    color: #FAFAFA;
+    text-align: center;
+    line-height: 1.5;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+/* ==================== RELATED COURSES ==================== */
+
+.browse-related-card {
+    background: #FAFAFA;
+    border: 1px solid #CFCFCF;
+    padding: 18px 20px;
+    border-radius: 20px;
+}
+
+.browse-related-courses {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+}
+
+.browse-related-title {
+    font-size: 22px;
+    font-weight: 500;
+    color: #163300;
+    margin-bottom: 20px;
+}
+
+.browse-related-course-card {
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fff;
+}
+
+.browse-related-course-card:hover {
+  border-color: #65B741;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.browse-related-thumbnail {
+    width: 100%;
+    height: 50px;
+}
+
+.browse-related-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.browse-related-content {
+  padding: 16px;
+}
+
+.browse-related-instructor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.browse-related-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.browse-related-instructor-name {
+    font-size: 16px;
+    color: #9A9A9A;
+    font-weight: 600;
+}
+
+
+
+.browse-related-subtitle {
+    font-size: 16px;
+    color: #9A9A9A;
+    margin: 0;
+    font-weight: 600;
+}
+
+/* ==================== INSTRUCTOR PROFILE PAGE - ADDITIONAL CSS ==================== */
+/* Add this at the BOTTOM of your browse-course.css file */
+
+/* Instructor Profile Specific Wrapper */
+.instructor-profile-wrapper {
+  padding: 20px;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  margin-top: 80px;
+}
+
+/* Top Section Grid - Stats/About (Left) + Instructor Card (Right) */
+.instructor-top-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 40px;
+}
+
+.instructor-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.instructor-right-column {
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+}
+
+/* Instructor Card - Dark Green (Image 2) */
+.instructor-card {
+    background: #223D0D;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.instructor-badge {
+  display: inline-block;
+  background: #FAFAFA;
+  color: #163300;
+  padding: 5px 10px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.tutor-name {
+  font-size: 26px;
+  font-weight: 600;
+  color: #9FE870;
+  margin: 0 0 8px 0;
+}
+
+.instructor-role {
+  font-size: 16px;
+  color: #FAFAFA;
+  margin: 0 0 24px 0;
+  font-weight: 500;
+}
+
+.btn-send-message {
+  width: 100%;
+  padding: 20px;
+  border-radius: 10px;
+  border: none;
+  background: #9FE870;
+  color: #163300;
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 20px;
+}
+
+.btn-send-message:hover {
+  background: #163300;
+  color: #fafafa;
+}
+
+/* Social Icons Row */
+.instructor-social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.social-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #9FE870;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.social-icon-btn:hover {
+  background: #8ed65e;
+  transform: translateY(-2px);
+}
+
+.social-icon-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+/* My Courses Section - Full Width Below */
+.instructor-courses-section {
+  width: 100%;
+  margin-top: 0;
+}
+
+.instructor-courses-heading {
+  font-size: 24px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 24px 0;
+}
+
+/* Responsive for Instructor Profile */
+@media (max-width: 1279px) {
+  .instructor-top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .instructor-right-column {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .instructor-profile-wrapper {
+    padding: 16px;
+  }
+
+  .instructor-name {
+    font-size: 24px;
+  }
+
+  .instructor-courses-heading {
+    font-size: 20px;
+  }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1279px) {
+  .browse-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .browse-right-section {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 1023px) {
+  .browse-stats-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .browse-stats-row {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .browse-actions-row {
+    width: 100%;
+  }
+
+  .btn-browse-save,
+  .btn-browse-enroll {
+    flex: 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .browse-page-wrapper {
+    padding: 16px;
+  }
+
+  .course-header {
+    padding: 24px 20px;
+  }
+
+  .course-detail-title {
+    font-size: 24px;
+  }
+
+  .browse-stats-container {
+    padding: 20px;
+  }
+
+  .browse-about-section,
+  .browse-content-section {
+    padding: 24px 20px;
+  }
+
+  .browse-content-body {
+    padding: 0 20px 20px 20px;
+  }
+}

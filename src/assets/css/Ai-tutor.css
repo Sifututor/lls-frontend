@@ -1,0 +1,647 @@
+/* ==================== AI TUTOR PAGE CSS ==================== */
+
+/* Main Layout - 3 Columns */
+.ai-tutor-layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr) 260px;
+    gap: 24px;
+    padding: 20px;
+    margin-top: 60px;
+}
+
+/* ================= LEFT SIDEBAR - SESSIONS ================= */
+
+.ai-sessions-sidebar {
+    background: #FAFAFA;
+    border-radius: 20px;
+    border: 1px solid #CFCFCF;
+    padding: 20px;
+}
+
+.btn-new-session {
+    width: 100%;
+    padding: 10px;
+    background: #9FE870;
+    color: #163300;
+    border: none;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    transition: all 0.2s;
+}
+
+.btn-new-session:hover {
+  background: #163300;
+  color: #fafafa;
+}
+
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.session-group-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #9A9A9A;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+}
+
+.session-item {
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 18px;
+    color: #163300;
+    cursor: pointer;
+    transition: all;
+    margin-bottom: 8px;
+}
+
+
+
+.session-item:hover {
+  background: #F3F4F6;
+}
+
+.session-item.active {
+    background: #223D0D;
+    color: #9FE870;
+    font-weight: 500;
+}
+
+
+
+/* ================= CENTER - CHAT AREA ================= */
+
+
+
+.ai-chat-messages-container {
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ai-message {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message-time {
+    text-align: center;
+    font-size: 16px;
+    color: #9A9A9A;
+    background: #FAFAFA;
+    width: fit-content;
+    margin: 0 auto 20px;
+    border-radius: 16px;
+    padding: 5px 10px;
+    font-weight: 500;
+}
+
+.message-bubble {
+    max-width: 80%;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.ai-message.ai .message-bubble {
+  color: #163300;
+  align-self: flex-start;
+}
+
+.ai-message.error-message .message-bubble {
+  background-color: #FEF2F2 !important;
+  border: 1px solid #DD4040;
+  color: #DD4040;
+}
+
+.ai-message.error-message .message-bubble p {
+  color: #DD4040;
+}
+
+/* Keep normal AI message styling for non-errors */
+.ai-message.ai:not(.error-message) .message-bubble {
+  background-color: #F5F5F5;
+  color: #163300;
+}
+
+.ai-message.user .message-bubble {
+  background: #9FE870;
+  color: #163300;
+  align-self: flex-end;
+}
+
+.message-formula {
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 12px;
+  font-family: 'Courier New', monospace;
+  color: #6366F1;
+  text-align: left;
+}
+
+.message-example {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.example-label {
+  font-weight: 600;
+  color: #6B7280;
+  margin-bottom: 8px;
+}
+
+.example-steps {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 12px 0;
+}
+
+.example-steps li {
+  margin-bottom: 8px;
+}
+
+/* Action Buttons */
+.ai-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.ai-action-btn {
+    padding: 5px 10px;
+    background: #FAFAFA;
+    border-radius: 16px;
+    font-size: 16px;
+    color: #9A9A9A;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    border: 1px solid #fafafa;
+}
+
+.ai-action-btn:hover {
+  background: #F3F4F6;
+  border-color: #9FE870;
+}
+
+/* Input Area */
+.ai-input-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #FAFAFA;
+    border-radius: 80px;
+    padding: 10px;
+}
+
+.ai-attach-btn,
+.ai-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #E5E7EB;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ai-attach-btn:hover,
+.ai-send-btn:hover {
+  background: #F3F4F6;
+}
+
+.ai-send-btn {
+  background: #9FE870;
+  border-color: #9FE870;
+  color: #163300;
+}
+
+.ai-send-btn:hover {
+  background: #8FD760;
+}
+
+.ai-input-field {
+    flex: 1 1;
+    border: unset;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background: transparent;
+    padding-left: 5px;
+}
+
+.ai-input-field:focus {
+  border-color: #9FE870;
+}
+
+.ai-disclaimer {
+    text-align: center;
+    font-size: 16px;
+    color: #9A9A9A;
+    padding: 12px 24px 16px;
+    font-weight: 500;
+}
+
+/* ================= RIGHT SIDEBAR - INFO ================= */
+
+.ai-info-sidebar {
+    background: #FAFAFA;
+    border-radius: 20px;
+    border: 1px solid #CFCFCF;
+    padding: 20px;
+}
+
+
+
+.ai-usage-box {
+    background: #F1F1F1;
+    border-radius: 10px;
+    padding: 10px;
+
+}
+
+.usage-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+ 
+}
+
+.usage-label {
+    font-size: 16px;
+    color: #9A9A9A;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+
+
+.usage-value, .usage-reset {
+  font-size: 16px;
+  font-weight: 500;
+  color: #163300;
+
+}
+
+.usage-reset {
+    font-size: 16px;
+    color: #9A9A9A;
+
+    font-weight: 500;
+}
+
+
+
+.ai-tutor-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #163300;
+    margin-bottom: 16px;
+    margin-top: 20px;
+}
+
+.courses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.course-item-small {
+    border-bottom: 1px solid #E5E7EB;
+    border-radius: 8px;
+    transition: all 0.2s;
+    padding-bottom: 20px;
+}
+
+.course-item-small:last-child {
+    border-bottom: none;
+    padding-bottom: unset;
+}
+
+.course-badge-small {
+    display: inline-block;
+    padding: 5px 10px;
+    background: #DCFCE7;
+    color: #329256;
+    border-radius: 27px;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.course-title-small {
+    font-size: 20px;
+    font-weight: 600;
+    color: #163300;
+    margin: 8px 0 4px;
+}
+
+
+
+.course-meta-small {
+    font-size: 16px;
+    color: #9A9A9A;
+    margin-bottom: 8px;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.course-instructor-small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #374151;
+}
+
+/* ================= MODAL - NEW SESSION ================= */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+    background: #FAFAFA;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+    position: relative;
+    margin-top: 60px;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.modal-header-images {
+  display: flex;
+  justify-content: center;
+  gap: -8px;
+  margin-bottom: 24px;
+}
+
+.modal-header-images {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Base avatar */
+.tutor-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #F1F1F1;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin: 0 -10px;
+    position: relative;
+    z-index: 0;
+}
+
+/* Center avatar (main) */
+.tutor-avatar.main {
+    width: 72px;
+    height: 72px;
+    z-index: 2;
+    margin: 0 -6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* White ring behind main avatar */
+.tutor-avatar.main::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    background: #ffffff;
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.modal-close-btn svg path {
+    stroke: #163300;
+}
+
+.modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #163300;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.modal-subtitle {
+    font-size: 12px;
+    color: #9A9A9A;
+    text-align: center;
+    margin-bottom: 24px;
+    font-weight: 400;
+}
+
+
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: #163300;
+  margin-bottom: 12px;
+}
+
+.subject-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.subject-card {
+    padding: 8px 16px;
+    border: 1px solid #CFCFCF;
+    border-radius: 14px;
+    background: #FAFAFA;
+    cursor: pointer;
+    text-align: left;
+    box-shadow: 0 0.5px 1px 0 rgba(25, 33, 61, 0.04);
+    transition: all 0.2s;
+}
+
+.subject-card:hover {
+  border-color: #9FE870;
+  background: #F9FFF4;
+}
+
+.subject-card.selected {
+  border-color: #9FE870;
+  background: #F9FFF4;
+}
+
+.subject-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #163300;
+  margin-bottom: 4px;
+}
+
+.subject-topics {
+  font-size: 12px;
+  color: #9A9A9A;
+}
+
+input.topic-input {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid #CFCFCF;
+  border-radius: 14px;
+  font-size: 14px;
+  outline: none;
+  background: #FAFAFA;
+}
+
+input.topic-input:focus {
+  border-color: #9FE870;
+  font-size: 14px;
+}
+
+input.topic-input::placeholder {
+  color: #9A9A9A;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 12px 14px;
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #9A9A9A;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #F3F4F6;
+}
+
+.btn-start-session {
+  flex: 2;
+  padding: 12px 14px;
+  background: #9FE870;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #163300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-start-session:hover:not(:disabled) {
+  background: #8FD760;
+}
+
+.btn-start-session:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ai-chat-area {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;   /* page ke barabar */
+}
+
+/* messages normal flow me */
+.ai-chat-messages-container {
+    padding: 20px;
+}
+
+/* bottom bar – ALWAYS neeche rahe */
+.ai-input-wrapper {
+    margin-top: auto;          /* 🔥 MAGIC LINE */
+    position: sticky;          /* optional but safe */
+    bottom: 0;
+ 
+    z-index: 5;
+}
+
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1200px) {
+  .ai-tutor-layout {
+    grid-template-columns: 250px 1fr 300px;
+  }
+}
+
+@media (max-width: 992px) {
+  .ai-tutor-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  .ai-sessions-sidebar,
+  .ai-info-sidebar {
+    max-height: 300px;
+  }
+}

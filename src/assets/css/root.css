@@ -1,0 +1,103 @@
+/* ==================== LEARNEST ROOT VARIABLES ==================== */
+/* Based on Figma Style Guide */
+
+:root {
+    /* ===== PRIMARY COLORS ===== */
+    --primary-green: rgba(159, 232, 112, 1);        /* #9FE870 - Light Green */
+    --primary-medium-green: rgba(34, 48, 221, 1);   /* #2230DD - Medium Green (typo in figma?) */
+    --primary-darker-green: rgba(22, 51, 0, 1);     /* #163300 - Darker Green */
+    
+    /* Actual Green Shades (correcting from visual) */
+    --green-light: #9FE870;
+    --green-medium: #2230DD;  
+    --green-dark: #163300;
+    
+    /* ===== SECONDARY COLORS ===== */
+    --secondary-gray: rgba(154, 154, 154, 1);       /* #9A9A9A */
+    
+    /* ===== BACKGROUND COLORS ===== */
+    --bg-main: rgba(241, 241, 241, 1);              /* #F1F1F1 */
+    --bg-card: rgba(250, 250, 250, 1);              /* #FAFAFA */
+    --bg-white: rgba(250, 250, 250, 1);             /* #FAFAFA */
+    
+    /* ===== ADDITIONAL COLORS ===== */
+    --color-white: #FFFFFF;
+    --color-black: #000000;
+    
+    /* Status Colors */
+    --color-ongoing: #FF5252;
+    --color-upcoming: #FFC107;
+    --color-scheduled: #2196F3;
+    
+    /* Badge Colors */
+    --color-biology: #4CAF50;
+    --color-physics: #2196F3;
+    --color-chemistry: #9C27B0;
+    
+    /* Stat Card Colors */
+    --color-blue: #6B8CFF;
+    --color-purple: #A78BFA;
+    --color-green-stat: #4ADE80;
+    --color-orange: #FB923C;
+    
+    /* ===== TYPOGRAPHY ===== */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    
+    /* Font Sizes */
+    --font-h1: 28px;
+    --font-h2: 24px;
+    --font-h3: 20px;
+    --font-h4: 18px;
+    --font-h5: 16px;
+    --font-body: 14px;
+    --font-small: 12px;
+    --font-xs: 11px;
+    
+    /* Font Weights */
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+    
+    /* Line Heights */
+    --line-height-base: 1.5;
+    --line-height-tight: 1.2;
+    
+    /* ===== SPACING ===== */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 20px;
+    --space-2xl: 24px;
+    --space-3xl: 32px;
+    --space-4xl: 40px;
+    
+    /* ===== BORDER RADIUS ===== */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+    
+    /* ===== SHADOWS (Minimal) ===== */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.1);
+    
+    /* ===== TRANSITIONS ===== */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.2s ease;
+    --transition-slow: 0.3s ease;
+    
+    /* ===== LAYOUT ===== */
+    --sidebar-width: 240px;
+    --navbar-height: 72px;
+    --max-width: 1440px;
+    
+    /* ===== Z-INDEX ===== */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal: 1040;
+}
