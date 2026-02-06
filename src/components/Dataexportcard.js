@@ -8,12 +8,10 @@ function Dataexportcard() {
   ]);
 
   const handleRequestArchive = () => {
-    console.log('Requesting data archive...');
     // API call will go here
   };
 
-  const handleDownload = (exportId) => {
-    console.log('Downloading export:', exportId);
+  const handleDownload = () => {
     // Download logic will go here
   };
 

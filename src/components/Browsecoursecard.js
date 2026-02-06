@@ -1,14 +1,50 @@
 // src/components/BrowseCourseCard.js
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTutorProfilePath } from '../utils/tutorProfileUtils';
+import { useEnrollCourseMutation } from '../store/api/authApi';
+import { showError, showInfo } from '../utils/toast';
 
 function BrowseCourseCard({ course, onClick }) {
+  const navigate = useNavigate();
+  const [enrollCourse, { isLoading: isEnrolling }] = useEnrollCourseMutation();
+  const [enrolled, setEnrolled] = useState(false);
+
   const handleCardClick = () => {
     if (onClick) onClick(course.slug);
   };
 
-  const handleEnrollClick = (e) => {
+  const handleEnrollClick = async (e) => {
     e.stopPropagation();
-    if (onClick) onClick(course.slug);
+    
+    try {
+      const result = await enrollCourse(course.slug).unwrap();
+      
+      // Stay on browse course details - just show enrolled state
+      setEnrolled(true);
+      
+      // Navigate to BROWSE COURSE details page (About this course)
+      setTimeout(() => {
+        navigate(`/student/browse-course/${course.slug}`);
+      }, 500);
+      
+    } catch (error) {
+      console.error('❌ Enrollment failed:', error);
+      
+      // Check if already enrolled
+      if (error?.data?.message?.toLowerCase().includes('already enrolled')) {
+        showInfo('You are already enrolled in this course!');
+        setEnrolled(true);
+      } else {
+        showError(error?.data?.message || 'Failed to enroll. Please try again.');
+      }
+    }
+  };
+
+  const handleInstructorClick = (e) => {
+    e.stopPropagation();
+    const path = getTutorProfilePath(course.instructor);
+    if (path) navigate(path);
   };
 
   return (
@@ -28,7 +64,12 @@ function BrowseCourseCard({ course, onClick }) {
       </div>
 
       <div className="course-info">
-        <div className="course-instructor">
+        <div
+          className="course-instructor"
+          onClick={handleInstructorClick}
+          role={getTutorProfilePath(course.instructor) ? 'button' : undefined}
+          style={getTutorProfilePath(course.instructor) ? { cursor: 'pointer' } : undefined}
+        >
           <img 
             src={course.instructor?.avatar} 
             alt={course.instructor?.name} 
@@ -42,8 +83,12 @@ function BrowseCourseCard({ course, onClick }) {
         <p className="course-chapter">{course.lessons || course.chapter || ''}</p>
 
         <div className="course-actions">
-          <button className="btn-enroll-now" onClick={handleEnrollClick}>
-            Enroll Now
+          <button 
+            className={`btn-enroll-now ${enrolled ? 'enrolled' : ''}`}
+            onClick={handleEnrollClick}
+            disabled={isEnrolling || enrolled}
+          >
+            {isEnrolling ? 'Enrolling...' : enrolled ? '✓ Enrolled' : 'Enroll Now'}
           </button>
         </div>
       </div>

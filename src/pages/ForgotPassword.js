@@ -1,3 +1,4 @@
+// src/pages/ForgotPassword.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/auth.css';
@@ -5,70 +6,128 @@ import '../assets/css/auth.css';
 function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      navigate('/login');
-    }, 3000);
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('http://10.0.0.178:8000/api/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess(true);
+      } else {
+        setError(data.message || 'Failed to send reset link');
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (submitted) {
+  // Success state - email sent
+  if (success) {
     return (
-      <div className="auth-container forgot-password-success">
-        
-        <div className="auth-card-white">
+      <div className="auth-container forgot-password-page">
+        <div className="login-selection">
           <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
-            <img src="/assets/images/Learnest-logo.png" alt="Learnest" />
+            <img src="/assets/images/landingpage-logo.png" alt="Learnest" />
           </div>
 
-          <div className="success-state">
-            <div className="success-icon-large">S</div>
-            <h2 className="success-title">Reset Your Password</h2>
-            <p className="success-message">
-              An email with reset password instructions has been sent to <strong>{email}</strong>. 
-              Be sure to check your spam folder too.
+          <div className="login-title-section">
+            <h1 className="login-main-title">Check Your Email</h1>
+            <p className="login-subtitle">
+              We've sent a password reset link to <strong>{email}</strong>. 
+              Please check your inbox and spam folder.
             </p>
           </div>
 
-          <button onClick={() => navigate('/login')} className="btn-primary btn-full">Back to Login</button>
+          <div className="parent-login-card-container">
+            <div className="auth-card-white parent-login-card">
+              <button 
+                onClick={() => navigate('/login')} 
+                className="btn-primary btn-full"
+              >
+                Back to Log In
+              </button>
+
+              <div className="auth-switch">
+                <p>Didn't receive email? <button type="button" onClick={() => setSuccess(false)} className="link-switch">Resend</button></p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="auth-container forgot-password">
-        <div className="login-selection">
-      {/* Logo */}
-       <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
+    <div className="auth-container forgot-password-page">
+      <div className="login-selection">
+        {/* Logo */}
+        <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />
         </div>
+
         {/* Title Section */}
-      <div className="login-title-section">
-        <h1 className="login-main-title">Forgot Password?</h1>
-        <p className="login-subtitle">Don't worry! Enter your email and we'll send you a reset link.</p>
-      </div>
-      <div className="auth-card-white">
+        <div className="login-title-section">
+          <h1 className="login-main-title">Forgot Password?</h1>
+          <p className="login-subtitle">Don't worry! Enter your email and we'll send you a reset link.</p>
+        </div>
 
-       
+        {/* Forgot Password Card */}
+        <div className="parent-login-card-container">
+          <div className="auth-card-white parent-login-card">
+            {error && (
+              <div className="error-message">
+                <p>{error}</p>
+              </div>
+            )}
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="email"></label>
-            <input type="email" id="email" name="email" placeholder='Email Address' value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="form-group">
+                <label htmlFor="email"></label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  name="email" 
+                  placeholder="Email Address" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                  disabled={isLoading}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn-primary btn-full"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Sending...' : 'Send Email'}
+              </button>
+            </form>
+
+            <div className="auth-switch">
+              <p>Back to <button type="button" onClick={() => navigate('/login')} className="link-switch">Log In</button></p>
+            </div>
           </div>
-
-          <button type="submit" className="btn-primary btn-full">Send Reset Link</button>
-        </form>
-
-          <div className="auth-switch">
-          <p>Back to <button onClick={() => navigate('/login')} className="link-switch">Login</button></p>
         </div>
       </div>
-    </div>
     </div>
   );
 }

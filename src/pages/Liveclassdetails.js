@@ -1,7 +1,5 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
 import LiveClassHeader from '../components/Liveclassheader';
 import VideoPlayer from '../components/VideoPlayer';
 import CourseTabs from '../components/CourseTabs';
@@ -19,17 +17,14 @@ import {
 } from '../data/Liveclassdetailsdata';
 
 function Liveclassdetails() {
-  const { id } = useParams();
+  // Route uses :slug, but it's actually the class ID
+  const { slug } = useParams();
+  const classId = slug; // Use slug as classId for API calls
 
   return (
     <>
-      <Sidebar />
-
-      <main className="main-content">
-        <TopNavbar title="Live Classes" breadcrumb="Advanced Calculus" />
-
-        {/* Live Class Header (Full Width) - No Progress Bar */}
-        <LiveClassHeader liveClassData={liveClassData} />
+      {/* Live Class Header (Full Width) - No Progress Bar */}
+      <LiveClassHeader liveClassData={liveClassData} />
 
         {/* Class Details Content */}
         <div className="course-details-wrapper">
@@ -57,7 +52,6 @@ function Liveclassdetails() {
          
           </div>
         </div>
-      </main>
     </>
   );
 }

@@ -1,11 +1,32 @@
 // src/pages/Addchildrenstep.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAddChildrenMutation } from '../store/api/authApi';
+import { useRegistration } from '../context/RegistrationContext';
+import { showError, showWarning } from '../utils/toast';
 import '../assets/css/auth.css';
 
-function AddChildrenStep({ onComplete, signupData }) {
+function AddChildrenStep() {
   const navigate = useNavigate();
+  const { children: contextChildren, setChildren, setChildrenDisplay } = useRegistration();
+  const [addChildren, { isLoading, error }] = useAddChildrenMutation();
+
   const [students, setStudents] = useState([]);
+
+  useEffect(() => {
+    if (Array.isArray(contextChildren) && contextChildren.length > 0 && contextChildren[0]?.name) {
+      setStudents(
+        contextChildren.map((c, i) => ({
+          id: c.id || i + 1,
+          name: c.name,
+          email: c.email || '',
+          form_level: c.form_level,
+          displayFormLevel: c.form_level?.startsWith('Form') ? c.form_level : `Form ${c.form_level}`,
+          avatar: '/assets/images/student-img.png',
+        }))
+      );
+    }
+  }, []);
   const [formData, setFormData] = useState({
     studentName: '',
     formLevel: '',
@@ -45,8 +66,8 @@ function AddChildrenStep({ onComplete, signupData }) {
       form_level: mapFormLevelToApi(formData.formLevel),
       email: formData.studentEmail || undefined,
       id: Date.now(),
-      avatar: `/assets/images/student-img.png`,
-      displayFormLevel: formData.formLevel
+      avatar: '/assets/images/student-img.png',
+      displayFormLevel: formData.formLevel,
     };
     
     setStudents([...students, newStudent]);
@@ -63,26 +84,34 @@ function AddChildrenStep({ onComplete, signupData }) {
     });
   };
 
-  const handleDone = () => {
+  const handleDone = async () => {
     if (students.length === 0) {
-      alert('Please add at least one student');
+      showWarning('Please add at least one student');
       return;
     }
-    
-    // Format children for API - only required fields
-    const childrenForApi = students.map(s => {
-      const child = { 
-        name: s.name, 
-        form_level: s.form_level 
-      };
+
+    const childrenForApi = students.map((s) => {
+      const child = { name: s.name, form_level: s.form_level };
       if (s.email) child.email = s.email;
       return child;
     });
 
-    console.log('Children for API:', childrenForApi);
-    
-    onComplete(students, childrenForApi);
-    navigate('/create-account/terms');
+    setChildren(childrenForApi);
+    setChildrenDisplay(students);
+
+    try {
+      await addChildren({ children: childrenForApi }).unwrap();
+      navigate('/register/student-terms');
+    } catch (err) {
+      if (err.data?.message) {
+        showError(err.data.message);
+      } else if (err.data?.errors) {
+        const msgs = Object.values(err.data.errors).flat().join('\n');
+        showError(msgs);
+      } else {
+        showError('Failed to add children. Please try again.');
+      }
+    }
   };
 
   const formLevels = ['Form 1', 'Form 2', 'Form 3', 'Form 4', 'Form 5'];
@@ -232,8 +261,13 @@ function AddChildrenStep({ onComplete, signupData }) {
                 </div>
               </div>
 
-              <button onClick={handleDone} className="btn-primary btn-full btn-done">
-                Done - Start Learning
+              {error && (
+                <div className="error-message" style={{ background: '#FEF2F2', border: '1px solid #DD4040', borderRadius: '8px', padding: '12px', marginBottom: '16px', color: '#DD4040' }}>
+                  {error.data?.message || 'Failed to add children.'}
+                </div>
+              )}
+              <button type="button" onClick={handleDone} className="btn-primary btn-full btn-done" disabled={isLoading}>
+                {isLoading ? 'Adding...' : 'Done, Start Learning'}
               </button>
 
               <p className="helper-text">You can add more students anytime from the profile picker.</p>

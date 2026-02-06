@@ -948,13 +948,14 @@
   flex: 1;
 }
 
-/* Progress + Button wrapper - Push to bottom */
+/* Progress stays above button; actions block pushed to bottom */
 .course-progress-wrapper {
   margin-top: auto;
 }
 
 .course-actions {
-  margin-top: 12px;
+  margin-top: auto;
+  padding-top: 16px;
 }
 
 /* Live Class Card - Fixed Height */

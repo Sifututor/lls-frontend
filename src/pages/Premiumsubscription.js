@@ -1,6 +1,4 @@
 import React from 'react';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
 import Profilecard from '../components/Profilecard';
 import Studentemailcard from '../components/Studentemailcard';
 import Logoutbutton from '../components/Logoutbutton';
@@ -13,55 +11,30 @@ import Dataprivacycard from '../components/Dataprivacycard';
 import { premiumSubscriptionData } from '../data/Premiumsubscriptiondata';
 
 function Premiumsubscription() {
-  const handleEditProfile = () => {
-    console.log('Edit profile clicked');
-  };
+  const handleEditProfile = () => {};
 
-  const handleSubmitEmail = (email) => {
-    console.log('Submitting email:', email);
-  };
+  const handleSubmitEmail = () => {};
 
-  const handleLogout = () => {
-    console.log('Logging out');
-  };
+  const handleLogout = () => {};
 
-  const handleChangePlan = () => {
-    console.log('Change plan clicked');
-  };
+  const handleChangePlan = () => {};
 
-  const handleDownloadReceipt = (id) => {
-    console.log('Downloading receipt:', id);
-  };
+  const handleDownloadReceipt = () => {};
 
-  const handleDownloadAll = () => {
-    console.log('Downloading all receipts');
-  };
+  const handleDownloadAll = () => {};
 
-  const handleRegenerateLink = () => {
-    console.log('Regenerating parent access link');
-  };
+  const handleRegenerateLink = () => {};
 
   const handleCopyLink = () => {
-    console.log('Copying link');
     navigator.clipboard.writeText(premiumSubscriptionData.parentAccessLink);
   };
 
-  const handleDownloadData = () => {
-    console.log('Downloading user data');
-  };
+  const handleDownloadData = () => {};
 
-  const handleDeleteAccount = () => {
-    console.log('Delete account clicked');
-  };
+  const handleDeleteAccount = () => {};
 
   return (
-    <>
-      <Sidebar />
-
-      <main className="main-content">
-        <TopNavbar title="Profile" />
-
-        <div className="profile-page-container">
+    <div className="profile-page-container">
           {/* Page Header */}
           <div className="profile-page-header">
             <h1 className="profile-page-title">Profile</h1>
@@ -110,9 +83,7 @@ function Premiumsubscription() {
               />
             </div>
           </div>
-        </div>
-      </main>
-    </>
+    </div>
   );
 }
 

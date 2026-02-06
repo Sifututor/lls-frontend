@@ -1,14 +1,31 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { usePremium } from '../hooks/usePremium';
 
 function AITutorBox({ aiChatData }) {
+  const navigate = useNavigate();
+  const { isPremium } = usePremium();
   const [messages, setMessages] = useState(aiChatData.messages);
   const [inputText, setInputText] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const fileInputRef = useRef(null);
+  const [questionsUsed, setQuestionsUsed] = useState(0);
+  const maxFreeQuestions = 5;
+  
+  const canAskQuestion = isPremium || questionsUsed < maxFreeQuestions;
 
   const handleSendMessage = () => {
+    if (!canAskQuestion) {
+      navigate('/student/subscription');
+      return;
+    }
+    
     if (inputText.trim() || selectedFile) {
+      if (!isPremium) {
+        setQuestionsUsed(prev => prev + 1);
+      }
+      
       const newMessage = {
         id: messages.length + 1,
         type: 'user',
@@ -129,13 +146,14 @@ function AITutorBox({ aiChatData }) {
         <input
           type="text"
           className="ai-tutor-input"
-          placeholder="Type your question here..."
+          placeholder={canAskQuestion ? "Type your question here..." : "Upgrade for more questions"}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+          disabled={!canAskQuestion}
         />
 
-        <button className="ai-tutor-send-btn" onClick={handleSendMessage}>
+        <button className="ai-tutor-send-btn" onClick={handleSendMessage} disabled={!canAskQuestion}>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path
               d="M18 2L9 11M18 2L12 18L9 11M18 2L2 8L9 11"
@@ -158,10 +176,30 @@ function AITutorBox({ aiChatData }) {
         </div>
       )}
 
-      <p className="ai-tutor-footer">
-        {aiChatData.questionsRemaining} questions remaining today{' '}
-        <a href="#">({aiChatData.plan})</a>
-      </p>
+      {/* Show quota for free users */}
+      {!isPremium && (
+        <div className="ai-quota" style={{ 
+          padding: '12px', 
+          background: '#FEF3C7', 
+          borderRadius: '8px', 
+          marginTop: '12px',
+          fontSize: '14px',
+          color: '#92400E'
+        }}>
+          {questionsUsed}/{maxFreeQuestions} questions today
+          {questionsUsed >= maxFreeQuestions && (
+            <span style={{ display: 'block', marginTop: '4px' }}>
+              Daily limit reached. <a href="/student/subscription" onClick={(e) => { e.preventDefault(); navigate('/student/subscription'); }} style={{ color: '#10B981', textDecoration: 'underline' }}>Upgrade</a> for unlimited.
+            </span>
+          )}
+        </div>
+      )}
+      
+      {isPremium && (
+        <p className="ai-tutor-footer">
+          Unlimited questions (Premium)
+        </p>
+      )}
     </div>
   );
 }

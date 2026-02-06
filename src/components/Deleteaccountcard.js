@@ -9,7 +9,6 @@ function Deleteaccountcard() {
   };
 
   const handleConfirmDelete = () => {
-    console.log('Account deletion confirmed');
     // API call will go here
     setShowConfirmation(false);
   };

@@ -1,7 +1,7 @@
 // src/components/Notificationheader.js
 import React from 'react';
 
-function Notificationheader({ activeFilter, onFilterChange, unreadCount, onMarkAllRead }) {
+function Notificationheader({ activeFilter, onFilterChange, unreadCount, onMarkAllRead, isMarkingAll }) {
   const filters = [
     { id: 'All', label: 'All', count: null },
     { id: 'Unread', label: 'Unread', count: unreadCount },
@@ -28,8 +28,12 @@ function Notificationheader({ activeFilter, onFilterChange, unreadCount, onMarkA
         ))}
       </div>
 
-      <button className="mark-all-read-btn" onClick={onMarkAllRead}>
-        Mark all as read
+      <button 
+        className="mark-all-read-btn" 
+        onClick={onMarkAllRead}
+        disabled={isMarkingAll}
+      >
+        {isMarkingAll ? 'Marking...' : 'Mark all as read'}
       </button>
     </div>
   );

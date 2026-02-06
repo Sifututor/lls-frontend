@@ -1,10 +1,9 @@
 // src/pages/MyCourses.js
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
 import FilterBar from '../components/FilterBar';
 import MyCourseCard from '../components/MyCourseCard';
+import { SkeletonCard } from '../components/ui/LoadingSpinner';
 import { useGetMyCoursesQuery } from '../store/api/authApi';
 
 function MyCourses() {
@@ -32,8 +31,6 @@ function MyCourses() {
       };
     }
 
-    console.log('📦 Full API Response:', apiResponse);
-
     // ========================================
     // FIXED: Correct path to data
     // API structure: { success, data: { saved_courses, courses: { data: [...] } }, filters }
@@ -42,9 +39,6 @@ function MyCourses() {
     const coursesArray = apiResponse?.data?.courses?.data || [];
     const savedArray = apiResponse?.data?.saved_courses || [];
     const filtersData = apiResponse?.filters || {};
-
-    console.log('📚 Courses Array:', coursesArray.length);
-    console.log('⭐ Saved Array:', savedArray.length);
 
     // Transform API course to component format
     const transformCourse = (course, type) => {
@@ -83,7 +77,6 @@ function MyCourses() {
 
     coursesArray.forEach(course => {
       const progress = course.progress_percentage ?? 0;
-      console.log(`📖 ${course.title}: ${progress}%`);
 
       if (progress >= 100) {
         completed.push(transformCourse(course, 'completed'));
@@ -93,17 +86,12 @@ function MyCourses() {
     });
 
     // Saved courses (no progress bar)
-    const saved = savedArray.map(course => {
-      console.log(`⭐ Saved: ${course.title}`);
-      return transformCourse(course, 'saved');
-    });
+    const saved = savedArray.map(course => transformCourse(course, 'saved'));
 
     // Filter options from API
     const subjects = filtersData.subjects?.map(s => s.title) || [];
     const formLevels = filtersData.levels?.map(l => l.title) || [];
     const tutors = [...new Set(coursesArray.map(c => c.creator?.name).filter(Boolean))];
-
-    console.log(`✅ Ongoing: ${ongoing.length} | Completed: ${completed.length} | Saved: ${saved.length}`);
 
     return {
       ongoingCourses: ongoing,
@@ -136,7 +124,7 @@ function MyCourses() {
   // Navigation
   const handleCourseClick = (courseSlug) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => navigate(`/course-details/${courseSlug}`), 100);
+    navigate(`/student/course/${courseSlug}`);
   };
 
   // Local filter function
@@ -179,13 +167,7 @@ function MyCourses() {
     filteredSaved.length === 0;
 
   return (
-    <>
-      <Sidebar />
-
-      <main className="main-content">
-        <TopNavbar title="My Courses" breadcrumb="Ongoing Courses" />
-
-        <div className="dashboard-content">
+    <div className="dashboard-content">
           {/* Page Header */}
           <div className="page-header-section">
             <h1 className="welcome-title">My Courses</h1>
@@ -207,9 +189,14 @@ function MyCourses() {
 
           {/* Loading */}
           {isLoading && (
-            <div style={{ textAlign: 'center', padding: '60px 20px', background: 'white', borderRadius: '16px', marginBottom: '24px' }}>
-              <p style={{ color: '#6B7280' }}>Loading your courses...</p>
-            </div>
+            <section className="welcome-stats-container course">
+              <div className="courses-grid">
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
+            </section>
           )}
 
           {/* Error */}
@@ -292,9 +279,7 @@ function MyCourses() {
             </section>
           )}
 
-        </div>
-      </main>
-    </>
+    </div>
   );
 }
 

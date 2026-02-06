@@ -2,6 +2,7 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import Cookies from "js-cookie";
 import { logout, selectCurrentUser } from "../store/slices/authSlice";
 import { useLogoutMutation } from "../store/api/authApi";
 import { getUserType, isPremiumUser } from "../store/api/authApi";
@@ -12,6 +13,14 @@ function TopNavbar({ title, breadcrumb }) {
   const location = useLocation();
   const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
+
+  const userName = currentUser?.profile
+    ? `${currentUser.profile.first_name || ''} ${currentUser.profile.last_name || ''}`.trim() || currentUser?.name
+    : currentUser?.name || 'Student';
+  const userAvatar = currentUser?.profile?.profile_image
+    || currentUser?.avatar
+    || '/assets/images/icons/Ellipse 3.svg';
+  const userEmail = (currentUser?.profile?.email ?? currentUser?.email) || '';
 
   const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
 
@@ -32,22 +41,31 @@ function TopNavbar({ title, breadcrumb }) {
 
   const getUserDisplayInfo = () => {
     if (currentUser) {
+      const userName = currentUser.profile
+        ? `${currentUser.profile.first_name || ''} ${currentUser.profile.last_name || ''}`.trim() || currentUser.name
+        : currentUser.name;
+      const userAvatar = currentUser.profile?.profile_image || currentUser.avatar || '/assets/images/icons/Ellipse 3.svg';
+      const userEmail = currentUser.profile?.email ?? currentUser.email;
       return {
-        name: currentUser.name,
-        email: currentUser.email,
-        avatar: currentUser.avatar || '/assets/images/icons/Ellipse 3.svg',
+        name: userName || 'User',
+        email: userEmail || 'user@example.com',
+        avatar: userAvatar,
         role: currentUser.user_type || userType
       };
     }
 
-    const storedUser = localStorage.getItem('userData');
+    const storedUser = localStorage.getItem('userData') || Cookies.get('userData');
     if (storedUser) {
       try {
         const userData = JSON.parse(storedUser);
+        const userName = userData.profile
+          ? `${userData.profile.first_name || ''} ${userData.profile.last_name || ''}`.trim() || userData.name
+          : userData.name;
+        const userAvatar = userData.profile?.profile_image || userData.avatar || '/assets/images/icons/Ellipse 3.svg';
         return {
-          name: userData.name || 'User',
-          email: userData.email || 'user@example.com',
-          avatar: userData.avatar || '/assets/images/icons/Ellipse 3.svg',
+          name: userName || 'User',
+          email: (userData.profile?.email ?? userData.email) || 'user@example.com',
+          avatar: userAvatar,
           role: userData.user_type || userType
         };
       } catch (e) {
@@ -78,66 +96,66 @@ function TopNavbar({ title, breadcrumb }) {
   const getBreadcrumbData = () => {
     const path = location.pathname;
 
-    if (path.startsWith('/browse-course/')) {
+    if (path.startsWith('/student/browse-course/')) {
       return {
         parentName: 'Browse Courses',
-        parentLink: '/browse-courses',
+        parentLink: '/student/browse-courses',
         currentName: breadcrumb || 'Course Details'
       };
     }
 
-    if (path.startsWith('/course-details/')) {
+    if (path.startsWith('/student/course/')) {
       return {
         parentName: 'My Courses',
-        parentLink: '/my-courses',
+        parentLink: '/student/my-courses',
         currentName: breadcrumb || 'Course Details'
       };
     }
 
-    if (path.startsWith('/quiz-details/')) {
+    if (path.startsWith('/student/quiz-details/')) {
       return {
         parentName: 'My Courses',
-        parentLink: '/my-courses',
+        parentLink: '/student/my-courses',
         currentName: breadcrumb || 'Quiz Details'
       };
     }
 
-    if (path.startsWith('/quiz-take/')) {
+    if (path.startsWith('/student/quiz-take/')) {
       return {
         parentName: 'My Courses',
-        parentLink: '/my-courses',
+        parentLink: '/student/my-courses',
         currentName: breadcrumb || 'Take Quiz'
       };
     }
 
-    if (path.startsWith('/check-answers/')) {
+    if (path.startsWith('/student/check-answers/')) {
       return {
         parentName: 'My Courses',
-        parentLink: '/my-courses',
+        parentLink: '/student/my-courses',
         currentName: breadcrumb || 'Check Answers'
       };
     }
 
-    if (path.startsWith('/tutor/')) {
+    if (path.startsWith('/student/tutor/')) {
       return {
         parentName: 'Browse Courses',
-        parentLink: '/browse-courses',
+        parentLink: '/student/browse-courses',
         currentName: breadcrumb || 'Tutor Profile'
       };
     }
 
-    if (path.startsWith('/live-class-details/')) {
+    if (path.startsWith('/student/live-class/')) {
       return {
         parentName: 'Live Classes',
-        parentLink: '/live-classes',
+        parentLink: '/student/live-classes',
         currentName: breadcrumb || 'Live Class Details'
       };
     }
 
-    if (path === '/past-sessions') {
+    if (path === '/student/past-sessions') {
       return {
         parentName: 'Live Classes',
-        parentLink: '/live-classes',
+        parentLink: '/student/live-classes',
         currentName: 'Past Sessions'
       };
     }
@@ -319,7 +337,7 @@ function TopNavbar({ title, breadcrumb }) {
               </div>
 
               <div className="notification-footer">
-                <a href="#" onClick={(e) => { e.preventDefault(); navigate('/notifications'); }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigate('/student/notifications'); }}>
                   View all notifications
                 </a>
               </div>
@@ -340,27 +358,32 @@ function TopNavbar({ title, breadcrumb }) {
             }}
           >
             <div className="user-info">
-              <div className="user-name">{userInfo.name}</div>
+              <div className="user-name">{userName}</div>
               <div className="user-meta">{getUserMeta()}</div>
             </div>
             <img
-              src={userInfo.avatar}
+              src={userAvatar}
               alt="User Avatar"
               className="user-avatar"
+              onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/icons/Ellipse 3.svg'; }}
             />
           </div>
 
           {profileOpen && (
             <div className="profile-dropdown active">
               <div className="profile-dropdown-header">
-                <img src={userInfo.avatar} alt="Avatar" />
+                <img
+                  src={userAvatar}
+                  alt="Avatar"
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/icons/Ellipse 3.svg'; }}
+                />
                 <div className="profile-dropdown-info">
                   <h4>
                     {userInfo.role === 'parent' ? 'Parent' : 
                      userInfo.role === 'tutor' ? 'Tutor' : 'Student'}
                   </h4>
                   <p style={{ fontSize: 12, color: "#6B7280", margin: 0 }}>
-                    {userInfo.email}
+                    {userEmail}
                   </p>
                 </div>
                 {userInfo.role === 'parent' && (
@@ -378,7 +401,7 @@ function TopNavbar({ title, breadcrumb }) {
                 <div
                   className="profile-menu-item"
                   onClick={() => {
-                    navigate("/profile");
+                    navigate("/student/profile");
                     setProfileOpen(false);
                   }}
                   style={{ cursor: "pointer" }}
@@ -389,7 +412,7 @@ function TopNavbar({ title, breadcrumb }) {
                 <div
                   className="profile-menu-item"
                   onClick={() => {
-                    navigate("/edit-profile");
+                    navigate("/student/settings");
                     setProfileOpen(false);
                   }}
                   style={{ cursor: "pointer" }}
@@ -401,7 +424,7 @@ function TopNavbar({ title, breadcrumb }) {
                   <div
                     className="profile-menu-item"
                     onClick={() => {
-                      navigate("/premium-subscription");
+                      navigate("/student/subscription");
                       setProfileOpen(false);
                     }}
                     style={{ cursor: "pointer" }}

@@ -708,6 +708,132 @@ body {
     background: rgba(221, 64, 64, 0.1);
 }
 
+/* ============================================ */
+/* ADD THESE STYLES FOR DISCUSSION SECTION     */
+/* src/assets/css/coursedetails.css           */
+/* ============================================ */
+
+/* Upvoted State */
+.comment-action-btn.upvoted {
+    color: #2E7D32;
+  }
+  
+
+  
+  /* ========== REPLIES SECTION ========== */
+  .replies-section {
+    margin-top: 12px;
+  }
+  
+  .view-replies-btn {
+    background: none;
+    border: none;
+    color: #2E7D32;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 12px;
+  }
+  
+  .view-replies-btn:hover {
+    text-decoration: underline;
+  }
+  
+  .replies-list {
+    margin-top: 12px;
+    padding-left: 0;
+    border-left: 2px solid #E5E7EB;
+    margin-left: 4px;
+  }
+  
+  .replies-loading {
+    padding: 12px 16px;
+    color: #6B7280;
+    font-size: 13px;
+  }
+  
+  /* Individual Reply Item */
+  .reply-item {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #F9FAFB;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 8px;
+  }
+  
+  .reply-item.tutor-reply {
+    background: #F0FDF4;
+    border-left: 2px solid #2E7D32;
+    margin-left: -2px;
+  }
+  
+  .reply-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  .reply-content {
+    flex: 1;
+  }
+  
+  .reply-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  
+  .reply-user-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: #111827;
+  }
+  
+  .tutor-badge-small {
+    font-size: 12px;
+    color: #2E7D32;
+    font-weight: 500;
+  }
+  
+  .reply-time {
+    font-size: 12px;
+    color: #9CA3AF;
+  }
+  
+  .reply-text {
+    font-size: 14px;
+    color: #374151;
+    margin: 0;
+    line-height: 1.5;
+  }
+  
+  /* Loading & Empty States */
+  .discussion-loading,
+  .discussion-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6B7280;
+  }
+  
+  .discussion-error {
+    text-align: center;
+    padding: 20px;
+    color: #DC2626;
+  }
+  
+  .discussion-error button {
+    margin-left: 10px;
+    color: #2E7D32;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .video-player {

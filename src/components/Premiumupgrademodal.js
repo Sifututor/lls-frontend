@@ -19,7 +19,7 @@ function Premiumupgrademodal({ isOpen, onClose }) {
 
   const handleUpgradeNow = () => {
     onClose();
-    navigate('/premium-subscription');
+    navigate('/student/subscription');
   };
 
   if (!isOpen) return null;

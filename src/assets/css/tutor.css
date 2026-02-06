@@ -1,0 +1,491 @@
+/* src/assets/css/tutor.css - Tutor module styles */
+
+:root {
+  --tutor-primary: #4CAF50;
+  --tutor-primary-dark: #388E3C;
+  --tutor-green: #10B981;
+  --tutor-blue: #3B82F6;
+  --tutor-yellow: #F59E0B;
+  --tutor-red: #EF4444;
+  --tutor-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --tutor-card-radius: 12px;
+}
+
+.tutor-layout .page-content.tutor-content {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ========== Welcome Section ========== */
+.tutor-welcome {
+  margin-bottom: 24px;
+}
+
+.tutor-welcome h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.tutor-welcome p {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ========== Stats Grid ========== */
+.tutor-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.tutor-stat-card {
+  background: #fff;
+  border-radius: var(--tutor-card-radius);
+  box-shadow: var(--tutor-card-shadow);
+  padding: 20px;
+  border-left: 4px solid var(--tutor-primary);
+}
+
+.tutor-stat-green { border-left-color: var(--tutor-green); }
+.tutor-stat-blue { border-left-color: var(--tutor-blue); }
+.tutor-stat-yellow { border-left-color: var(--tutor-yellow); }
+.tutor-stat-red { border-left-color: var(--tutor-red); }
+
+.tutor-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tutor-stat-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.tutor-badge-green { background: #D1FAE5; color: #065F46; }
+.tutor-badge-blue { background: #DBEAFE; color: #1E40AF; }
+.tutor-badge-yellow { background: #FEF3C7; color: #92400E; }
+.tutor-badge-red { background: #FEE2E2; color: #991B1B; }
+
+.tutor-stat-icon {
+  width: 24px;
+  height: 24px;
+  background: #e5e7eb;
+  border-radius: 6px;
+}
+
+.tutor-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.tutor-stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.tutor-stat-progress {
+  margin-top: 12px;
+}
+
+.tutor-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.tutor-progress-bar {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.tutor-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.tutor-fill-green { background: var(--tutor-green); }
+.tutor-fill-blue { background: var(--tutor-blue); }
+.tutor-fill-yellow { background: var(--tutor-yellow); }
+.tutor-fill-red { background: var(--tutor-red); }
+
+/* ========== Quick Actions ========== */
+.tutor-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.tutor-quick-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--tutor-card-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  box-shadow: var(--tutor-card-shadow);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.tutor-quick-action-btn:hover {
+  background: #f9fafb;
+  border-color: var(--tutor-primary);
+  color: var(--tutor-primary);
+}
+
+.tutor-quick-icon {
+  width: 20px;
+  height: 20px;
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+/* ========== Dashboard Grid ========== */
+.tutor-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .tutor-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========== Section Common ========== */
+.tutor-section {
+  background: #fff;
+  border-radius: var(--tutor-card-radius);
+  box-shadow: var(--tutor-card-shadow);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.tutor-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.tutor-section .section-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.tutor-section .section-header a {
+  font-size: 0.875rem;
+  color: var(--tutor-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.tutor-section .section-header a:hover {
+  text-decoration: underline;
+}
+
+/* ========== Upcoming Classes ========== */
+.tutor-class-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tutor-class-card {
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.tutor-class-card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.tutor-class-meta {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 12px 0;
+}
+
+.tutor-class-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tutor-class-actions .btn-outline {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.tutor-class-actions .btn-outline:hover {
+  background: #f3f4f6;
+}
+
+.tutor-class-actions .btn-primary {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  background: var(--tutor-primary);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.tutor-class-actions .btn-primary:hover {
+  background: var(--tutor-primary-dark);
+}
+
+/* ========== Students Progress ========== */
+.tutor-students-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tutor-student-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.tutor-student-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.tutor-student-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tutor-student-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+}
+
+.tutor-student-info p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.tutor-student-progress {
+  flex-shrink: 0;
+  width: 140px;
+}
+
+.tutor-student-progress > span:first-child {
+  display: block;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.tutor-student-progress > span:nth-child(2) {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.tutor-student-progress .tutor-progress-bar {
+  margin-top: 6px;
+}
+
+/* ========== Pending Q&A (Sidebar) ========== */
+.tutor-qna-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tutor-qna-card {
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.tutor-qna-card h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.tutor-qna-chapter {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0 0 8px 0;
+}
+
+.tutor-qna-meta {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tutor-qna-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+}
+
+.tutor-qna-urgent {
+  color: var(--tutor-red);
+  font-weight: 600;
+}
+
+.tutor-qna-card .btn-full {
+  width: 100%;
+  padding: 10px;
+  font-size: 0.875rem;
+  background: var(--tutor-primary);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.tutor-qna-card .btn-full:hover {
+  background: var(--tutor-primary-dark);
+}
+
+/* ========== Submissions ========== */
+.tutor-submissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tutor-submission-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.tutor-submission-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.tutor-submission-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tutor-submission-info h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+}
+
+.tutor-submission-info p {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.tutor-status-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.tutor-status-pending {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.tutor-status-approved {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.tutor-status-rejected {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.tutor-status-scheduled {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+/* ========== Tutor Login Page ========== */
+.tutor-login-page .tutor-login-note {
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-align: center;
+  margin: 0;
+}
+
+.tutor-login-page .link-forgot {
+  font-size: 0.875rem;
+  color: var(--tutor-primary);
+  text-decoration: none;
+}
+
+.tutor-login-page .link-forgot:hover {
+  text-decoration: underline;
+}
+
+.tutor-login-page .form-group-link {
+  margin-bottom: 16px;
+}

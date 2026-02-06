@@ -1,7 +1,8 @@
 // src/pages/StudentLogin.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { ButtonLoader } from '../components/ui/LoadingSpinner';
 import { useLoginMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import '../assets/css/auth.css';
@@ -20,6 +21,15 @@ function StudentLogin({ onLogin }) {
 
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  // On mount: restore remembered email and checkbox from localStorage
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    const isRemembered = localStorage.getItem('rememberMe') === 'true';
+    if (isRemembered && savedEmail) {
+      setFormData(prev => ({ ...prev, email: savedEmail, rememberMe: true }));
+    }
+  }, []);
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -49,7 +59,17 @@ function StudentLogin({ onLogin }) {
         onLogin('student', response.user || response);
       }
 
-      navigate('/dashboard');
+      // Remember Me: persist or clear email in localStorage
+      if (formData.rememberMe) {
+        localStorage.setItem('rememberedEmail', formData.email);
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        localStorage.removeItem('rememberedEmail');
+        localStorage.removeItem('rememberMe');
+      }
+
+      // Navigate to student dashboard
+      navigate('/student/dashboard');
 
     } catch (err) {
       setError(err.data?.message || err.message || 'Invalid email or password');
@@ -155,7 +175,7 @@ function StudentLogin({ onLogin }) {
                 className="btn-primary btn-full"
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? <ButtonLoader text="Signing in..." /> : 'Sign In'}
               </button>
             </form>
 
@@ -172,7 +192,7 @@ function StudentLogin({ onLogin }) {
             </button>
 
             <div className="auth-switch">
-              <p>Don't have an account? <button onClick={() => navigate('/create-account/parent-info')} className="link-switch">Sign Up for free</button></p>
+              <p>Don't have an account? <button type="button" onClick={() => navigate('/create-account/student')} className="link-switch" disabled={isLoading}>Sign Up for free</button></p>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 // src/components/Deleteaccountmodal.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 function Deleteaccountmodal({ isOpen, onClose }) {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ function Deleteaccountmodal({ isOpen, onClose }) {
     setError('');
 
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('authToken') || Cookies.get('authToken');
       
       // API call to delete account
       const response = await fetch('http://10.55.1.160:8000/api/account/delete', {
@@ -49,13 +50,17 @@ function Deleteaccountmodal({ isOpen, onClose }) {
       const data = await response.json();
 
       if (response.ok) {
-        // Clear all local storage
+        // Clear all local storage and cookies
         localStorage.removeItem('authToken');
         localStorage.removeItem('tokenExpiry');
         localStorage.removeItem('userData');
         localStorage.removeItem('userType');
         localStorage.removeItem('isPremium');
-        
+        Cookies.remove('authToken', { path: '/' });
+        Cookies.remove('tokenExpiry', { path: '/' });
+        Cookies.remove('userData', { path: '/' });
+        Cookies.remove('userType', { path: '/' });
+        Cookies.remove('isPremium', { path: '/' });
         onClose();
         navigate('/login');
       } else {

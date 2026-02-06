@@ -1,13 +1,17 @@
 // src/pages/LiveClasses.js
 import React, { useState, useMemo } from 'react';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
+import { useNavigate } from 'react-router-dom';
 import FilterBar from '../components/FilterBar';
 import Liveclassescarousel from '../components/Liveclassescarousel';
 import LiveClassCard from '../components/LiveClassCard';
+import { SkeletonLiveClasses } from '../components/ui/LoadingSpinner';
 import { useGetBrowseLiveClassesQuery, useJoinLiveClassMutation } from '../store/api/authApi';
+import { usePremium } from '../hooks/usePremium';
+import { showInfo } from '../utils/toast';
 
 function LiveClasses() {
+  const navigate = useNavigate();
+  const { isPremium } = usePremium();
   const [filters, setFilters] = useState({
     searchText: '',
     subject: '',
@@ -32,8 +36,6 @@ function LiveClasses() {
     }
 
     const { ongoing = [], upcoming = [], scheduled = [] } = apiResponse.data;
-
-    console.log('📦 Live Classes API:', { ongoing, upcoming, scheduled });
 
     // Helper: Format schedule time (e.g., "Thu 2:00 PM")
     const formatScheduleTime = (dateString) => {
@@ -79,12 +81,13 @@ function LiveClasses() {
 
       return {
         id: classItem.id,
+        slug: classItem.id, // Use id as slug for navigation
         thumbnail: '/assets/images/live-classes.png',
         status: statusText,
-        subject: 'Biology',
-        duration: `${classItem.duration_minutes} Min`,
+        subject: classItem.course?.subject || 'Biology',
+        duration: `${classItem.duration_minutes || 60} Min`,
         courseBadge: truncateText(classItem.course?.title),
-        scheduleTime: type === 'scheduled' ? formatScheduleTime(classItem.scheduled_at) : null,
+        schedule: type === 'scheduled' ? formatScheduleTime(classItem.scheduled_at) : null,
         instructor: {
           avatar: '/assets/images/icons/Ellipse 2.svg',
           name: classItem.tutor?.name || 'Unknown Tutor'
@@ -126,7 +129,6 @@ function LiveClasses() {
   };
 
   const handleApply = () => {
-    console.log('Applying filters:', filters);
     const hasActiveFilters = Object.values(filters).some(value => value !== '');
     setShowActiveFilters(hasActiveFilters);
   };
@@ -144,72 +146,62 @@ function LiveClasses() {
   };
 
   const handleJoinClass = async (classId) => {
-    console.log('Joining class:', classId);
+    if (!isPremium) {
+      navigate('/student/subscription');
+      return;
+    }
+    
     try {
       const result = await joinLiveClass(classId).unwrap();
-      console.log('Join result:', result);
       if (result?.meeting_url) {
         window.open(result.meeting_url, '_blank');
       }
     } catch (error) {
       console.error('Failed to join class:', error);
-      alert('Failed to join class. Please try again.');
+      // Navigate to live class details page if join fails
+      navigate(`/student/live-class/${classId}`);
     }
   };
 
   const handleNotifyMe = (classId) => {
-    console.log('Notify me for class:', classId);
-    alert('You will be notified when this class starts!');
+    showInfo('You will be notified when this class starts!');
   };
 
   // Loading state
   if (isLoading) {
     return (
-      <>
-        <Sidebar />
-        <main className="main-content">
-          <TopNavbar title="Live Classes" />
-          <div className="dashboard-content">
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-              <p style={{ color: '#6B7280', fontSize: '18px' }}>Loading live classes...</p>
-            </div>
-          </div>
-        </main>
-      </>
+      <div className="dashboard-content">
+        <SkeletonLiveClasses />
+      </div>
     );
   }
 
   // Error state
   if (isError) {
     return (
-      <>
-        <Sidebar />
-        <main className="main-content">
-          <TopNavbar title="Live Classes" />
-          <div className="dashboard-content">
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '60vh', gap: '16px' }}>
-              <p style={{ color: '#DC2626', fontSize: '18px' }}>Failed to load live classes</p>
-              <button className="btn-apply-filters" onClick={() => refetch()}>Retry</button>
-            </div>
-          </div>
-        </main>
-      </>
+      <div className="dashboard-content">
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '60vh', gap: '16px' }}>
+          <p style={{ color: '#DC2626', fontSize: '18px' }}>Failed to load live classes</p>
+          <button className="btn-apply-filters" onClick={() => refetch()}>Retry</button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <>
-      <Sidebar />
-
-      <main className="main-content">
-        <TopNavbar title="Live Classes" />
-
-        <div className="dashboard-content">
+    <div className="dashboard-content">
           
           {/* Page Header */}
           <div className="page-header-section">
             <h1 className="welcome-title">Live Classes</h1>
             <p className="welcome-subtitle">Upcoming and Past Sessions</p>
+            <button 
+              onClick={() => navigate('/student/past-sessions')}
+              className="view-all-link"
+              style={{ marginTop: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#10B981', fontSize: '14px' }}
+            >
+              View Past Sessions →
+            </button>
           </div>
 
           {/* Filter Bar */}
@@ -284,9 +276,7 @@ function LiveClasses() {
               <p style={{ fontSize: '14px', color: '#9CA3AF' }}>Check back later for upcoming sessions</p>
             </div>
           )}
-        </div>
-      </main>
-    </>
+    </div>
   );
 }
 

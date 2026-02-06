@@ -1,18 +1,24 @@
 // src/pages/Dashboard.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
+import Cookies from 'js-cookie';
 import StatCard from '../components/StatCard';
 import LiveClassCard from '../components/LiveClassCard';
 import MyCourseCard from '../components/MyCourseCard';
 import QAItem from '../components/QAItem';
-import { useGetMyCoursesQuery, useGetBrowseLiveClassesQuery, useJoinLiveClassMutation } from '../store/api/authApi';
 import { 
-  statsData, 
+  useGetMyCoursesQuery, 
+  useGetBrowseLiveClassesQuery, 
+  useJoinLiveClassMutation,
+  useGetStudentDashboardAnalyticsQuery 
+} from '../store/api/authApi';
+import { SectionLoader, Spinner } from '../components/ui/LoadingSpinner';
+import { 
+  statsData as defaultStatsData, 
   qaData,
   achievementBadges 
 } from '../data/dashboardData';
+import { showInfo } from '../utils/toast';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -20,7 +26,66 @@ function Dashboard() {
   // API Calls
   const { data: apiResponse, isLoading: coursesLoading } = useGetMyCoursesQuery({});
   const { data: liveClassesResponse, isLoading: liveClassesLoading } = useGetBrowseLiveClassesQuery({});
+  const { data: analyticsData, isLoading: analyticsLoading } = useGetStudentDashboardAnalyticsQuery();
   const [joinLiveClass] = useJoinLiveClassMutation();
+
+  // Transform API analytics to stats - only use API data, no fallback to static
+  const getStatsData = () => {
+    if (!analyticsData) return null;
+
+    const { courses_enrolled, videos_watched, quiz_average, learning_time } = analyticsData;
+
+    const coursesProgress = courses_enrolled?.progress?.total > 0 
+      ? (courses_enrolled.progress.current / courses_enrolled.progress.total) * 100 
+      : 0;
+
+    const videosProgress = videos_watched?.progress?.total > 0 
+      ? (videos_watched.progress.current / videos_watched.progress.total) * 100 
+      : 0;
+
+    const quizProgress = quiz_average?.value || 0;
+
+    const timeProgress = learning_time?.goal?.total > 0 
+      ? (learning_time.goal.current / learning_time.goal.total) * 100 
+      : 0;
+
+    return [
+      {
+        ...defaultStatsData[0],
+        value: courses_enrolled?.value || 0,
+        progressValue: `${courses_enrolled?.progress?.current || 0} of ${courses_enrolled?.progress?.total || 0}`,
+        progress: coursesProgress
+      },
+      {
+        ...defaultStatsData[1],
+        value: videos_watched?.value || 0,
+        progressValue: `${videos_watched?.progress?.current || 0} of ${videos_watched?.progress?.total || 0}`,
+        progress: videosProgress
+      },
+      {
+        ...defaultStatsData[2],
+        value: `${quiz_average?.value || 0}%`,
+        progressValue: quiz_average?.performance || 'Improvement',
+        progress: quizProgress
+      },
+      {
+        ...defaultStatsData[3],
+        value: `${learning_time?.hours || 0}h`,
+        progressValue: `${learning_time?.goal?.current || 0} of ${learning_time?.goal?.total || 100}h`,
+        progress: timeProgress
+      }
+    ];
+  };
+
+  const statsData = getStatsData();
+
+  // Calculate weekly goal percentage
+  const getWeeklyGoalPercentage = () => {
+    if (!analyticsData?.learning_time?.goal) return 80;
+    const { current, total } = analyticsData.learning_time.goal;
+    if (total === 0) return 0;
+    return Math.round((current / total) * 100);
+  };
 
   // Helper: Strip HTML tags
   const stripHtml = (html) => {
@@ -40,9 +105,6 @@ function Dashboard() {
     
     const { ongoing = [], upcoming = [], scheduled = [] } = liveClassesResponse.data;
 
-    console.log('📦 Dashboard Live Classes:', { ongoing, upcoming, scheduled });
-
-    // Transform single class
     const transformClass = (classItem, type) => {
       let buttonType = 'notify';
       let statusText = 'upcoming';
@@ -78,13 +140,9 @@ function Dashboard() {
       };
     };
 
-    // Get 2 ongoing (Join Now) classes
     const joinClasses = ongoing.slice(0, 2).map(item => transformClass(item, 'ongoing'));
-    
-    // Get 2 upcoming/scheduled (Notify Me) classes
     const notifyClasses = [...upcoming, ...scheduled].slice(0, 2).map(item => transformClass(item, 'upcoming'));
 
-    // Combine: 2 Join + 2 Notify = 4 cards total
     return [...joinClasses, ...notifyClasses].slice(0, 4);
   };
 
@@ -104,13 +162,11 @@ function Dashboard() {
         return {
           id: course.id,
           slug: course.slug,
-          // Static thumbnail (same as LiveClassCard)
           thumbnail: '/assets/images/live-classes.png',
           badge: course.subject?.toLowerCase() || 'general',
           lastWatched: (course.progress_percentage ?? 0) > 0,
           instructor: {
             name: course.creator?.name || 'Unknown',
-            // Static avatar (same as LiveClassCard)
             avatar: '/assets/images/icons/Ellipse 2.svg'
           },
           title: course.title,
@@ -126,50 +182,45 @@ function Dashboard() {
   // Get user name
   const getUserName = () => {
     try {
-      return JSON.parse(localStorage.getItem('userData'))?.name || 'Student';
+      const raw = localStorage.getItem('userData') || Cookies.get('userData');
+      return raw ? JSON.parse(raw)?.name : 'Student';
     } catch {
       return 'Student';
     }
   };
 
   // Handlers
-  const handleViewAllClasses = () => navigate('/live-classes');
-  const handleViewAllCourses = () => navigate('/my-courses');
-  const handleViewAllQA = () => navigate('/recent-video-qa');
+  const handleViewAllClasses = () => navigate('/student/live-classes');
+  const handleViewAllCourses = () => navigate('/student/my-courses');
+  const handleViewAllQA = () => navigate('/student/video-qa');
   
   const handleJoinClass = async (classId) => {
-    console.log('Joining class:', classId);
     try {
       const result = await joinLiveClass(classId).unwrap();
-      console.log('Join result:', result);
       if (result?.meeting_url) {
         window.open(result.meeting_url, '_blank');
       }
     } catch (error) {
       console.error('Failed to join class:', error);
-      navigate(`/live-class-details/${classId}`);
+      navigate(`/student/live-class/${classId}`);
     }
   };
 
   const handleNotifyClass = (classId) => {
-    console.log('Notify me for class:', classId);
-    alert('You will be notified when this class starts!');
+    showInfo('You will be notified when this class starts!');
   };
 
-  const handleViewQA = (slug) => navigate(`/recent-video-qa#${slug}`);
+  const handleViewQA = (slug) => {
+    navigate(`/student/video-qa${slug ? `#${slug}` : ''}`);
+  };
   
   const handleCourseClick = (slug) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    navigate(`/course-details/${slug}`);
+    navigate(`/student/course/${slug}`);
   };
 
   return (
-    <>
-      <Sidebar />
-      <main className="main-content">
-        <TopNavbar title="Dashboard" />
-        
-        <div className="dashboard-content">
+    <div className="dashboard-content">
           {/* Welcome + Stats */}
           <section className="welcome-stats-container">
             <div className="welcome-section">
@@ -182,7 +233,7 @@ function Dashboard() {
                   </span>
                 </h1>
                 <p className="welcome-subtitle">
-                  You've completed 80% of your weekly goal, Keep it up!
+                  You've completed {analyticsLoading ? '--' : getWeeklyGoalPercentage()}% of your weekly goal, Keep it up!
                 </p>
               </div>
               <div className="achievement-badges">
@@ -194,9 +245,36 @@ function Dashboard() {
               </div>
             </div>
             <div className="stats-grid">
-              {statsData.map((stat) => (
-                <StatCard key={stat.id} data={stat} />
-              ))}
+              {analyticsLoading || !statsData ? (
+                // Loading skeleton
+                defaultStatsData.map((stat) => (
+                  <div key={stat.id} className={`stat-card ${stat.type}`} style={{ opacity: 0.6 }}>
+                    <div className="stat-label"><Spinner size="sm" color="gray" /></div>
+                    <div className="stat-header">
+                      <div className="stat-icon-wrapper">
+                        <img src={stat.icon} alt={stat.title} className="stat-icon" />
+                      </div>
+                      <div className="stat-content">
+                        <h2 className="stat-value">--</h2>
+                        <p className="stat-title">{stat.title}</p>
+                      </div>
+                    </div>
+                    <div className="stat-footer">
+                      <span className="progress-text">{stat.progressText}</span>
+                      <span className="progress-value">--</span>
+                    </div>
+                    <div className="stat-progress">
+                      <div className="progress-bar">
+                        <div className="progress-fill" style={{ width: '0%' }} />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                statsData.map((stat) => (
+                  <StatCard key={stat.id} data={stat} />
+                ))
+              )}
             </div>
           </section>
 
@@ -215,9 +293,7 @@ function Dashboard() {
               </button>
             </div>
             {liveClassesLoading ? (
-              <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px' }}>
-                <p style={{ color: '#6B7280' }}>Loading live classes...</p>
-              </div>
+              <SectionLoader message="Loading live classes..." height="200px" />
             ) : liveClassesData.length > 0 ? (
               <div className="live-classes-grid">
                 {liveClassesData.map((classItem) => (
@@ -248,9 +324,7 @@ function Dashboard() {
               </button>
             </div>
             {coursesLoading ? (
-              <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px' }}>
-                <p style={{ color: '#6B7280' }}>Loading courses...</p>
-              </div>
+              <SectionLoader message="Loading courses..." height="200px" />
             ) : continueLearningCourses.length > 0 ? (
               <div className="courses-grid">
                 {continueLearningCourses.map((course) => (
@@ -264,7 +338,7 @@ function Dashboard() {
             ) : (
               <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px' }}>
                 <p style={{ color: '#6B7280', marginBottom: '16px' }}>No courses in progress</p>
-                <button className="btn-apply-filters" onClick={() => navigate('/browse-courses')}>
+                <button className="btn-apply-filters" onClick={() => navigate('/student/browse-courses')}>
                   Browse Courses
                 </button>
               </div>
@@ -291,9 +365,7 @@ function Dashboard() {
               ))}
             </div>
           </section>
-        </div>
-      </main>
-    </>
+    </div>
   );
 }
 

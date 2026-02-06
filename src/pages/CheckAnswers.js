@@ -1,7 +1,5 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
 import CourseHeader from '../components/CourseHeader';
 import AnswerItem from '../components/Answeritem';
 import { answersData, answerStats } from '../data/Checkanswersdata';
@@ -26,12 +24,9 @@ function CheckAnswers() {
 
   return (
     <>
-      <Sidebar />
-      <main className="main-content">
-        <TopNavbar title="Check Answers" breadcrumb="Sorting Algorithms Quiz" />
-        <CourseHeader courseData={checkAnswersHeaderData} />
-        
-        <div className="quiz-check-container">
+      <CourseHeader courseData={checkAnswersHeaderData} />
+      
+      <div className="quiz-check-container">
           {/* Stats Summary */}
           <div className="check-answers-stats">
             <div className="stats-summary">
@@ -72,8 +67,7 @@ function CheckAnswers() {
           {answersData.map((item) => (
             <AnswerItem key={item.id} item={item} />
           ))}
-        </div>
-      </main>
+      </div>
     </>
   );
 }

@@ -172,7 +172,7 @@ function ParentLogin({ onLogin }) {
             </button>
 
             <div className="auth-switch">
-              <p>New to Learnest? <button onClick={() => navigate('/create-account/parent-info')} className="link-switch">Create Account</button></p>
+              <p>New to Learnest? <button type="button" onClick={() => navigate('/register')} className="link-switch" disabled={isLoading}>Create Account</button></p>
             </div>
           </div>
         </div>

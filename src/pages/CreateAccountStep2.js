@@ -4,12 +4,24 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useRegisterMutation, useGetMeQuery } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
+import { showError, showWarning } from '../utils/toast';
 import '../assets/css/auth.css';
 
-function CreateAccountStep2({ signupData, childrenData, onComplete }) {
+function CreateAccountStep2({ signupData: propSignupData, childrenData: propChildrenData, onComplete }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [register, { isLoading, error }] = useRegisterMutation();
+  
+  // Get data from props or localStorage
+  const signupData = propSignupData || (() => {
+    const stored = localStorage.getItem('signupData');
+    return stored ? JSON.parse(stored) : null;
+  })();
+  
+  const childrenData = propChildrenData || (() => {
+    const stored = localStorage.getItem('childrenData');
+    return stored ? JSON.parse(stored) : null;
+  })();
   
   const [agreements, setAgreements] = useState({
     termsOfService: false,
@@ -36,8 +48,7 @@ function CreateAccountStep2({ signupData, childrenData, onComplete }) {
       });
       
       const data = await response.json();
-      console.log('/me API Response:', data);
-      
+
       if (data.user) {
         localStorage.setItem('userData', JSON.stringify(data.user));
         localStorage.setItem('userType', data.user.user_type || 'parent');
@@ -60,13 +71,9 @@ function CreateAccountStep2({ signupData, childrenData, onComplete }) {
     e.preventDefault();
     
     if (!agreements.termsOfService || !agreements.dataProcessing) {
-      alert('Please agree to all required terms');
+      showWarning('Please agree to all required terms');
       return;
     }
-
-    console.log('========== DEBUG: Registration Data ==========');
-    console.log('signupData:', signupData);
-    console.log('childrenData:', childrenData);
 
     try {
       const registerPayload = {
@@ -81,11 +88,7 @@ function CreateAccountStep2({ signupData, childrenData, onComplete }) {
         children: childrenData || []
       };
 
-      console.log('Register Payload:', registerPayload);
-
       const result = await register(registerPayload).unwrap();
-      
-      console.log('Register Response:', result);
 
       // If registration successful and we have token
       if (result.token) {
@@ -95,7 +98,6 @@ function CreateAccountStep2({ signupData, childrenData, onComplete }) {
         localStorage.setItem('tokenExpiry', expiryTime.toString());
 
         // Call /me API to get user data
-        console.log('Calling /me API with token...');
         await fetchUserData(result.token);
       }
 
@@ -107,21 +109,13 @@ function CreateAccountStep2({ signupData, childrenData, onComplete }) {
       navigate('/create-account/success');
       
     } catch (err) {
-      console.log('========== DEBUG: API Error ==========');
-      console.log('Full error:', err);
-      console.log('Error data:', err.data);
-      
-      if (err.data?.errors) {
-        console.log('Validation errors:', err.data.errors);
-      }
-
       if (err.data?.message) {
-        alert(err.data.message);
+        showError(err.data.message);
       } else if (err.data?.errors) {
         const errorMessages = Object.values(err.data.errors).flat().join('\n');
-        alert(errorMessages);
+        showError(errorMessages);
       } else {
-        alert('Registration failed. Please try again.');
+        showError('Registration failed. Please try again.');
       }
     }
   };

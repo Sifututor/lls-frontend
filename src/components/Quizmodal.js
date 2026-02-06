@@ -1,7 +1,10 @@
 // src/components/QuizModal.js
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function QuizModal({ isOpen, onClose, lessonName, onStartQuiz }) {
+function QuizModal({ isOpen, onClose, lessonName, quizId, onStartQuiz }) {
+  const navigate = useNavigate();
+
   // Close on Escape key
   useEffect(() => {
     const handleEscape = (e) => {
@@ -28,6 +31,10 @@ function QuizModal({ isOpen, onClose, lessonName, onStartQuiz }) {
   const handleStartQuiz = () => {
     if (onStartQuiz) onStartQuiz();
     onClose();
+    // Navigate to Quiz Details page
+    if (quizId) {
+      navigate(`/student/quiz/${quizId}`);
+    }
   };
 
   return (

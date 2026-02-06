@@ -1,24 +1,17 @@
 // src/pages/Createaccountsuccess.js
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRegistration } from '../context/RegistrationContext';
 import '../assets/css/auth.css';
 
 function CreateAccountSuccess() {
   const navigate = useNavigate();
-  const [userEmail, setUserEmail] = useState('');
-  const [userName, setUserName] = useState('');
+  const { parentData } = useRegistration();
+  const userName = parentData?.name || '';
+  const userEmail = parentData?.email || '';
 
-  useEffect(() => {
-    const email = localStorage.getItem('pendingVerificationEmail') || '';
-    const name = localStorage.getItem('pendingVerificationName') || '';
-    setUserEmail(email);
-    setUserName(name);
-  }, []);
-
-  const handleGoToLogin = () => {
-    localStorage.removeItem('pendingVerificationEmail');
-    localStorage.removeItem('pendingVerificationName');
-    navigate('/login');
+  const handleContinue = () => {
+    navigate('/register/add-children');
   };
 
   return (
@@ -86,8 +79,8 @@ function CreateAccountSuccess() {
             <p>Once approved, you'll receive a confirmation email. You can then login and start learning!</p>
           </div>
 
-          <button onClick={handleGoToLogin} className="btn-primary btn-full">
-            Go to Login
+          <button type="button" onClick={handleContinue} className="btn-primary btn-full">
+            Continue
           </button>
 
           <p className="helper-text" style={{ textAlign: 'center', marginTop: '16px', color: '#6B7280', fontSize: '13px' }}>

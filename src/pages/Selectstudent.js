@@ -1,19 +1,29 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRegistration } from '../context/RegistrationContext';
 import '../assets/css/auth.css';
 
-function SelectStudent({ students = [], onSelectStudent }) {
+function SelectStudent() {
   const navigate = useNavigate();
+  const { childrenDisplay, setSelectedStudentId } = useRegistration();
 
-  // Mock students if none provided
-  const displayStudents = students.length > 0 ? students : [
-    { id: 1, name: 'Shahroz', form: 'Form 2', avatar: '/assets/images/student-img.png' },
-    { id: 2, name: 'Ali', form: 'Form 4', avatar: '/assets/images/student-img.png', status: 'Activation sent' }
-  ];
+  const displayStudents = Array.isArray(childrenDisplay) && childrenDisplay.length > 0
+    ? childrenDisplay.map((s, i) => ({
+        id: s.id || i + 1,
+        name: s.name,
+        form: s.displayFormLevel || s.form_level || '—',
+        avatar: s.avatar || '/assets/images/student-img.png',
+        status: s.status,
+      }))
+    : [];
 
   const handleStudentSelect = (student) => {
-    onSelectStudent(student);
-    navigate('/dashboard');
+    setSelectedStudentId(student.id);
+    try {
+      localStorage.setItem('selectedStudentId', String(student.id));
+      localStorage.setItem('selectedStudent', JSON.stringify(student));
+    } catch (e) {}
+    navigate('/student/dashboard');
   };
 
   return (
@@ -33,7 +43,14 @@ function SelectStudent({ students = [], onSelectStudent }) {
       {/* Student Cards */}
       <div className="student-selection-card">
         <div className="students-grid">
-          {displayStudents.map((student) => (
+          {displayStudents.length === 0 ? (
+            <div className="students-grid-empty" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '24px' }}>
+              <p style={{ marginBottom: '16px' }}>No students added yet. Add a student to get started.</p>
+              <button type="button" className="btn-primary" onClick={() => navigate('/register/add-children')}>
+                Add Student
+              </button>
+            </div>
+          ) : displayStudents.map((student) => (
             <div
               key={student.id}
               className="student-profile-card"
@@ -46,11 +63,13 @@ function SelectStudent({ students = [], onSelectStudent }) {
             </div>
           ))}
 
-          {/* Add Student Button */}
-          <div className="student-profile-card add-student-card" onClick={() => navigate('/create-account/add-child')}>
+          {/* Add Student Button - only show when we have at least one student */}
+          {displayStudents.length > 0 && (
+          <div className="student-profile-card add-student-card" onClick={() => navigate('/register/add-children')}>
             <div className="add-student-icon">+</div>
             <h3 className="add-student-text">Add Student</h3>
           </div>
+          )}
         </div>
 
         {/* Use Different Account */}

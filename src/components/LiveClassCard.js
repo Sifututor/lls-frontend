@@ -1,13 +1,19 @@
 // src/components/LiveClassCard.js
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTutorProfilePath } from '../utils/tutorProfileUtils';
 
 function LiveClassCard({ classData, onJoin, onNotify }) {
+  const navigate = useNavigate();
   
   const handleButtonClick = () => {
+    // Use id for API calls, slug for navigation
+    const classId = classData.id || classData.slug;
+    
     if (classData.buttonType === 'join' || classData.buttonType === 'watch') {
-      onJoin && onJoin(classData.slug);
+      onJoin && onJoin(classId);
     } else {
-      onNotify && onNotify(classData.slug);
+      onNotify && onNotify(classId);
     }
   };
 
@@ -42,7 +48,15 @@ function LiveClassCard({ classData, onJoin, onNotify }) {
 
       <div className="class-info">
         {/* Instructor with avatar fallback (like MyCourseCard) */}
-        <div className="instructor">
+        <div
+          className="instructor"
+          onClick={(e) => {
+            const path = getTutorProfilePath(classData.instructor);
+            if (path) { e.stopPropagation(); navigate(path); }
+          }}
+          role={getTutorProfilePath(classData.instructor) ? 'button' : undefined}
+          style={getTutorProfilePath(classData.instructor) ? { cursor: 'pointer' } : undefined}
+        >
           <img
             src={classData.instructor?.avatar}
             alt={classData.instructor?.name}

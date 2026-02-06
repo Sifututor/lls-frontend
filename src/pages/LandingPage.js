@@ -9,8 +9,7 @@ function LandingPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (email.trim()) {
-      // Email captured, navigate to create account
-      navigate('/create-account/parent-info');
+      navigate('/register');
     }
   };
 
@@ -25,7 +24,7 @@ function LandingPage() {
           <div className="header-actions">
             <button 
               className="btn-text" 
-              onClick={() => navigate('/create-account/parent-info')}
+              onClick={() => navigate('/register')}
             >
               Create Account →
             </button>

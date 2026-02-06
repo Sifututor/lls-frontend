@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { showWarning } from '../utils/toast';
 
 function Passwordsecuritysection({ 
   securityLevel, 
@@ -42,7 +43,7 @@ function Passwordsecuritysection({
 
   const handleUpdate = () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('Passwords do not match!');
+      showWarning('Passwords do not match!');
       return;
     }
     onUpdate();

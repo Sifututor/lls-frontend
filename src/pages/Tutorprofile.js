@@ -1,33 +1,26 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
 import BrowseCourseStats from '../components/Browsecoursestats';
 import BrowseAboutSection from '../components/Browseaboutsection';
 import TutorCard from '../components/Tutorcard';
 import CourseCard from '../components/CourseCard';
 import { tutorProfileData } from '../data/Tutorprofiledata';
+import { showInfo } from '../utils/toast';
 
 function TutorProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const handleSendMessage = () => {
-    alert(`Send message to ${tutorProfileData.tutorCard.name}`);
+    showInfo(`Send message to ${tutorProfileData.tutorCard.name}`);
   };
 
   const handleCourseClick = (courseId) => {
-    navigate(`/browse-course/${courseId}`);
+    navigate(`/student/browse-course/${courseId}`);
   };
 
   return (
-    <>
-      <Sidebar />
-
-      <main className="main-content">
-        <TopNavbar title="Tutor Profile" breadcrumb={tutorProfileData.tutorCard.name} />
-
-        <div className="instructor-profile-wrapper">
+    <div className="instructor-profile-wrapper">
           {/* Top Grid - Stats/About + Tutor Card */}
           <div className="instructor-top-grid">
             {/* LEFT COLUMN - Stats + About Me */}
@@ -76,8 +69,6 @@ function TutorProfile() {
             </div>
           </div>
         </div>
-      </main>
-    </>
   );
 }
 

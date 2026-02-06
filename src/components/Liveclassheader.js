@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTutorProfilePath } from '../utils/tutorProfileUtils';
 
 function Liveclassheader({ liveClassData }) {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -30,7 +33,15 @@ function Liveclassheader({ liveClassData }) {
             <h1 className="course-detail-title">{liveClassData.title}</h1>
 
             <div className="browse-instructor-row">
-                <div className="browse-instructor-info">
+                <div
+                  className="browse-instructor-info"
+                  onClick={() => {
+                    const path = getTutorProfilePath(liveClassData.instructor);
+                    if (path) navigate(path);
+                  }}
+                  role={getTutorProfilePath(liveClassData.instructor) ? 'button' : undefined}
+                  style={getTutorProfilePath(liveClassData.instructor) ? { cursor: 'pointer' } : undefined}
+                >
               <img
                 src={liveClassData.instructor.avatar}
                 alt="Instructor"

@@ -1,6 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTutorProfilePath } from '../utils/tutorProfileUtils';
 
 function BrowseRelatedCourses({ courses, onCourseClick }) {
+  const navigate = useNavigate();
+
   return (
     <div className="browse-related-card">
       <h3 className="browse-related-title">Related Courses</h3>
@@ -10,7 +14,7 @@ function BrowseRelatedCourses({ courses, onCourseClick }) {
           <div 
             key={course.id} 
             className="browse-related-course-card"
-            onClick={() => onCourseClick(course.id)}
+            onClick={() => onCourseClick(course.slug)}
             style={{ cursor: 'pointer' }}
           >
             <div className="browse-related-thumbnail">
@@ -18,7 +22,16 @@ function BrowseRelatedCourses({ courses, onCourseClick }) {
             </div>
 
             <div className="browse-related-content">
-              <div className="browse-related-instructor">
+              <div
+                className="browse-related-instructor"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const path = getTutorProfilePath(course.instructor);
+                  if (path) navigate(path);
+                }}
+                role={getTutorProfilePath(course.instructor) ? 'button' : undefined}
+                style={getTutorProfilePath(course.instructor) ? { cursor: 'pointer' } : undefined}
+              >
                 <img 
                   src={course.instructor.avatar} 
                   alt={course.instructor.name}

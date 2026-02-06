@@ -3,10 +3,14 @@ import React from 'react';
 function Profilecard({ userData, onEditProfile }) {
   return (
     <div className="profile-user-card">
-      <img 
-        src={userData.avatar} 
-        alt={userData.name} 
-        className="profile-user-avatar" 
+      <img
+        src={userData.avatar || '/assets/images/icons/Ellipse 3.svg'}
+        alt={userData.name || 'Student'}
+        className="profile-user-avatar"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = '/assets/images/icons/Ellipse 3.svg';
+        }}
       />
 
       <div className="profile-user-info-section">
@@ -31,17 +35,17 @@ function Profilecard({ userData, onEditProfile }) {
 
       <div className="profile-user-details">
         <div className="profile-detail-row">
-         <img src="/assets/images/icons/map.svg" alt="Alex Student" class="map"></img>
+         <img src="/assets/images/icons/map.svg" alt="Alex Student" className="map"></img>
           <span>{userData.location}</span>
         </div>
 
         <div className="profile-detail-row">
-         <img src="/assets/images/icons/mail.svg" alt="Alex Student" class="mail"></img>
+         <img src="/assets/images/icons/mail.svg" alt="Alex Student" className="mail"></img>
           <span>{userData.contactEmail}</span>
         </div>
 
         <div className="profile-detail-row">
-          <img src="/assets/images/icons/time.svg" alt="Alex Student" class="time"></img>
+          <img src="/assets/images/icons/time.svg" alt="Alex Student" className="time"></img>
           <span>{userData.timezone}</span>
         </div>
       </div>

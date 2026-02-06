@@ -1,5 +1,6 @@
 // src/components/VideoPlayer.js
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { usePremium } from '../hooks/usePremium';
 
 const VideoPlayer = forwardRef(({ 
   video, 
@@ -9,6 +10,7 @@ const VideoPlayer = forwardRef(({
   hasPreviousLesson = true,
   onBookmarkClick // New prop - callback when bookmark is clicked
 }, ref) => {
+  const { isPremium } = usePremium();
   const [isPlaying, setIsPlaying] = useState(false);
   const [showThumbnail, setShowThumbnail] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -68,7 +70,6 @@ const VideoPlayer = forwardRef(({
           setShowThumbnail(false);
         }
       } catch (error) {
-        console.log('Playback error:', error);
         setVideoError(true);
       }
     }
@@ -112,7 +113,6 @@ const VideoPlayer = forwardRef(({
   };
 
   const handleVideoError = () => {
-    console.log('Video error - URL:', video?.url);
     setVideoError(true);
   };
 
@@ -380,12 +380,21 @@ const VideoPlayer = forwardRef(({
                   <span className="skip-text">10</span>
                 </button>
 
-                {/* Bookmark Button - Opens Notes Tab */}
-                <button className="control-btn bookmark-btn" onClick={handleAddBookmark} title="Add Note at Current Time">
-                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                    <path d="M6 3C5.44772 3 5 3.44772 5 4V19L11 16L17 19V4C17 3.44772 16.5523 3 16 3H6Z" fill="currentColor" stroke="currentColor" strokeWidth="2"/>
-                  </svg>
-                </button>
+                {/* Bookmark Button - Premium only */}
+                {isPremium ? (
+                  <button className="control-btn bookmark-btn" onClick={handleAddBookmark} title="Add Note at Current Time">
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                      <path d="M6 3C5.44772 3 5 3.44772 5 4V19L11 16L17 19V4C17 3.44772 16.5523 3 16 3H6Z" fill="currentColor" stroke="currentColor" strokeWidth="2"/>
+                    </svg>
+                  </button>
+                ) : (
+                  <button className="control-btn bookmark-btn locked" title="Premium feature - Bookmarks" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                      <path d="M6 3C5.44772 3 5 3.44772 5 4V19L11 16L17 19V4C17 3.44772 16.5523 3 16 3H6Z" fill="currentColor" stroke="currentColor" strokeWidth="2"/>
+                    </svg>
+                    <span style={{ fontSize: '10px', marginLeft: '4px' }}>🔒</span>
+                  </button>
+                )}
 
                 <button className="control-btn" onClick={() => skipTime(10)} title="Skip +10s">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -412,16 +421,25 @@ const VideoPlayer = forwardRef(({
                 <input type="range" className="volume-slider" min="0" max="1" step="0.1" value={isMuted ? 0 : volume} onChange={handleVolumeChange} />
 
                 <div className="quality-menu-wrapper">
-                  <button className="control-btn speed-btn" onClick={() => setShowSpeedMenu(!showSpeedMenu)} title="Playback Speed">
-                    <span className="speed-text">{playbackSpeed}x</span>
-                  </button>
-                  {showSpeedMenu && (
-                    <div className="quality-dropdown">
-                      {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
-                        <div key={speed} className={`quality-option ${playbackSpeed === speed ? 'active' : ''}`} onClick={() => handleSpeedChange(speed)}>
-                          {speed}x
+                  {/* Speed Control - Premium only */}
+                  {isPremium ? (
+                    <>
+                      <button className="control-btn speed-btn" onClick={() => setShowSpeedMenu(!showSpeedMenu)} title="Playback Speed">
+                        <span className="speed-text">{playbackSpeed}x</span>
+                      </button>
+                      {showSpeedMenu && (
+                        <div className="quality-dropdown">
+                          {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
+                            <div key={speed} className={`quality-option ${playbackSpeed === speed ? 'active' : ''}`} onClick={() => handleSpeedChange(speed)}>
+                              {speed}x
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
+                    </>
+                  ) : (
+                    <div className="control-btn speed-btn locked" title="Premium feature - Speed Control" style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+                      <span className="speed-text">🔒 1x</span>
                     </div>
                   )}
                 </div>

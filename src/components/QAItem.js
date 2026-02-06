@@ -1,11 +1,21 @@
 // src/components/QAItem.js
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTutorProfilePath } from '../utils/tutorProfileUtils';
 
 function QAItem({ qa, onClick }) {
+  const navigate = useNavigate();
+
   const handleClick = () => {
     if (onClick) {
       onClick(qa.slug);
     }
+  };
+
+  const handleInstructorClick = (e) => {
+    e.stopPropagation();
+    const path = getTutorProfilePath(qa.instructor);
+    if (path) navigate(path);
   };
 
   return (
@@ -31,8 +41,18 @@ function QAItem({ qa, onClick }) {
             src={qa.instructor.avatar}
             alt={qa.instructor.name}
             className="qa-instructor-avatar"
+            onClick={handleInstructorClick}
+            role={getTutorProfilePath(qa.instructor) ? 'button' : undefined}
+            style={getTutorProfilePath(qa.instructor) ? { cursor: 'pointer' } : undefined}
           />
-          <span className="qa-instructor-name">{qa.instructor.name}</span>
+          <span
+            className="qa-instructor-name"
+            onClick={handleInstructorClick}
+            role={getTutorProfilePath(qa.instructor) ? 'button' : undefined}
+            style={getTutorProfilePath(qa.instructor) ? { cursor: 'pointer' } : undefined}
+          >
+            {qa.instructor.name}
+          </span>
           <span className={`qa-subject ${qa.subject}`}>
             {qa.subject.charAt(0).toUpperCase() + qa.subject.slice(1)}
           </span>

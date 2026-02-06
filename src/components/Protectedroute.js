@@ -17,8 +17,8 @@ function ProtectedRoute({ children }) {
     // Check session on every route change
     const checkSession = () => {
       if (isAuthenticated && isTokenExpired()) {
-        console.log('Session expired - logging out');
-        
+        console.warn('Session expired - logging out');
+
         // Clear Redux state
         dispatch(logout());
         

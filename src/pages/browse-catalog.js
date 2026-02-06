@@ -1,10 +1,9 @@
 // src/pages/BrowseCourses.js
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
 import FilterBar from '../components/FilterBar';
 import BrowseCourseCard from '../components/Browsecoursecard';
+import { SkeletonCard } from '../components/ui/LoadingSpinner';
 import { useGetBrowseCoursesQuery } from '../store/api/authApi';
 
 function BrowseCourses() {
@@ -29,13 +28,9 @@ function BrowseCourses() {
       };
     }
 
-    console.log('📦 Browse Courses API:', apiResponse);
-
     // Get courses array from API
     const coursesArray = apiResponse?.data?.data || [];
     const filtersData = apiResponse?.filters || {};
-
-    console.log('📚 Browse Courses:', coursesArray.length);
 
     // Transform API course to component format
     const transformedCourses = coursesArray.map(course => {
@@ -62,8 +57,6 @@ function BrowseCourses() {
     const subjects = filtersData.subjects?.map(s => s.title) || [];
     const formLevels = filtersData.levels?.map(l => l.title) || [];
     const tutors = [...new Set(coursesArray.map(c => c.tutor?.name).filter(Boolean))];
-
-    console.log(`✅ Total Courses: ${transformedCourses.length}`);
 
     return {
       browseCourses: transformedCourses,
@@ -130,20 +123,15 @@ function BrowseCourses() {
 
   const filteredCourses = filterCourses(browseCourses);
 
-  // Handle course click
+  // Handle course click - Navigate to browse course details
   const handleCourseClick = (courseSlug) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => navigate(`/course-details/${courseSlug}`), 100);
+    // Navigate to student browse course details page
+    setTimeout(() => navigate(`/student/browse-course/${courseSlug}`), 100);
   };
 
   return (
-    <>
-      <Sidebar />
-
-      <main className="main-content">
-        <TopNavbar title="Browse Courses" breadcrumb="Explore Catalog" />
-
-        <div className="dashboard-content">
+    <div className="dashboard-content">
           
           {/* Page Header */}
           <div className="page-header-section">
@@ -166,9 +154,14 @@ function BrowseCourses() {
 
           {/* Loading */}
           {isLoading && (
-            <div style={{ textAlign: 'center', padding: '60px 20px', background: 'white', borderRadius: '16px', marginBottom: '24px' }}>
-              <p style={{ color: '#6B7280' }}>Loading courses...</p>
-            </div>
+            <section className="welcome-stats-container course">
+              <div className="courses-grid">
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
+            </section>
           )}
 
           {/* Error */}
@@ -219,9 +212,7 @@ function BrowseCourses() {
             </section>
           )}
 
-        </div>
-      </main>
-    </>
+    </div>
   );
 }
 

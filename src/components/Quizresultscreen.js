@@ -1,8 +1,9 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
-function QuizResultScreen({ results, passed }) {
+function QuizResultScreen({ results, passed, courseSlug }) {
   const navigate = useNavigate();
+  const { id: quizId } = useParams();
 
   return (
     <div className="result-section">
@@ -79,15 +80,21 @@ function QuizResultScreen({ results, passed }) {
           )}
         </div>
         
-        <button className="btn-check-answers" onClick={() => navigate('/check-answers/1')}>
+        <button className="btn-check-answers" onClick={() => navigate(`/student/quiz/${quizId}/review`)}>
           Check Answers →
         </button>
         
         <div className="result-actions">
           <button className="btn-close" onClick={() => window.close()}>Close</button>
-          <button className="btn-back-course" onClick={() => navigate('/course-details/1')}>
-            Back to Course →
-          </button>
+          {courseSlug ? (
+            <button className="btn-back-course" onClick={() => navigate(`/student/course/${courseSlug}`)}>
+              Back to Course →
+            </button>
+          ) : (
+            <button className="btn-back-course" onClick={() => navigate('/student/my-courses')}>
+              Back to Courses →
+            </button>
+          )}
         </div>
       </div>
     </div>

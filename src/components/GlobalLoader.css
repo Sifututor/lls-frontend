@@ -1,0 +1,314 @@
+/* ===== PREMIUM GLOBAL LOADER - LEARNEST ===== */
+/* Brand: #9FE870 | #223D0D | #163300 | #F1F1F1 | #FAFAFA | #9A9A9A */
+
+/* ===== FULL SCREEN ===== */
+.gl-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a1a00;
+  overflow: hidden;
+}
+
+/* ===== ANIMATED GRADIENT MESH BG ===== */
+.gl-bg-mesh {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 80%, rgba(159, 232, 112, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 20%, rgba(34, 61, 13, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, rgba(22, 51, 0, 0.6) 0%, transparent 70%);
+  animation: glMeshMove 8s ease-in-out infinite alternate;
+}
+
+@keyframes glMeshMove {
+  0% {
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(159, 232, 112, 0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 20%, rgba(34, 61, 13, 0.4) 0%, transparent 50%),
+      radial-gradient(ellipse 100% 100% at 50% 50%, rgba(22, 51, 0, 0.6) 0%, transparent 70%);
+  }
+  100% {
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 30%, rgba(159, 232, 112, 0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 30% 70%, rgba(34, 61, 13, 0.35) 0%, transparent 50%),
+      radial-gradient(ellipse 100% 100% at 50% 50%, rgba(22, 51, 0, 0.5) 0%, transparent 70%);
+  }
+}
+
+/* Subtle grain texture */
+.gl-bg-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+  pointer-events: none;
+}
+
+/* ===== FLOATING PARTICLES ===== */
+.gl-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.gl-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: #9FE870;
+}
+
+.gl-p-1 {
+  width: 4px; height: 4px;
+  top: 15%; left: 10%;
+  opacity: 0.3;
+  animation: glFloat 7s ease-in-out infinite;
+}
+.gl-p-2 {
+  width: 6px; height: 6px;
+  top: 25%; right: 15%;
+  opacity: 0.2;
+  animation: glFloat 9s ease-in-out infinite 1s;
+}
+.gl-p-3 {
+  width: 3px; height: 3px;
+  bottom: 30%; left: 20%;
+  opacity: 0.4;
+  animation: glFloat 6s ease-in-out infinite 0.5s;
+}
+.gl-p-4 {
+  width: 5px; height: 5px;
+  bottom: 20%; right: 25%;
+  opacity: 0.25;
+  animation: glFloat 8s ease-in-out infinite 2s;
+}
+.gl-p-5 {
+  width: 3px; height: 3px;
+  top: 60%; left: 75%;
+  opacity: 0.35;
+  animation: glFloat 10s ease-in-out infinite 1.5s;
+}
+.gl-p-6 {
+  width: 4px; height: 4px;
+  top: 40%; left: 40%;
+  opacity: 0.2;
+  animation: glFloat 7s ease-in-out infinite 3s;
+}
+
+@keyframes glFloat {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
+  25% { transform: translateY(-20px) translateX(10px); opacity: 0.4; }
+  50% { transform: translateY(-10px) translateX(-15px); opacity: 0.3; }
+  75% { transform: translateY(-25px) translateX(5px); opacity: 0.5; }
+}
+
+/* ===== MAIN CONTENT ===== */
+.gl-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  animation: glContentIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes glContentIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ===== LOGO WITH RINGS ===== */
+.gl-logo-area {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gl-logo-img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  position: relative;
+  z-index: 3;
+  filter: brightness(0) invert(1);
+  animation: glLogoPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes glLogoPulse {
+  0%, 100% { transform: scale(1); filter: brightness(0) invert(1); }
+  50% { transform: scale(1.05); filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(159, 232, 112, 0.5)); }
+}
+
+/* Outer ring - rotating dashed */
+.gl-ring-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed rgba(159, 232, 112, 0.25);
+  animation: glRingRotate 12s linear infinite;
+}
+
+/* Inner ring - counter rotating */
+.gl-ring-inner {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #9FE870;
+  border-left-color: rgba(159, 232, 112, 0.3);
+  animation: glRingRotateReverse 2s linear infinite;
+}
+
+@keyframes glRingRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes glRingRotateReverse {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+/* ===== BRAND NAME ANIMATION ===== */
+.gl-brand {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #FAFAFA;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.gl-brand-letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(15px);
+  animation: glLetterIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes glLetterIn {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== PROGRESS BAR ===== */
+.gl-progress-area {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gl-progress-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 100px;
+  background: rgba(159, 232, 112, 0.1);
+  overflow: visible;
+  position: relative;
+}
+
+.gl-progress-fill {
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, #223D0D, #9FE870);
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+/* Glow effect on progress tip */
+.gl-progress-glow {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #9FE870;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 16px rgba(159, 232, 112, 0.6), 0 0 32px rgba(159, 232, 112, 0.3);
+  transition: left 0.3s ease;
+  animation: glGlowPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes glGlowPulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(159, 232, 112, 0.6), 0 0 32px rgba(159, 232, 112, 0.3); }
+  50% { box-shadow: 0 0 24px rgba(159, 232, 112, 0.8), 0 0 48px rgba(159, 232, 112, 0.4); }
+}
+
+/* Progress info */
+.gl-progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gl-progress-text {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(250, 250, 250, 0.5);
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+}
+
+.gl-progress-percent {
+  font-size: 13px;
+  font-weight: 600;
+  color: #9FE870;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== FADE OUT ===== */
+.gl-fade-out .gl-screen,
+.gl-fade-out {
+  animation: glScreenOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes glScreenOut {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.02); pointer-events: none; }
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 480px) {
+  .gl-logo-area {
+    width: 80px;
+    height: 80px;
+  }
+
+  .gl-logo-img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .gl-brand {
+    font-size: 22px;
+    letter-spacing: 3px;
+  }
+
+  .gl-progress-area {
+    width: 220px;
+  }
+
+  .gl-content {
+    gap: 24px;
+  }
+}

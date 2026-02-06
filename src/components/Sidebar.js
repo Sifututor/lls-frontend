@@ -1,17 +1,28 @@
 // src/components/Sidebar.js
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { LayoutContext } from '../context/LayoutContext';
+import { selectCurrentUser } from '../store/slices/authSlice';
 import { isPremiumUser, getUserType } from '../store/api/authApi';
 import Premiumupgrademodal from './Premiumupgrademodal';
+
+const DEFAULT_AVATAR = '/assets/images/icons/Ellipse 3.svg';
 
 function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const currentUser = useSelector(selectCurrentUser);
   const { collapsed, mobileOpen, setMobileOpen } = useContext(LayoutContext);
   const [isPremium, setIsPremium] = useState(false);
   const [userType, setUserType] = useState('student');
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+
+  const userName = currentUser?.profile
+    ? `${currentUser.profile.first_name || ''} ${currentUser.profile.last_name || ''}`.trim() || currentUser?.name
+    : currentUser?.name || 'Student';
+  const userAvatar = currentUser?.profile?.profile_image || currentUser?.avatar || DEFAULT_AVATAR;
+  const userEmail = (currentUser?.profile?.email ?? currentUser?.email) || '';
 
   useEffect(() => {
     setIsPremium(isPremiumUser());
@@ -20,17 +31,17 @@ function Sidebar() {
 
   // Dashboard active state
   const isDashboardActive = () => {
-    return location.pathname === '/dashboard' || location.pathname === '/';
+    return location.pathname === '/student/dashboard' || location.pathname === '/';
   };
 
   // My Courses active state - includes all inner pages
   const isMyCoursesActive = () => {
     const myCoursesPages = [
-      '/my-courses',
-      '/course-details',
-      '/quiz-details',
-      '/quiz-take',
-      '/check-answers'
+      '/student/my-courses',
+      '/student/course',
+      '/student/quiz-details',
+      '/student/quiz-take',
+      '/student/check-answers'
     ];
     
     return myCoursesPages.some(page => location.pathname.startsWith(page));
@@ -39,9 +50,9 @@ function Sidebar() {
   // Browse Courses active state - includes inner pages
   const isBrowseCoursesActive = () => {
     const browsePages = [
-      '/browse-courses',
-      '/browse-course',
-      '/tutor'
+      '/student/browse-courses',
+      '/student/browse-course',
+      '/student/tutor'
     ];
     
     return browsePages.some(page => location.pathname.startsWith(page));
@@ -50,10 +61,10 @@ function Sidebar() {
   // Live Classes active state - includes all related pages
   const isLiveClassesActive = () => {
     const liveClassPages = [
-      '/live-classes',
-      '/past-sessions',
-      '/live-class-details',
-      '/recent-video-qa'
+      '/student/live-classes',
+      '/student/past-sessions',
+      '/student/live-class',
+      '/student/recent-video-qa'
     ];
     
     return liveClassPages.some(page => location.pathname.startsWith(page));
@@ -61,7 +72,7 @@ function Sidebar() {
 
   // AI Tutor active state
   const isAiTutorActive = () => {
-    return location.pathname === '/ai-tutor';
+    return location.pathname === '/student/ai-tutor';
   };
 
   const handleOverlayClick = () => {
@@ -112,7 +123,7 @@ function Sidebar() {
               {/* Dashboard */}
               <li>
                 <Link 
-                  to="/dashboard" 
+                  to="/student/dashboard" 
                   className={`nav-item ${isDashboardActive() ? 'active' : ''}`}
                   onClick={handleLinkClick}
                 >
@@ -124,7 +135,7 @@ function Sidebar() {
               {/* My Courses */}
               <li>
                 <Link 
-                  to="/my-courses" 
+                  to="/student/my-courses" 
                   className={`nav-item ${isMyCoursesActive() ? 'active' : ''}`}
                   onClick={handleLinkClick}
                 >
@@ -136,7 +147,7 @@ function Sidebar() {
               {/* Browse Courses */}
               <li>
                 <Link 
-                  to="/browse-courses" 
+                  to="/student/browse-courses" 
                   className={`nav-item ${isBrowseCoursesActive() ? 'active' : ''}`}
                   onClick={handleLinkClick}
                 >
@@ -148,7 +159,7 @@ function Sidebar() {
               {/* Live Classes */}
               <li className="nav-item-with-submenu">
                 <Link
-                  to="/live-classes"
+                  to="/student/live-classes"
                   className={`nav-item ${isLiveClassesActive() ? 'active' : ''}`}
                   onClick={handleLinkClick}
                 >
@@ -160,8 +171,8 @@ function Sidebar() {
                   <ul className="nav-submenu show">
                     <li>
                       <Link 
-                        to="/past-sessions" 
-                        className={`nav-subitem ${location.pathname === '/past-sessions' ? 'active' : ''}`}
+                        to="/student/past-sessions" 
+                        className={`nav-subitem ${location.pathname === '/student/past-sessions' ? 'active' : ''}`}
                         onClick={handleLinkClick}
                       >
                         <img src="/assets/images/icons/live-classes-submenu.svg" alt="Past Sessions" className="nav-icon" />
@@ -175,7 +186,7 @@ function Sidebar() {
               {/* AI Tutor */}
               <li>
                 <Link 
-                  to="/ai-tutor" 
+                  to="/student/ai-tutor" 
                   className={`nav-item ${isAiTutorActive() ? 'active' : ''}`}
                   onClick={handleLinkClick}
                 >

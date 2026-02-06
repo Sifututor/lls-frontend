@@ -1,7 +1,10 @@
 // src/components/MyCourseCard.js
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTutorProfilePath } from '../utils/tutorProfileUtils';
 
 function MyCourseCard({ course, onClick }) {
+  const navigate = useNavigate();
   const [progressWidth, setProgressWidth] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -39,14 +42,12 @@ function MyCourseCard({ course, onClick }) {
     e.stopPropagation();
     setMenuOpen(false);
     if (window.confirm(`Unenroll from "${course.title}"?`)) {
-      console.log('Unenroll:', course.slug);
     }
   };
 
   const handleReport = (e) => {
     e.stopPropagation();
     setMenuOpen(false);
-    console.log('Report:', course.slug);
   };
 
   // Render button based on course type
@@ -84,7 +85,16 @@ function MyCourseCard({ course, onClick }) {
 
       {/* Course Info */}
       <div className="course-info">
-        <div className="course-instructor">
+        <div
+          className="course-instructor"
+          onClick={(e) => {
+            e.stopPropagation();
+            const path = getTutorProfilePath(course.instructor);
+            if (path) navigate(path);
+          }}
+          role={getTutorProfilePath(course.instructor) ? 'button' : undefined}
+          style={getTutorProfilePath(course.instructor) ? { cursor: 'pointer' } : undefined}
+        >
           <img
             src={course.instructor.avatar}
             alt={course.instructor.name}

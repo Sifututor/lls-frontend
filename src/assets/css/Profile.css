@@ -1347,7 +1347,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #D1D5DB;
+  background-color: #163300;
   transition: 0.3s;
   border-radius: 24px;
 }
@@ -1942,6 +1942,60 @@
     padding-top: 20px;
     font-weight: 500;
 }
+
+.edit-profile-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  background-color: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+/* CANCEL BUTTON */
+.btn-cancel {
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  padding: 10px 15px;
+  color: #163300;
+  font-size: 18px;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  max-width: fit-content;
+
+}
+
+.btn-cancel:hover {
+  background: #f0f0f0;
+}
+
+/* SAVE CHANGES BUTTON */
+.btn-save {
+  background: #9FE870;
+  border: 1px solid #9FE870;
+  padding: 10px 15px;
+  color: #163300;
+  font-size: 18px;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-save:hover {
+  background: #8fdb60;
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 
 /* Responsive */
 @media (max-width: 1024px) {

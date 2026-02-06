@@ -1,6 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTutorProfilePath } from '../utils/tutorProfileUtils';
 
 function LiveClassCard({ classData, onJoin, onNotify }) {
+  const navigate = useNavigate();
+
   return (
     <article className="class-card">
       <div className="class-thumbnail">
@@ -26,7 +30,15 @@ function LiveClassCard({ classData, onJoin, onNotify }) {
       <div className="class-card-title-small">{classData.title}</div>
 
       <div className="class-info">
-        <div className="instructor">
+        <div
+          className="instructor"
+          onClick={() => {
+            const path = getTutorProfilePath(classData.instructor);
+            if (path) navigate(path);
+          }}
+          role={getTutorProfilePath(classData.instructor) ? 'button' : undefined}
+          style={getTutorProfilePath(classData.instructor) ? { cursor: 'pointer' } : undefined}
+        >
           <img
             src={classData.instructor.avatar}
             alt={classData.instructor.name}

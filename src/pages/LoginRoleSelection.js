@@ -44,15 +44,21 @@ function LoginRoleSelection() {
 
             <button
               className="role-selection-card-item"
-              onClick={() => navigate('/login/tutor')}
+              onClick={() => navigate('/tutor/login')}
             >
               <div className="role-card-icon">
-                <img src="/assets/images/icons/tutor.svg" alt="Tutor" />
+                <img src="/assets/images/icons/student.svg" alt="Tutor" />
               </div>
-              <h3 className="role-card-title">I'm a Tutor</h3>
-              <p className="role-card-subtitle">Manage your classes and students</p>
+              <h3 className="role-card-title">I&apos;m a Tutor</h3>
+              <p className="role-card-subtitle">Continue your
+              teaching journey</p>
             </button>
           </div>
+        </div>
+
+        {/* Create Account Link */}
+        <div className="auth-switch" style={{ marginTop: '32px', textAlign: 'center' }}>
+          <p>New to Learnest? <button type="button" onClick={() => navigate('/create-account/student')} className="link-switch login">Create Account</button></p>
         </div>
       </div>
     </div>

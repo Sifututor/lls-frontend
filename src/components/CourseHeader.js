@@ -1,7 +1,10 @@
 // src/components/CourseHeader.js
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTutorProfilePath } from '../utils/tutorProfileUtils';
 
 function CourseHeader({ courseData }) {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [progressWidth, setProgressWidth] = useState(0);
 
@@ -73,7 +76,15 @@ function CourseHeader({ courseData }) {
           <div className="course-header-left">
             <h1 className="course-detail-title">{courseData.title}</h1>
 
-            <div className="course-instructor-info">
+            <div
+              className="course-instructor-info"
+              onClick={() => {
+                const path = getTutorProfilePath(courseData.instructor);
+                if (path) navigate(path);
+              }}
+              role={getTutorProfilePath(courseData.instructor) ? 'button' : undefined}
+              style={getTutorProfilePath(courseData.instructor) ? { cursor: 'pointer' } : undefined}
+            >
               <img
                 src={courseData.instructor?.avatar || '/assets/images/icons/Ellipse 2.svg'}
                 alt="Instructor"

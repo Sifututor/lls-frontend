@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
 import CourseHeader from '../components/CourseHeader';
 import QuizTimer from '../components/Quiztimer';
 import QuizQuestionCard from '../components/Quizquestioncard';
@@ -147,19 +145,15 @@ function QuizTake() {
   if (showReview) {
     return (
       <>
-        <Sidebar />
-        <main className="main-content">
-          <TopNavbar title="Quiz Review" breadcrumb="Sorting Algorithms" />
-          <CourseHeader courseData={quizHeaderData} />
-          
-          <QuizReviewScreen
+        <CourseHeader courseData={quizHeaderData} />
+        
+        <QuizReviewScreen
             questions={quizQuestions}
             userAnswers={userAnswers}
             onBackToQuiz={handleBackToQuiz}
             onSubmitQuiz={handleSubmitQuiz}
             onGoToQuestion={goToQuestion}
           />
-        </main>
       </>
     );
   }
@@ -168,16 +162,12 @@ function QuizTake() {
   if (showResult && results) {
     return (
       <>
-        <Sidebar />
-        <main className="main-content">
-          <TopNavbar title="Quiz Results" breadcrumb="Sorting Algorithms" />
-          <CourseHeader courseData={quizHeaderData} />
-          
-          <QuizResultScreen
+        <CourseHeader courseData={quizHeaderData} />
+        
+        <QuizResultScreen
             results={results}
             passed={results.passed}
           />
-        </main>
       </>
     );
   }
@@ -187,12 +177,9 @@ function QuizTake() {
 
   return (
     <>
-      <Sidebar />
-      <main className="main-content">
-        <TopNavbar title="Quiz" breadcrumb="Sorting Algorithms" />
-        <CourseHeader courseData={quizHeaderData} />
-        
-        <div className="quiz-taking-container">
+      <CourseHeader courseData={quizHeaderData} />
+      
+      <div className="quiz-taking-container">
           {/* Left Side - Question Area */}
           <div className="quiz-question-area">
             <QuizQuestionCard
@@ -236,7 +223,6 @@ function QuizTake() {
             </button>
           </div>
         </div>
-      </main>
 
       {/* End Quiz Modal */}
       <EndQuizModal

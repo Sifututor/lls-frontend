@@ -1,57 +1,64 @@
 import React from 'react';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Profilecard from '../components/Profilecard';
 import Studentemailcard from '../components/Studentemailcard';
 import Logoutbutton from '../components/Logoutbutton';
 import Plansection from '../components/Plansection';
 import Parentaccesscard from '../components/Parentaccesscard';
 import Dataprivacycard from '../components/Dataprivacycard';
-import { profileData } from '../data/Profiledata';
+import { selectCurrentUser } from '../store/slices/authSlice';
+import { profileData as staticProfileData } from '../data/Profiledata';
+
+const DEFAULT_AVATAR = '/assets/images/icons/Ellipse 3.svg';
 
 function Profile() {
-  const handleEditProfile = () => {
-    console.log('Edit profile clicked');
+  const navigate = useNavigate();
+  const currentUser = useSelector(selectCurrentUser);
+
+  const profileData = {
+    user: {
+      name: currentUser?.profile
+        ? `${currentUser.profile.first_name || ''} ${currentUser.profile.last_name || ''}`.trim() || currentUser?.name
+        : currentUser?.name || 'Student',
+      email: (currentUser?.profile?.email ?? currentUser?.email) || 'user@example.com',
+      avatar: currentUser?.profile?.profile_image || currentUser?.avatar || DEFAULT_AVATAR,
+      bio: currentUser?.profile?.bio || '',
+      location: currentUser?.profile?.country || 'Malaysia',
+      contactEmail: currentUser?.profile?.email || currentUser?.email || '',
+      timezone: currentUser?.profile?.timezone || '',
+      isPremium: currentUser?.is_premium === true || currentUser?.is_premium === '1',
+    },
+    plans: staticProfileData.plans,
+    parentAccessLink: staticProfileData.parentAccessLink,
   };
 
-  const handleSubmitEmail = (email) => {
-    console.log('Submitting email:', email);
+  const handleEditProfile = () => {
+    navigate('/student/profile/edit');
   };
+
+  const handleSubmitEmail = () => {};
 
   const handleLogout = () => {
-    console.log('Logging out');
     // Logout logic
   };
 
   const handleUpgradePlan = () => {
-    console.log('Upgrading to premium');
+    navigate('/student/subscription');
   };
 
-  const handleRegenerateLink = () => {
-    console.log('Regenerating parent access link');
-  };
+  const handleRegenerateLink = () => {};
 
   const handleCopyLink = () => {
-    console.log('Copying link');
     navigator.clipboard.writeText(profileData.parentAccessLink);
   };
 
-  const handleDownloadData = () => {
-    console.log('Downloading user data');
-  };
+  const handleDownloadData = () => {};
 
-  const handleDeleteAccount = () => {
-    console.log('Delete account clicked');
-  };
+  const handleDeleteAccount = () => {};
 
   return (
-    <>
-      <Sidebar />
-
-      <main className="main-content">
-        <TopNavbar title="Profile" />
-
-        <div className="profile-page-container">
+    <div className="profile-page-container">
           {/* Page Header */}
           <div className="profile-page-header">
             <h1 className="profile-page-title">Profile</h1>
@@ -91,8 +98,6 @@ function Profile() {
             </div>
           </div>
         </div>
-      </main>
-    </>
   );
 }
 

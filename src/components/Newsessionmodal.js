@@ -1,15 +1,24 @@
+// src/components/Newsessionmodal.js
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Spinner } from './ui/LoadingSpinner';
+import { useGetSubjectsQuery } from '../store/api/authApi';
 
 function Newsessionmodal({ onClose, onStartSession }) {
+  const navigate = useNavigate();
+  const tutorAvatars = [
+    { id: 1, src: '/assets/images/icons/team1.png', alt: 'Tutor 1', className: 'tutor-avatar' },
+    { id: 2, src: '/assets/images/icons/team2.png', alt: 'Tutor 2', className: 'tutor-avatar main' },
+    { id: 3, src: '/assets/images/icons/team3.png', alt: 'Tutor 3', className: 'tutor-avatar' },
+  ];
   const [selectedSubject, setSelectedSubject] = useState('');
   const [topicText, setTopicText] = useState('');
 
-  const subjects = [
-    { id: 'mathematics', name: 'Mathematics', topics: 12 },
-    { id: 'physics', name: 'Physics', topics: 10 },
-    { id: 'chemistry', name: 'Chemistry', topics: 11 },
-    { id: 'biology', name: 'Biology', topics: 9 }
-  ];
+  // Fetch subjects from API
+  const { data: subjectsData, isLoading, error } = useGetSubjectsQuery();
+
+  // Get subjects array from API response
+  const subjects = subjectsData?.data || subjectsData?.subjects || subjectsData || [];
 
   const handleStartSession = () => {
     if (selectedSubject) {
@@ -27,11 +36,19 @@ function Newsessionmodal({ onClose, onStartSession }) {
           </svg>
         </button>
 
-        {/* Header with Images */}
+        {/* Header with Images - clickable to tutor profile */}
         <div className="modal-header-images">
-          <img src="/assets/images/icons/team1.png" alt="Tutor 1" className="tutor-avatar" />
-          <img src="/assets/images/icons/team2.png" alt="Tutor 2" className="tutor-avatar main" />
-          <img src="/assets/images/icons/team3.png" alt="Tutor 3" className="tutor-avatar" />
+          {tutorAvatars.map((t) => (
+            <img
+              key={t.id}
+              src={t.src}
+              alt={t.alt}
+              className={t.className}
+              onClick={() => navigate(`/tutor-profile/${t.id}`)}
+              role="button"
+              style={{ cursor: 'pointer' }}
+            />
+          ))}
         </div>
 
         <h2 className="modal-title">Start New Session</h2>
@@ -40,18 +57,25 @@ function Newsessionmodal({ onClose, onStartSession }) {
         {/* Select Subject */}
         <div className="form-group">
           <label className="form-label">Select Subject</label>
-          <div className="subject-grid">
-            {subjects.map(subject => (
-              <button
-                key={subject.id}
-                className={`subject-card ${selectedSubject === subject.id ? 'selected' : ''}`}
-                onClick={() => setSelectedSubject(subject.id)}
-              >
-                <div className="subject-name">{subject.name}</div>
-                <div className="subject-topics">{subject.topics} topics</div>
-              </button>
-            ))}
-          </div>
+          
+          {isLoading ? (
+            <div className="subjects-loading"><Spinner size="sm" color="gray" /> Loading subjects...</div>
+          ) : error ? (
+            <div className="subjects-error">Failed to load subjects</div>
+          ) : (
+            <div className="subject-grid">
+              {subjects.map(subject => (
+                <button
+                  key={subject.id || subject.title}
+                  className={`subject-card ${selectedSubject === (subject.title || subject.id) ? 'selected' : ''}`}
+                  onClick={() => setSelectedSubject(subject.title || subject.id)}
+                >
+                  <div className="subject-name">{subject.title}</div>
+                  <div className="subject-topics">{subject.topics_count || subject.topics || 0} topics</div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Topic Input */}
@@ -74,7 +98,7 @@ function Newsessionmodal({ onClose, onStartSession }) {
           <button
             className="btn-start-session"
             onClick={handleStartSession}
-            disabled={!selectedSubject}
+            disabled={!selectedSubject || isLoading}
           >
             Start Session
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">

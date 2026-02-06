@@ -7,9 +7,11 @@ function CourseContentAccordion({ courseContentData }) {
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
 
-  useEffect(() => {
-    setChapters(prevChapters =>
-      prevChapters.map(chapter => {
+  // ✅ Only run when courseContentData changes (from props)
+useEffect(() => {
+  if (courseContentData) {
+    setChapters(
+      courseContentData.map(chapter => {
         const allLessonsCompleted = chapter.lessons.every(lesson => lesson.completed);
         return {
           ...chapter,
@@ -17,7 +19,8 @@ function CourseContentAccordion({ courseContentData }) {
         };
       })
     );
-  }, [chapters]);
+  }
+}, [courseContentData]);  // ✅ Depend on props, not state
 
   const toggleChapter = (chapterId) => {
     setChapters(
@@ -62,7 +65,6 @@ function CourseContentAccordion({ courseContentData }) {
     const chapter = chapters.find(ch => ch.id === chapterId);
     
     if (!chapter.buttonDisabled) {
-      console.log('Starting test for chapter:', chapterId);
     }
   };
 
@@ -73,7 +75,6 @@ function CourseContentAccordion({ courseContentData }) {
   };
 
   const handleStartQuiz = () => {
-    console.log('Starting quiz for lesson:', selectedLesson?.title);
   };
 
   return (
@@ -153,6 +154,7 @@ function CourseContentAccordion({ courseContentData }) {
         isOpen={showQuizModal}
         onClose={() => setShowQuizModal(false)}
         lessonName={selectedLesson?.title}
+        quizId={selectedLesson?.quiz_id ?? selectedLesson?.quizId ?? selectedLesson?.quiz?.id ?? 1}
         onStartQuiz={handleStartQuiz}
       />
     </>

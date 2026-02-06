@@ -1,16 +1,24 @@
 // src/pages/CreateAccountStep1.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRegistration } from '../context/RegistrationContext';
+import { showWarning } from '../utils/toast';
 import '../assets/css/auth.css';
 
-function CreateAccountStep1({ onComplete }) {
+function CreateAccountStep1() {
   const navigate = useNavigate();
+  const { parentData, setParentData } = useRegistration();
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
+    fullName: parentData?.name || '',
+    email: parentData?.email || '',
     password: '',
     confirmPassword: ''
   });
+
+  useEffect(() => {
+    if (parentData?.name) setFormData((f) => ({ ...f, fullName: parentData.name }));
+    if (parentData?.email) setFormData((f) => ({ ...f, email: parentData.email }));
+  }, [parentData?.name, parentData?.email]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -25,19 +33,18 @@ function CreateAccountStep1({ onComplete }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+      showWarning('Passwords do not match!');
       return;
     }
-    
-    // Save parent info for API call later
-    onComplete({
+
+    setParentData({
       name: formData.fullName,
       email: formData.email,
       password: formData.password,
-      password_confirmation: formData.confirmPassword
+      password_confirmation: formData.confirmPassword,
+      user_type: 'parent',
     });
-    
-    navigate('/create-account/add-child');
+    navigate('/register/terms');
   };
 
   // Password validation
@@ -61,7 +68,7 @@ function CreateAccountStep1({ onComplete }) {
 
           <div className="auth-title-sections">
             <h2 className="auth-title">Create family account</h2>
-            <p className="auth-subtitle">Step 1 of 2 - Parent Information</p>
+            <p className="auth-subtitle">Step 1 - Family Account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form" autoComplete="on">

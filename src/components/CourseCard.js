@@ -1,6 +1,7 @@
 // src/components/CourseCard.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getTutorProfilePath } from '../utils/tutorProfileUtils';
 
 function CourseCard({ course }) {
   const navigate = useNavigate();
@@ -18,14 +19,13 @@ function CourseCard({ course }) {
   const handleContinueLearning = (e) => {
     e.preventDefault();
     window.scrollTo(0, 0);
-    navigate(`/course-details/${course.slug}`);
+    navigate(`/student/course/${course.slug}`);
   };
 
   // Handle Unenroll
   const handleUnenroll = () => {
     setMenuOpen(false);
     if (window.confirm(`Are you sure you want to unenroll from "${course.title}"?`)) {
-      console.log('Unenroll from course:', course.slug);
       // API call will go here
     }
   };
@@ -34,7 +34,6 @@ function CourseCard({ course }) {
   const handleReport = () => {
     setMenuOpen(false);
     if (window.confirm(`Report "${course.title}"?`)) {
-      console.log('Report course:', course.slug);
       // API call will go here
     }
   };
@@ -68,7 +67,15 @@ function CourseCard({ course }) {
       </div>
 
       <div className="course-info">
-        <div className="course-instructor">
+        <div
+          className="course-instructor"
+          onClick={(e) => {
+            const path = getTutorProfilePath(course.instructor);
+            if (path) { e.stopPropagation(); navigate(path); }
+          }}
+          role={getTutorProfilePath(course.instructor) ? 'button' : undefined}
+          style={getTutorProfilePath(course.instructor) ? { cursor: 'pointer' } : undefined}
+        >
           <img
             src={course.instructor.avatar}
             alt={course.instructor.name}

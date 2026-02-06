@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import TopNavbar from '../components/TopNavbar';
+import { useNavigate } from 'react-router-dom';
 import FilterBar from '../components/FilterBar';
 import Liveclasscard from '../components/LiveClassCard';
 import { pastSessionsData } from '../data/Pastsessionsdata';
 
 function Pastsessions() {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     searchText: '',
     subject: '',
@@ -44,7 +44,6 @@ function Pastsessions() {
   };
 
   const handleApply = () => {
-    console.log('Applying filters:', filters);
     const hasActiveFilters = Object.values(filters).some(value => value !== '');
     setShowActiveFilters(hasActiveFilters);
   };
@@ -71,24 +70,24 @@ function Pastsessions() {
   };
 
   const handleWatchRecording = (classId) => {
-    console.log('Watching recording:', classId);
-    // Navigate to live-class-details page
+    navigate(`/student/live-class/${classId}`);
   };
 
   return (
-    <>
-      <Sidebar />
-
-      <main className="main-content">
-        <TopNavbar title="Live Classes" breadcrumb="Past Sessions" />
-
-        <div className="dashboard-content">
+    <div className="dashboard-content">
           
           {/* Page Header */}
           <div className="page-header-section">
+            <button 
+              className="back-btn" 
+              onClick={() => navigate('/student/live-classes')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', marginBottom: '16px', fontSize: '14px', color: '#6B7280' }}
+            >
+              ← Back to Live Classes
+            </button>
             <h1 className="welcome-title">Past Sessions</h1>
             <p className="welcome-subtitle">
-              Upcoming and Past Sessions
+              View recordings of past live class sessions
             </p>
           </div>
 
@@ -156,9 +155,7 @@ function Pastsessions() {
               ))}
             </div>
           </div>
-        </div>
-      </main>
-    </>
+    </div>
   );
 }
 

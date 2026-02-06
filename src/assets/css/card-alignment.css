@@ -1,0 +1,85 @@
+/* ===== CARD BUTTON ALIGNMENT FIX ===== */
+/* Push all card buttons to bottom, aligned across all cards */
+
+/* Course Cards - ensure flex column + full height */
+.course-card,
+.class-card,
+.my-course-card,
+.live-class-card,
+.quiz-card,
+.lesson-card,
+.tutor-card,
+.session-card,
+.stat-card,
+.activity-card,
+.achievement-card,
+.enrolled-course-card,
+.recommended-card,
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Card content area - takes available space */
+.course-card .course-info,
+.course-card .card-body,
+.course-card .card-info,
+.class-card .class-info,
+.class-card .card-content,
+.live-class-card .class-info,
+.live-class-card .card-content,
+.my-course-card .course-info,
+.my-course-card .card-body,
+[class*="course-card"] .course-info,
+[class*="class-card"] .class-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card action wrappers and buttons pushed to bottom */
+.course-card .course-actions,
+.course-card .btn-continue,
+.course-card .btn-view-course,
+.course-card .btn-enroll-now,
+.course-card .btn-enroll,
+.course-card .card-btn,
+.class-card .class-info > .btn-join,
+.class-card .class-info > .btn-notify,
+.class-card .class-info > .btn-watch-recording,
+.class-card .class-info > button,
+.card-actions,
+.card-footer,
+.card-buttons,
+.button-wrapper.action-wrapper,
+.cta-wrapper {
+  margin-top: auto;
+}
+
+/* Grids - equal height cards */
+.courses-grid,
+.course-grid,
+.cards-grid,
+.card-grid,
+.live-classes-grid,
+.classes-grid,
+.lessons-grid,
+.quizzes-grid,
+.tutors-grid,
+[class*="-grid"] {
+  align-items: stretch;
+}
+
+/* Carousel / slider cards - equal height */
+.carousel-track > *,
+.swiper-slide > div,
+.slick-slide > div,
+[class*="carousel"] .course-card,
+[class*="carousel"] .class-card,
+[class*="slider"] .course-card,
+[class*="slider"] .class-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}

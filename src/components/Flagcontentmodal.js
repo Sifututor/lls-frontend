@@ -1,5 +1,6 @@
 // src/components/FlagContentModal.js
 import React, { useState, useEffect } from 'react';
+import { showWarning } from '../utils/toast';
 
 function FlagContentModal({ 
   isOpen, 
@@ -40,7 +41,7 @@ function FlagContentModal({
 
   const handleConfirm = () => {
     if (!selectedReason) {
-      alert('Please select a reason');
+      showWarning('Please select a reason');
       return;
     }
     
