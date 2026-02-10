@@ -1,0 +1,94 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout code
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # Step 3: Install dependencies
+      - name: 📦 Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # Step 4: Build for production
+      - name: 🔨 Build production
+        run: npm run build
+        env:
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+          CI: false  # Ignore warnings as errors
+
+      # Step 5: Create .htaccess
+      - name: 📝 Create .htaccess
+        run: |
+          cat > build/.htaccess << 'EOF'
+          <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+            RewriteRule ^index\.html$ - [L]
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_FILENAME} !-l
+            RewriteRule . /index.html [L]
+          </IfModule>
+
+          <IfModule mod_expires.c>
+            ExpiresActive On
+            ExpiresByType image/png "access plus 1 year"
+            ExpiresByType image/webp "access plus 1 year"
+            ExpiresByType image/jpeg "access plus 1 year"
+            ExpiresByType image/svg+xml "access plus 1 year"
+            ExpiresByType text/css "access plus 1 year"
+            ExpiresByType application/javascript "access plus 1 year"
+            ExpiresByType font/woff2 "access plus 1 year"
+          </IfModule>
+
+          <IfModule mod_deflate.c>
+            AddOutputFilterByType DEFLATE text/html text/plain text/css
+            AddOutputFilterByType DEFLATE application/javascript application/json
+            AddOutputFilterByType DEFLATE image/svg+xml
+          </IfModule>
+
+          <IfModule mod_headers.c>
+            Header set X-Content-Type-Options "nosniff"
+            Header set X-Frame-Options "SAMEORIGIN"
+            Header set X-XSS-Protection "1; mode=block"
+          </IfModule>
+          EOF
+
+      # Step 6: Deploy to cPanel via FTP
+      - name: 🚀 Deploy to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          local-dir: ./build/
+          server-dir: ${{ secrets.FTP_DIR }}
+          dangerous-clean-slate: false  # Set true to delete old files
+
+      # Step 7: Deployment notification
+      - name: ✅ Deployment Complete
+        run: |
+          echo "============================================"
+          echo "✅ DEPLOYMENT SUCCESSFUL!"
+          echo "============================================"
+          echo "🌐 App deployed to cPanel"
+          echo "📅 Time: $(date)"
+          echo ""
