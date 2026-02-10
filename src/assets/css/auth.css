@@ -23,7 +23,8 @@
     content: "";
     position: absolute;
     inset: 0;
-    background-image: url('/assets/images/landing-page-bg.png');
+    /* background-image: url('/assets/images/landing-page-bg.png'); */
+    background-color: #f8f9fa;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
