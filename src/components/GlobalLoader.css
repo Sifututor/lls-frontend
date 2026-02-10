@@ -15,7 +15,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url('F:\sifu-projects\react-project\learnest-react-fixed\public\assets\images\landing-page-bg.png ');
+  background-image: url('/assets/images/landing-page-bg.png');
 
   background-size: cover;
   background-position: center;
