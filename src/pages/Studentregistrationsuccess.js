@@ -1,8 +1,8 @@
 // src/pages/StudentRegistrationSuccess.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { showSuccess, showError } from '../utils/toast';
+import { toast } from 'react-toastify';
 import '../assets/css/auth.css';
 
 function StudentRegistrationSuccess() {
@@ -12,6 +12,10 @@ function StudentRegistrationSuccess() {
   const [userEmail, setUserEmail] = useState('');
   const [verificationStatus, setVerificationStatus] = useState(null);
   const [verificationMessage, setVerificationMessage] = useState('');
+
+  // FIX: Track if verification was already handled to prevent double alerts
+  const hasVerifiedRef = useRef(false);
+  const toastShownRef = useRef(false);
 
   const isEmailVerification = searchParams.has('redirect');
 
@@ -25,8 +29,11 @@ function StudentRegistrationSuccess() {
   useEffect(() => {
     const verifyEmail = async () => {
       const redirectUrl = searchParams.get('redirect');
-      if (!redirectUrl) return;
-
+      
+      // FIX: Prevent multiple API calls
+      if (!redirectUrl || hasVerifiedRef.current) return;
+      
+      hasVerifiedRef.current = true; // Mark as processing
       setVerificationStatus('verifying');
 
       try {
@@ -41,21 +48,57 @@ function StudentRegistrationSuccess() {
         if (response.ok && (data.status === true || (data.message && data.message.toLowerCase().includes('verified')))) {
           setVerificationStatus('success');
           setVerificationMessage('Your email has been verified successfully!');
-          showSuccess('Email verified successfully!');
+          
+          // FIX: Show toast ONLY ONCE with unique toastId
+          if (!toastShownRef.current) {
+            toastShownRef.current = true;
+            toast.success('Email verified successfully!', {
+              toastId: 'email-verified-success', // Prevents duplicates
+              position: 'top-right',
+              autoClose: 3000,
+            });
+          }
         } else if (response.status === 409 || (data.message && data.message.toLowerCase().includes('already'))) {
           setVerificationStatus('already');
           setVerificationMessage('Your email is already verified.');
-          showSuccess('Email already verified!');
+          
+          // FIX: Show toast ONLY ONCE with unique toastId
+          if (!toastShownRef.current) {
+            toastShownRef.current = true;
+            toast.info('Email already verified!', {
+              toastId: 'email-already-verified', // Prevents duplicates
+              position: 'top-right',
+              autoClose: 3000,
+            });
+          }
         } else {
           setVerificationStatus('error');
           setVerificationMessage(data.message || 'Verification failed. The link may have expired.');
-          showError(data.message || 'Verification failed');
+          
+          // FIX: Show error toast ONLY ONCE
+          if (!toastShownRef.current) {
+            toastShownRef.current = true;
+            toast.error(data.message || 'Verification failed', {
+              toastId: 'email-verify-error', // Prevents duplicates
+              position: 'top-right',
+              autoClose: 4000,
+            });
+          }
         }
       } catch (error) {
         console.error('[EmailVerify] Error:', error);
         setVerificationStatus('error');
         setVerificationMessage('Network error. Please try again.');
-        showError('Network error occurred');
+        
+        // FIX: Show network error toast ONLY ONCE
+        if (!toastShownRef.current) {
+          toastShownRef.current = true;
+          toast.error('Network error occurred', {
+            toastId: 'email-verify-network-error', // Prevents duplicates
+            position: 'top-right',
+            autoClose: 4000,
+          });
+        }
       }
     };
 

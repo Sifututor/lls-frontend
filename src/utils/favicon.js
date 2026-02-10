@@ -1,33 +1,33 @@
 // src/utils/favicon.js
 export function setCircularFavicon(imageUrl) {
+  const size = 128;
+  const center = size / 2;
+  const radius = 60;
+  const logoSize = 100;
+
   const canvas = document.createElement('canvas');
-  canvas.width = 64;
-  canvas.height = 64;
+  canvas.width = size;
+  canvas.height = size;
   const ctx = canvas.getContext('2d');
 
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
-    // Draw circular clipping path
     ctx.beginPath();
-    ctx.arc(32, 32, 30, 0, Math.PI * 2);
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
     ctx.closePath();
     ctx.clip();
 
-    // Fill background with WHITE so dark logo is visible
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, 64, 64);
+    ctx.fillRect(0, 0, size, size);
 
-    // Draw logo centered and bigger
-    const size = 44;
-    const offset = (64 - size) / 2;
-    ctx.drawImage(img, offset, offset, size, size);
+    const offset = (size - logoSize) / 2;
+    ctx.drawImage(img, offset, offset, logoSize, logoSize);
 
-    // Add green border ring
     ctx.beginPath();
-    ctx.arc(32, 32, 30, 0, Math.PI * 2);
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
     ctx.strokeStyle = '#9FE870';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.stroke();
 
     // Set as favicon

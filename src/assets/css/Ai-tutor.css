@@ -144,6 +144,45 @@
   align-self: flex-end;
 }
 
+/* ================= TYPING INDICATOR (WhatsApp Style) ================= */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.typing-indicator span {
+  width: 10px;
+  height: 10px;
+  background-color: #9A9A9A;
+  border-radius: 50%;
+  animation: typing-dot 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
 .message-formula {
   background: #FAFAFA;
   border: 1px solid #CFCFCF;
@@ -634,6 +673,87 @@ input.topic-input::placeholder {
     grid-template-columns: 250px 1fr 300px;
   }
 }
+
+/* ================= AI DAILY LIMIT ================= */
+
+.ai-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.questions-remaining {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 20px;
+}
+
+.questions-remaining.exhausted {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.remaining-icon {
+  font-size: 14px;
+}
+
+.limit-warning {
+  text-align: center;
+  padding: 8px;
+  font-size: 13px;
+  color: #d97706;
+  background: #fef3c7;
+  border-radius: 8px;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.ai-input-field:disabled {
+  
+  cursor: not-allowed;
+}
+
+.ai-input-field:disabled::placeholder {
+  color: #9ca3af;
+}
+
+.ai-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quiz-reset-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.reset-icon {
+  font-size: 16px;
+}
+
+.limit-header-fallback {
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 
 @media (max-width: 992px) {
   .ai-tutor-layout {

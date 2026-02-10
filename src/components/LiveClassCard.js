@@ -1,15 +1,21 @@
 // src/components/LiveClassCard.js
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getTutorProfilePath } from '../utils/tutorProfileUtils';
+import { usePremium } from '../hooks/usePremium';
+import Premiumupgrademodal from './Premiumupgrademodal';
 
 function LiveClassCard({ classData, onJoin, onNotify }) {
   const navigate = useNavigate();
-  
+  const { isPremium } = usePremium();
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+
   const handleButtonClick = () => {
-    // Use id for API calls, slug for navigation
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
     const classId = classData.id || classData.slug;
-    
     if (classData.buttonType === 'join' || classData.buttonType === 'watch') {
       onJoin && onJoin(classId);
     } else {
@@ -18,6 +24,7 @@ function LiveClassCard({ classData, onJoin, onNotify }) {
   };
 
   return (
+    <>
     <article className="class-card">
       {/* Thumbnail with fallback (like MyCourseCard) */}
       <div className="class-thumbnail">
@@ -71,21 +78,21 @@ function LiveClassCard({ classData, onJoin, onNotify }) {
         
         {/* Support 3 button types */}
         {classData.buttonType === 'join' ? (
-          <button 
+          <button
             className="btn-join"
             onClick={handleButtonClick}
           >
             Join Class
           </button>
         ) : classData.buttonType === 'watch' ? (
-          <button 
+          <button
             className="btn-watch-recording"
             onClick={handleButtonClick}
           >
             Watch Recording
           </button>
         ) : (
-          <button 
+          <button
             className="btn-notify"
             onClick={handleButtonClick}
           >
@@ -94,6 +101,11 @@ function LiveClassCard({ classData, onJoin, onNotify }) {
         )}
       </div>
     </article>
+    <Premiumupgrademodal
+      isOpen={showPremiumModal}
+      onClose={() => setShowPremiumModal(false)}
+    />
+    </>
   );
 }
 

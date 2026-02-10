@@ -2,17 +2,50 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Newsessionmodal from '../components/Newsessionmodal';
+import AiLimitModal from '../components/AiLimitModal';
+import TypingMessage from '../components/TypingMessage';
+import ClearChatButton from '../components/ClearChatButton';
 import { useAskAIMutation } from '../store/api/authApi';
+import { useAiLimit } from '../hooks/useAiLimit';
+import { showWarning } from '../utils/toast';
 
 function Aitutor() {
   const navigate = useNavigate();
+  
+  // ✅ FIX 1: Get current user for user-specific storage
+  const getCurrentUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem('userData') || '{}');
+    } catch {
+      return {};
+    }
+  };
+  
+  const currentUser = getCurrentUser();
+  const userId = currentUser?.id;
+  
+  // ✅ FIX 2: User-specific storage keys (different for each user)
+  const CHAT_STORAGE_KEY = `ai_tutor_chat_${userId || 'guest'}`;
+  const SESSION_STORAGE_KEY = `ai_tutor_session_${userId || 'guest'}`;
   const [showModal, setShowModal] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+
+  const {
+    canAskQuestion,
+    usedQuestions,
+    maxQuestions,
+    remainingQuestions,
+    hoursUntilReset,
+    recordQuestion,
+    isPremium,
+  } = useAiLimit();
   const [sessions, setSessions] = useState({
     today: [],
     yesterday: []
   });
   const [activeSession, setActiveSession] = useState(null); // { chat_id, chat_name, subject }
   const [messages, setMessages] = useState([]);
+  const [typingMessageId, setTypingMessageId] = useState(null); // Track which message is currently typing
   const [inputText, setInputText] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
@@ -23,10 +56,64 @@ function Aitutor() {
 
   const [askAI, { isLoading }] = useAskAIMutation();
 
+  // ✅ FIX 3: Load messages ONLY for current user
+  useEffect(() => {
+    // If no user logged in, clear everything
+    if (!userId) {
+      setMessages([]);
+      setActiveSession(null);
+      return;
+    }
+
+    // Load chat history for THIS user only
+    const savedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
+    const savedSession = localStorage.getItem(SESSION_STORAGE_KEY);
+    
+    if (savedMessages) {
+      try {
+        const parsed = JSON.parse(savedMessages);
+        setMessages(parsed);
+      } catch (e) {
+        localStorage.removeItem(CHAT_STORAGE_KEY);
+      }
+    }
+    
+    if (savedSession) {
+      try {
+        const parsed = JSON.parse(savedSession);
+        setActiveSession(parsed);
+      } catch (e) {
+        console.error('Failed to parse saved session');
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+      }
+    }
+  }, [userId, CHAT_STORAGE_KEY, SESSION_STORAGE_KEY]);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+    }
+  }, [messages]);
+
+  // Save active session to localStorage
+  useEffect(() => {
+    if (activeSession) {
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(activeSession));
+    }
+  }, [activeSession]);
+
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Auto-show limit modal when limit is reached (e.g. after 5th question is recorded)
+  useEffect(() => {
+    if (!isPremium && usedQuestions >= maxQuestions) {
+      setShowLimitModal(true);
+    }
+  }, [usedQuestions, maxQuestions, isPremium]);
 
   // Start new session from modal
   const handleNewSession = (subject, topic) => {
@@ -114,13 +201,26 @@ function Aitutor() {
 
   const handleSendMessage = async (messageText = inputText, subject = activeSession?.subject) => {
     const textToSend = messageText || inputText;
-    
+
     if (!textToSend.trim() && !selectedFile) return;
     if (isLoading) return;
 
-    // Check if we have a subject for new chat
+    // ✅ FIX 5: Validate subject is selected
     if (!activeSession?.chat_id && !subject) {
       setShowModal(true);
+      showWarning('Please select a subject to start a new chat');
+      return;
+    }
+
+    if (!canAskQuestion) {
+      setShowLimitModal(true);
+      showWarning('Daily question limit reached');
+      return;
+    }
+
+    const recorded = recordQuestion();
+    if (!recorded && !isPremium) {
+      setShowLimitModal(true);
       return;
     }
 
@@ -186,21 +286,23 @@ function Aitutor() {
         }
       }
 
-      // Add AI response
+      // Add AI response with typing effect
+      const aiResponseId = Date.now() + 1;
       const aiResponse = {
-        id: Date.now() + 1,
+        id: aiResponseId,
         type: 'ai',
         text: result.answer || 'Sorry, I could not process your question.',
         time: new Date().toLocaleTimeString('en-US', { 
           hour: 'numeric', 
           minute: '2-digit',
           hour12: true 
-        })
+        }),
+        isTyping: true
       };
       setMessages(prev => [...prev, aiResponse]);
+      setTypingMessageId(aiResponseId);
 
     } catch (error) {
-      console.error('AI API Error:', error);
       
       // Get actual error message from API
       let errorText = 'Sorry, there was an error processing your question. Please try again.';
@@ -242,6 +344,14 @@ function Aitutor() {
     if (e.key === 'Enter' && !isLoading) {
       handleSendMessage();
     }
+  };
+
+  // Clear chat messages
+  const handleClearChat = () => {
+    setMessages([]);
+    setActiveSession(null);
+    localStorage.removeItem(CHAT_STORAGE_KEY);
+    localStorage.removeItem(SESSION_STORAGE_KEY);
   };
 
   return (
@@ -312,6 +422,12 @@ function Aitutor() {
               <div className="chat-header-info">
                 <span className="chat-subject-badge">{activeSession.subject}</span>
               </div>
+              {!isPremium && (
+                <div className={`questions-remaining ${remainingQuestions === 0 ? 'exhausted' : ''}`}>
+                  <span className="remaining-icon" aria-hidden>💬</span>
+                  <span>{remainingQuestions}/{maxQuestions} questions remaining today</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -365,7 +481,22 @@ function Aitutor() {
                           )}
                         </div>
                       )}
-                      <p>{message.text}</p>
+                      <p>
+                        {message.type === 'ai' && message.isTyping && message.id === typingMessageId ? (
+                          <TypingMessage 
+                            text={message.text} 
+                            onComplete={() => {
+                              // Mark typing as complete
+                              setTypingMessageId(null);
+                              setMessages(prev => prev.map(m => 
+                                m.id === message.id ? { ...m, isTyping: false } : m
+                              ));
+                            }}
+                          />
+                        ) : (
+                          message.text
+                        )}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -454,17 +585,23 @@ function Aitutor() {
                 ref={inputRef}
                 type="text"
                 className="ai-input-field"
-                placeholder={activeSession ? "Type your question here..." : "Start a new session to ask questions..."}
+                placeholder={
+                  !activeSession
+                    ? 'Start a new session to ask questions...'
+                    : !canAskQuestion
+                    ? 'Daily limit reached. Upgrade for unlimited access.'
+                    : 'Type your question here...'
+                }
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyPress={handleKeyPress}
-                disabled={isLoading || !activeSession}
+                disabled={isLoading || !activeSession || (!canAskQuestion && !isPremium)}
               />
-              
-              <button 
-                className="ai-send-btn" 
+
+              <button
+                className="ai-send-btn"
                 onClick={() => handleSendMessage()}
-                disabled={isLoading || (!inputText.trim() && !selectedFile) || !activeSession}
+                disabled={isLoading || (!inputText.trim() && !selectedFile) || !activeSession || (!canAskQuestion && !isPremium)}
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M18 2L9 11M18 2L12 18L9 11M18 2L2 8L9 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -472,6 +609,11 @@ function Aitutor() {
               </button>
             </div>
 
+            {!isPremium && remainingQuestions <= 2 && remainingQuestions > 0 && (
+              <p className="limit-warning">
+                Only {remainingQuestions} question{remainingQuestions !== 1 ? 's' : ''} remaining today
+              </p>
+            )}
             <p className="ai-disclaimer">
               AI Tutor can make mistakes. Consider checking important information.
             </p>
@@ -482,34 +624,42 @@ function Aitutor() {
         <div className="ai-info-sidebar">
           <div className="ai-usage-box">
             <div className="usage-row">
-              <div className="usage-label">Chats used:</div>
-              <div className="usage-value">3/5</div>
+              <div className="usage-label">Questions used:</div>
+              <div className="usage-value">{usedQuestions}/{maxQuestions}</div>
             </div>
             <div className="usage-row">
               <div className="usage-reset">Reset in:</div>
-              <div className="usage-value">02:58:00</div>
+              <div className="usage-value">{hoursUntilReset}h</div>
             </div>
           </div>
 
           <div className="relevant-courses-section">
             <h3 className="ai-tutor-title">Relevant Courses</h3>
+            {/* ✅ FIX 4: Remove fake courses - show empty state or API data */}
             <div className="courses-list">
-              {[1, 2, 3, 4].map((item) => (
-                <div key={item} className="course-item-small">
-                  <span className="course-badge-small">Biology</span>
-                  <h4 className="course-title-small">Foundation of UX Strategy</h4>
-                  <p className="course-meta-small">Form 5 • 24 Lessons</p>
-                  <div
-                    className="course-instructor"
-                    onClick={() => navigate('/tutor-profile/Siti%20Sarah')}
-                    role="button"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <img src="/assets/images/icons/Ellipse 2.svg" alt="Instructor" className="course-instructor-avatar" />
-                    <span className="course-instructor-name">Siti Sarah</span>
-                  </div>
-                </div>
-              ))}
+              <div style={{ 
+                padding: '24px', 
+                textAlign: 'center', 
+                color: '#6B7280',
+                fontSize: '14px'
+              }}>
+                <p>Browse courses related to your selected subject</p>
+                <button 
+                  onClick={() => navigate('/student/browse-courses')}
+                  style={{
+                    marginTop: '12px',
+                    padding: '8px 16px',
+                    background: '#9FE870',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#163300',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Browse Courses
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -521,6 +671,14 @@ function Aitutor() {
           onStartSession={handleNewSession}
         />
       )}
+
+      <AiLimitModal
+        isOpen={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        usedQuestions={usedQuestions}
+        maxQuestions={maxQuestions}
+        hoursUntilReset={hoursUntilReset}
+      />
     </>
   );
 }

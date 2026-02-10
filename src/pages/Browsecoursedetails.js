@@ -11,8 +11,7 @@ import { SkeletonCourseDetails } from '../components/ui/LoadingSpinner';
 import { useGetBrowseCourseDetailsQuery, useGetBrowseCoursesQuery } from '../store/api/authApi';
 import { showSuccess, showInfo } from '../utils/toast';
 
-// Static data fallback for sections without API
-import { browseCourseData as staticData } from '../data/Browsecoursedata';
+// No static data imports - using only API data
 
 function BrowseCourseDetails() {
   const { slug } = useParams();
@@ -83,44 +82,34 @@ function BrowseCourseDetails() {
         reviews: course.reviews_count || course.enrolled_count || 128
       },
 
-      // Stats - Use API data if available, else static
+      // Stats - Use ONLY API data, no static fallbacks
       stats: {
-        lessons: course.total_lessons || staticData?.stats?.lessons || '24',
-        quizzes: course.total_quizzes || staticData?.stats?.quizzes || '12',
-        enrolledStudents: course.enrolled_count || staticData?.stats?.enrolledStudents || '1.2k',
-        learningHours: course.duration_hours || staticData?.stats?.learningHours || '18h'
+        lessons: course.total_lessons || 0,
+        quizzes: course.total_quizzes || 0,
+        enrolledStudents: course.enrolled_count || 0,
+        learningHours: course.duration_hours || '0h'
       },
 
-      // About section - with both learningPoints and learningOutcomes for compatibility
+      // About section - No static fallbacks
       about: {
         title: 'About This Course',
-        description: course.description || staticData?.about?.description || 'This course provides comprehensive learning materials.',
-        learningPoints: course.learning_outcomes || staticData?.about?.learningOutcomes || staticData?.about?.learningPoints || [
-          'Understand fundamental concepts',
-          'Apply knowledge in practical scenarios',
-          'Build problem-solving skills',
-          'Prepare for examinations'
-        ],
-        learningOutcomes: course.learning_outcomes || staticData?.about?.learningOutcomes || staticData?.about?.learningPoints || [
-          'Understand fundamental concepts',
-          'Apply knowledge in practical scenarios',
-          'Build problem-solving skills',
-          'Prepare for examinations'
-        ]
+        description: course.description || 'No description available.',
+        learningPoints: course.learning_outcomes || [],
+        learningOutcomes: course.learning_outcomes || []
       },
 
-      // Course Content - Static (no API for this yet)
-      courseContent: course.chapters || staticData?.courseContent || [],
+      // Course Content - Only from API
+      courseContent: course.chapters || [],
 
-      // Upcoming Class - Static
-      upcomingClass: staticData?.upcomingClass || null
+      // Upcoming Class - None (no static data)
+      upcomingClass: null
     };
   }, [apiResponse]);
 
   // ========== RELATED COURSES ==========
   const relatedCourses = useMemo(() => {
     if (!browseCoursesResponse || !courseData) {
-      return staticData?.relatedCourses || [];
+      return []; // No static fallback
     }
 
     const allCourses = browseCoursesResponse?.data?.data || browseCoursesResponse?.data || [];
@@ -142,8 +131,8 @@ function BrowseCourseDetails() {
         lessons: course.level || 'Form 1'
       }));
 
-    // If no related courses found, return static data
-    return related.length > 0 ? related : (staticData?.relatedCourses || []);
+    // Return only API data
+    return related;
   }, [browseCoursesResponse, courseData, slug]);
 
   // ========== HANDLERS ==========

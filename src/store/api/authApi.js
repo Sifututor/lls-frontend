@@ -11,23 +11,45 @@ const cookieOptions = {
   secure: typeof window !== 'undefined' && window.location?.protocol === 'https:',
 };
 
+const baseQueryWithAuth = fetchBaseQuery({
+  baseUrl: BASE_URL,
+  prepareHeaders: (headers, { getState, endpoint }) => {
+    const token = localStorage.getItem('authToken') || Cookies.get('authToken');
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    if (endpoint !== 'updateAccountSettings') {
+      headers.set('Content-Type', 'application/json');
+    }
+    headers.set('Accept', 'application/json');
+    return headers;
+  },
+});
+
+const baseQueryWithReauth = async (args, api, extraOptions) => {
+  const result = await baseQueryWithAuth(args, api, extraOptions);
+  if (result.error && result.error.status === 401) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('tokenExpiry');
+      localStorage.removeItem('userData');
+      localStorage.removeItem('userType');
+      localStorage.removeItem('isPremium');
+    }
+    try {
+      Cookies.remove('authToken', { path: '/' });
+      Cookies.remove('tokenExpiry', { path: '/' });
+      Cookies.remove('userData', { path: '/' });
+      Cookies.remove('userType', { path: '/' });
+      Cookies.remove('isPremium', { path: '/' });
+    } catch (_) {}
+  }
+  return result;
+};
+
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState, endpoint }) => {
-      const token = localStorage.getItem('authToken') || Cookies.get('authToken');
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      // Do NOT set Content-Type for FormData (updateAccountSettings) — browser sets multipart boundary
-      if (endpoint !== 'updateAccountSettings') {
-        headers.set('Content-Type', 'application/json');
-      }
-      headers.set('Accept', 'application/json');
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['Auth', 'User', 'AI', 'Courses', 'Notes', 'LiveClasses', 'VideoQnA', 'Notifications', 'Quiz', 'Tutor'],
   endpoints: (builder) => ({
     // Login
@@ -37,23 +59,43 @@ export const authApi = createApi({
         method: 'POST',
         body: credentials,
       }),
+      // ✅ FIX: After login, fetch fresh user data from /me to ensure profile updates are reflected
+      async onQueryStarted(credentials, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          
+          // Save token first
+          if (data.token) {
+            localStorage.setItem('authToken', data.token);
+            Cookies.set('authToken', data.token, cookieOptions);
+            const expiryTime = new Date().getTime() + (24 * 60 * 60 * 1000);
+            localStorage.setItem('tokenExpiry', expiryTime.toString());
+            Cookies.set('tokenExpiry', expiryTime.toString(), cookieOptions);
+          }
+          
+          // Save user data from login response first
+          if (data.user) {
+            localStorage.setItem('userData', JSON.stringify(data.user));
+            Cookies.set('userData', JSON.stringify(data.user), cookieOptions);
+            const userRole = (data.user.user_type || 'student').toLowerCase();
+            localStorage.setItem('userType', userRole);
+            Cookies.set('userType', userRole, cookieOptions);
+            localStorage.setItem('isPremium', data.user.is_premium ? 'true' : 'false');
+            Cookies.set('isPremium', data.user.is_premium ? 'true' : 'false', cookieOptions);
+          }
+          
+          // Fetch fresh user data from /me after login
+          setTimeout(() => {
+            dispatch(authApi.endpoints.getMe.initiate(undefined, { forceRefetch: true }));
+          }, 100);
+          
+        } catch (error) {
+          // Silent error - login still works, just no fresh data fetch
+        }
+      },
       transformResponse: (response) => {
-        if (response.token) {
-          localStorage.setItem('authToken', response.token);
-          Cookies.set('authToken', response.token, cookieOptions);
-          const expiryTime = new Date().getTime() + (24 * 60 * 60 * 1000);
-          localStorage.setItem('tokenExpiry', expiryTime.toString());
-          Cookies.set('tokenExpiry', expiryTime.toString(), cookieOptions);
-        }
-        if (response.user) {
-          localStorage.setItem('userData', JSON.stringify(response.user));
-          Cookies.set('userData', JSON.stringify(response.user), cookieOptions);
-          const userRole = (response.user.user_type || 'student').toLowerCase();
-          localStorage.setItem('userType', userRole);
-          Cookies.set('userType', userRole, cookieOptions);
-          localStorage.setItem('isPremium', response.user.is_premium ? 'true' : 'false');
-          Cookies.set('isPremium', response.user.is_premium ? 'true' : 'false', cookieOptions);
-        }
+        // Token and user data are now handled in onQueryStarted
+        // Just return the response
         return response;
       },
       invalidatesTags: ['Auth'],
@@ -110,15 +152,28 @@ export const authApi = createApi({
       query: () => '/me',
       providesTags: ['User'],
       transformResponse: (response) => {
-        if (response.user) {
-          localStorage.setItem('userData', JSON.stringify(response.user));
-          Cookies.set('userData', JSON.stringify(response.user), cookieOptions);
-          const userRole = (response.user.user_type || 'student').toLowerCase();
+        if (response.user || response.data) {
+          const userData = response.user || response.data || response;
+          
+          // Save complete user data including profile image
+          const userToSave = {
+            ...userData,
+            profile_image: userData.profile_image || userData.profile?.profile_image || userData.avatar,
+            avatar: userData.profile_image || userData.profile?.profile_image || userData.avatar,
+            name: userData.name || `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+          };
+          
+          localStorage.setItem('userData', JSON.stringify(userToSave));
+          Cookies.set('userData', JSON.stringify(userToSave), cookieOptions);
+          
+          const userRole = (userData.user_type || 'student').toLowerCase();
           localStorage.setItem('userType', userRole);
           Cookies.set('userType', userRole, cookieOptions);
-          localStorage.setItem('isPremium', response.user.is_premium ? 'true' : 'false');
-          Cookies.set('isPremium', response.user.is_premium ? 'true' : 'false', cookieOptions);
+          
+          localStorage.setItem('isPremium', userData.is_premium ? 'true' : 'false');
+          Cookies.set('isPremium', userData.is_premium ? 'true' : 'false', cookieOptions);
         }
+        
         return response;
       },
     }),
@@ -154,6 +209,31 @@ export const authApi = createApi({
           Cookies.set('tokenExpiry', expiryTime.toString(), cookieOptions);
         }
         return response;
+      },
+    }),
+
+    // Get Form Levels for registration (CORRECT ENDPOINT)
+    getForms: builder.query({
+      query: () => '/levels', // CORRECT ENDPOINT
+      transformResponse: (response) => {
+        // API returns { levels: [...] } with 'title' field
+        const levels = response?.levels || response?.data || response || [];
+        
+        // Map 'title' to 'name' for consistency in frontend
+        return levels.map(level => ({
+          id: level.id,
+          name: level.title || level.name, // Use title, fallback to name
+          title: level.title,
+          level: level.level || level.id,
+        }));
+      },
+    }),
+
+    // Get Schools (for registration)
+    getSchools: builder.query({
+      query: () => '/schools',
+      transformResponse: (response) => {
+        return response?.data || response || [];
       },
     }),
 
@@ -231,11 +311,13 @@ export const authApi = createApi({
         method: 'POST',
         body: formData,
       }),
-      invalidatesTags: [{ type: 'User', id: 'ACCOUNT_SETTINGS' }],
+      invalidatesTags: [{ type: 'User', id: 'ACCOUNT_SETTINGS' }, 'User'],
       async onQueryStarted(formData, { dispatch, queryFulfilled }) {
         try {
-          const { data } = await queryFulfilled();
+          const { data } = await queryFulfilled;
+          
           if (data?.data) {
+            // Update getAccountSettings cache
             dispatch(
               authApi.util.updateQueryData('getAccountSettings', undefined, (draft) => {
                 Object.assign(draft, data);
@@ -255,9 +337,14 @@ export const authApi = createApi({
                 }
               })
             );
+            
+            // Fetch fresh user data from /me after profile update
+            setTimeout(() => {
+              dispatch(authApi.endpoints.getMe.initiate(undefined, { forceRefetch: true }));
+            }, 100);
           }
-        } catch {
-          // Rollback handled by RTK Query; cache stays unchanged on error
+        } catch (error) {
+          // Silent error - profile update still works
         }
       },
     }),
@@ -503,6 +590,32 @@ export const authApi = createApi({
       providesTags: (result, error, quizId) => [{ type: 'Quiz', id: quizId }],
     }),
 
+    startQuizAttempt: builder.mutation({
+      query: (quizId) => ({
+        url: `/quizzes/${quizId}/start`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Quiz'],
+    }),
+
+    getQuizQuestions: builder.query({
+      query: (attemptId) => `/quiz-attempts/${attemptId}/questions`,
+    }),
+
+    submitQuizAttempt: builder.mutation({
+      query: ({ attemptId, answers }) => ({
+        url: `/quiz-attempts/${attemptId}/submit`,
+        method: 'POST',
+        body: { answers },
+      }),
+      invalidatesTags: ['Quiz'],
+    }),
+
+    getQuizAttempts: builder.query({
+      query: (quizId) => `/quizzes/${quizId}/attempts`,
+      providesTags: (result, error, quizId) => [{ type: 'Quiz', id: quizId }],
+    }),
+
     // ========== STUDENT DASHBOARD ==========
     getStudentDashboardAnalytics: builder.query({
       query: () => '/student/dashboard-analytics',
@@ -541,7 +654,7 @@ export const authApi = createApi({
 export const isTokenExpired = () => {
   const expiry = localStorage.getItem('tokenExpiry') || Cookies.get('tokenExpiry');
   if (!expiry) return true;
-  return new Date().getTime() > parseInt(expiry);
+  return new Date().getTime() > parseInt(expiry, 10);
 };
 
 export const getUserType = () => {
@@ -559,6 +672,8 @@ export const {
   useGetMeQuery,
   useLogoutMutation,
   useRefreshTokenMutation,
+  useGetFormsQuery,
+  useGetSchoolsQuery,
   useGetSubjectsQuery,
   useAskAIMutation,
   // Account Settings
@@ -596,6 +711,10 @@ export const {
   useGetQuestionRepliesQuery,
   // Quiz
   useGetQuizOverviewQuery,
+  useStartQuizAttemptMutation,
+  useGetQuizQuestionsQuery,
+  useSubmitQuizAttemptMutation,
+  useGetQuizAttemptsQuery,
   // Student Dashboard
   useGetStudentDashboardAnalyticsQuery,
   // Tutor

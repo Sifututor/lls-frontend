@@ -209,6 +209,12 @@ function TopNavbar({ title, breadcrumb }) {
     setProfileOpen(false);
   };
 
+  // Truncate name function for long names
+  const truncateName = (name, maxLength = 15) => {
+    if (!name) return '';
+    return name.length > maxLength ? name.substring(0, maxLength) + '...' : name;
+  };
+
   return (
     <header className={`top-navbar ${collapsed ? "collapsed" : ""}`}>
       <button
@@ -305,7 +311,7 @@ function TopNavbar({ title, breadcrumb }) {
                         <p>SPM Revision: Additional Mathematics</p>
                         <div className="notification-time">
                           <span>10 min ago</span>
-                          {isPremium && (
+                          {!isPremium && (
                             <span className="premium-badge">
                               <img
                                 src="/assets/images/icons/120-setting.svg"
@@ -351,7 +357,7 @@ function TopNavbar({ title, breadcrumb }) {
             }}
           >
             <div className="user-info">
-              <div className="user-name">{userInfo.name}</div>
+              <div className="user-name">{truncateName(userInfo.name, 15)}</div>
               <div className="user-meta">{getUserMeta()}</div>
             </div>
             <img

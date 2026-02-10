@@ -1,9 +1,10 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-function QuizResultScreen({ results, passed, courseSlug }) {
+function QuizResultScreen({ results, passed, courseSlug, quizId: quizIdProp }) {
   const navigate = useNavigate();
-  const { id: quizId } = useParams();
+  const { id: quizIdFromParams } = useParams();
+  const quizId = quizIdProp ?? quizIdFromParams;
 
   return (
     <div className="result-section">
@@ -80,9 +81,11 @@ function QuizResultScreen({ results, passed, courseSlug }) {
           )}
         </div>
         
-        <button className="btn-check-answers" onClick={() => navigate(`/student/quiz/${quizId}/review`)}>
-          Check Answers →
-        </button>
+        {quizId && (
+          <button className="btn-check-answers" onClick={() => navigate(`/student/quiz/${quizId}/review`)}>
+            Check Answers →
+          </button>
+        )}
         
         <div className="result-actions">
           <button className="btn-close" onClick={() => window.close()}>Close</button>

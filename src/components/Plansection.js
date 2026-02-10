@@ -1,6 +1,34 @@
 import React from 'react';
 
-function Plansection({ plansData, onUpgrade }) {
+function Plansection({ plansData = {}, onUpgrade }) {
+  // ✅ FIX: Safe defaults for plans data
+  const defaultPlansData = {
+    free: {
+      name: 'Free',
+      tagline: 'Get started with basic features',
+      features: [
+        { title: 'Unlimited Course Enrollment', description: 'Access all courses' },
+        { title: 'Video Streaming (1080p)', description: 'High quality videos' },
+        { title: 'AI Tutor (5 questions/day)', description: 'Get AI help' },
+        { title: 'Quiz (3 attempts/day)', description: 'Test your knowledge' }
+      ]
+    },
+    premium: {
+      name: 'Premium',
+      tagline: 'Unlock all premium features',
+      features: [
+        { title: 'Unlimited AI Tutor', description: 'Ask unlimited questions' },
+        { title: 'Unlimited Quiz Attempts', description: 'Practice as much as you want' },
+        { title: 'Video Speed Control', description: '0.5x to 2x playback speed' },
+        { title: 'Bookmarks & Notes', description: 'Save important moments' },
+        { title: 'Download Materials', description: 'Access PDFs offline' },
+        { title: 'Post Q&A', description: 'Ask questions in videos' }
+      ]
+    }
+  };
+
+  const plans = plansData?.free ? plansData : defaultPlansData;
+
   return (
     <div className="profile-plans-wrapper">
       <h2 className="profile-section-heading">Choose Your Plan</h2>
@@ -9,16 +37,16 @@ function Plansection({ plansData, onUpgrade }) {
         {/* Free Plan */}
         <div className="profile-plan-card profile-plan-free">
           <div className="profile-plan-header-section">
-            <h3 className="profile-plan-name">{plansData.free.name}</h3>
-            <p className="profile-plan-tagline">{plansData.free.tagline}</p>
+            <h3 className="profile-plan-name">{plans.free.name}</h3>
+            <p className="profile-plan-tagline">{plans.free.tagline}</p>
           </div>
 
           <h4 className="profile-features-heading">What's Included</h4>
 
           <div className="profile-features-container">
-            {plansData.free.features.map((feature, index) => (
+            {plans.free.features.map((feature, index) => (
               <div key={index} className="profile-feature-item">
-                          <img src="/assets/images/icons/022-check.svg" alt="check" class="check"></img>
+                <img src="/assets/images/icons/022-check.svg" alt="check" className="check" />
                 <div className="profile-feature-content">
                   <p className="profile-feature-title">{feature.title}</p>
                   <p className="profile-feature-desc">{feature.description}</p>
@@ -34,8 +62,8 @@ function Plansection({ plansData, onUpgrade }) {
         <div className="profile-plan-card profile-plan-premium">
           <div className="profile-plan-header-premium-section">
             <div>
-              <h3 className="profile-plan-name-premium">{plansData.premium.name}</h3>
-              <p className="profile-plan-tagline-premium">{plansData.premium.tagline}</p>
+              <h3 className="profile-plan-name-premium">{plans.premium.name}</h3>
+              <p className="profile-plan-tagline-premium">{plans.premium.tagline}</p>
             </div>
             <span className="profile-badge-recommended">Recommended</span>
           </div>
@@ -43,9 +71,9 @@ function Plansection({ plansData, onUpgrade }) {
           <h4 className="profile-features-heading-premium">Everything in Free, Plus</h4>
 
           <div className="profile-features-container">
-            {plansData.premium.features.map((feature, index) => (
+            {plans.premium.features.map((feature, index) => (
               <div key={index} className="profile-feature-item">
-                <img src="/assets/images/icons/022-check.svg" alt="check" class="check"></img>
+                <img src="/assets/images/icons/022-check.svg" alt="check" className="check" />
                 <div className="profile-feature-content">
                   <p className="profile-feature-title">{feature.title}</p>
                   <p className="profile-feature-desc">{feature.description}</p>
@@ -55,7 +83,7 @@ function Plansection({ plansData, onUpgrade }) {
           </div>
 
           <button className="profile-btn-upgrade-plan" onClick={onUpgrade}>
-            <span className="profile-upgrade-icon"><img src="/assets/images/icons/go-premime.svg" alt="check" class="check"></img></span>
+            <span className="profile-upgrade-icon"><img src="/assets/images/icons/go-premime.svg" alt="check" className="check" /></span>
             <span>Upgrade to Premium</span>
           </button>
         </div>

@@ -35,7 +35,7 @@ function Dataprivacycard({ onDownload }) {
         </div>
 
         <p className="profile-privacy-note">
-          Please refer <strong>Terms & Conditions</strong> or <strong>Privacy Policy</strong>
+          Please refer <a href="/terms" target="_blank" rel="noopener noreferrer" className="link-terms">Terms & Conditions</a> or <a href="/privacy" target="_blank" rel="noopener noreferrer" className="link-terms">Privacy Policy</a>
         </p>
       </div>
 

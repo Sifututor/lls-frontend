@@ -25,8 +25,9 @@ button.btn-upgrade-small {
     left: 0;
     top: 0;
     height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden; /* Changed from overflow-y: auto */
+    display: flex;
+    flex-direction: column;
     z-index: 1030;
     -webkit-overflow-scrolling: touch;
     transition: all 0.3s ease;
@@ -34,6 +35,10 @@ button.btn-upgrade-small {
 
 .sidebar-inner {
     padding: 24px 20px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 20px;
 }
 
 /* Logo */
@@ -53,6 +58,20 @@ button.btn-upgrade-small {
 /* Sidebar Navigation */
 .sidebar-section {
     margin-bottom: 32px;
+}
+
+/* Sidebar Upgrade Section - Fixed at bottom */
+.sidebar-upgrade-section {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    border-top: 1px solid #E5E7EB;
+    background: inherit;
+    margin-top: auto;
+}
+
+/* Ensure nav doesn't overlap with upgrade section */
+.nav-list {
+    padding-bottom: 20px;
 }
 
 .section-label {
@@ -429,6 +448,10 @@ a.dashboard-link.inner {
     flex-shrink: 0;
 }
 
+.empty-icon {
+  display: flex;
+  justify-content: center;
+}
 
 
 /* ===== DASHBOARD CONTENT (Responsive padding) ===== */
@@ -727,6 +750,9 @@ section.content-section {
     font-weight: 600;
     color: #163300;
     white-space: nowrap;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .user-meta {

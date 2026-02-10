@@ -27,7 +27,7 @@ function Studentemailcard({ onSubmit }) {
       </div>
 
       <div className="profile-info-box">
-        <img src="/assets/images/icons/info.svg" alt="Alex Student" class="info"></img>
+        <img src="/assets/images/icons/info.svg" alt="Alex Student" className="info" />
         <p className="profile-info-text">
           If an email address is provided, an activation email will be sent to allow you to set your password and access your account independently.
         </p>

@@ -107,7 +107,6 @@ function Editprofile() {
         showError(result.message || 'Failed to update password');
       }
     } catch (err) {
-      console.error('Error updating password:', err);
       showError(err?.data?.message || 'Failed to update password');
     }
   };
@@ -131,9 +130,6 @@ function Editprofile() {
 
       const result = await updateAccountSettings(formDataToSend).unwrap();
 
-      // DEBUG: Check what the API actually returns
-      console.log('[EditProfile] Full API result:', JSON.stringify(result, null, 2));
-      console.log('[EditProfile] result.data:', JSON.stringify(result.data, null, 2));
 
       if (result.status) {
         // Update Redux state — updateUserProfile handles all response formats
@@ -148,7 +144,6 @@ function Editprofile() {
         showError(result.message || 'Failed to save changes');
       }
     } catch (err) {
-      console.error('[EditProfile] Save error:', err);
       showError(err?.data?.message || 'Update failed');
     }
   };

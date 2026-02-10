@@ -1,5 +1,9 @@
 // src/components/CourseTabs.js
 import React, { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
+import { getFullFileUrl } from '../utils/fileUrl';
+import { showError } from '../utils/toast';
+import { usePremium } from '../hooks/usePremium';
 
 function CourseTabs({ 
   currentLesson, 
@@ -9,6 +13,8 @@ function CourseTabs({
   bookmarkTimestamp,
   onBookmarkHandled
 }) {
+  // ✅ Premium check for notes and downloads
+  const { isPremium } = usePremium();
   const [activeTab, setActiveTab] = useState('lesson');
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [notes, setNotes] = useState(notesData);
@@ -40,6 +46,12 @@ function CourseTabs({
   }, [bookmarkTimestamp, onBookmarkHandled]);
 
   const handleAddNote = () => {
+    // ✅ Premium gate for notes/bookmarks
+    if (!isPremium) {
+      toast.warning('Notes and bookmarks are a Premium feature. Upgrade to access!');
+      return;
+    }
+    
     setShowNoteInput(true);
     setTimeout(() => {
       if (noteInputRef.current) {
@@ -81,10 +93,18 @@ function CourseTabs({
   };
 
   const handleDownload = (download) => {
-    if (download.url) {
-      window.open(download.url, '_blank');
-    } else if (download.fullName) {
-      window.open(download.fullName, '_blank');
+    // ✅ Premium gate for downloads
+    if (!isPremium) {
+      toast.warning('Downloads are a Premium feature. Upgrade to access course materials!');
+      return;
+    }
+    
+    const rawPath = download.url || download.path || download.file_path || download.fullName || download.file;
+    const fullUrl = getFullFileUrl(rawPath);
+    if (fullUrl) {
+      window.open(fullUrl, '_blank');
+    } else {
+      showError('Download link not available');
     }
   };
 
@@ -142,7 +162,12 @@ function CourseTabs({
 
           {/* Add Note Section */}
           <div className="add-note-section">
-            <button className="btn-add-note" onClick={handleAddNote}>
+            <button 
+              className="btn-add-note" 
+              onClick={handleAddNote}
+              title={!isPremium ? 'Premium feature' : ''}
+            >
+              {!isPremium && '🔒 '}
               Add Note at <span id="currentTimestamp">{currentTimestamp}</span>
             </button>
 
@@ -221,23 +246,30 @@ function CourseTabs({
         <div className={`tab-content ${activeTab === 'downloads' ? 'active' : ''}`}>
           <div className="downloads-list">
             {downloadsData.length > 0 ? (
-              downloadsData.map((download) => (
-                <div key={download.id} className="download-item">
+              downloadsData.map((download, index) => (
+                <div key={download.id || index} className="download-item">
                   <div className="download-info">
-                    <div className="download-name">{download.name}</div>
-                    <div className="download-size">{download.size}</div>
+                    <div className="download-name" title={download.displayName || download.name}>
+                      {download.displayName || download.name}
+                    </div>
+                    <div className="download-size">
+                      {download.chapterTitle ? `PDF • ${download.chapterTitle}` : download.size}
+                    </div>
                   </div>
                   <button
                     className="btn-download"
                     onClick={() => handleDownload(download)}
+                    title={!isPremium ? 'Premium feature' : `Download ${download.displayName || download.name}`}
+                    style={!isPremium ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
                   >
+                    {!isPremium && '🔒 '}
                     <img src="/assets/images/icons/download-button.png" alt="Download" />
                   </button>
                 </div>
               ))
             ) : (
               <div className="empty-downloads">
-                <p>No downloadable materials for this lesson.</p>
+                <p>No downloadable materials for this course.</p>
               </div>
             )}
           </div>

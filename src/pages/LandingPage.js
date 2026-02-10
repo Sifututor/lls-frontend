@@ -68,7 +68,13 @@ function LandingPage() {
 
         {/* Footer */}
         <div className="auth-footer">
-          <p>Are you a tutor? <a href="#tutor-portal">Go to Tutor Portal</a></p>
+          <p>Are you a tutor? <button type="button" className="link-btn" onClick={() => navigate('/tutor/login')}>Go to Tutor Portal</button></p>
+          <div className="footer-links">
+            <a href="/terms" target="_blank" rel="noopener noreferrer">Terms & Conditions</a>
+            <span>•</span>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+          </div>
+          <p className="footer-copy">© 2026 Learnest. All rights reserved.</p>
         </div>
       </div>
     </div>

@@ -8,7 +8,6 @@ import Plansection from '../components/Plansection';
 import Parentaccesscard from '../components/Parentaccesscard';
 import Dataprivacycard from '../components/Dataprivacycard';
 import { selectCurrentUser } from '../store/slices/authSlice';
-import { profileData as staticProfileData } from '../data/Profiledata';
 
 const DEFAULT_AVATAR = '/assets/images/icons/Ellipse 3.svg';
 
@@ -21,16 +20,17 @@ function Profile() {
       name: currentUser?.profile
         ? `${currentUser.profile.first_name || ''} ${currentUser.profile.last_name || ''}`.trim() || currentUser?.name
         : currentUser?.name || 'Student',
-      email: (currentUser?.profile?.email ?? currentUser?.email) || 'user@example.com',
+      email: (currentUser?.profile?.email ?? currentUser?.email) || '',
       avatar: currentUser?.profile?.profile_image || currentUser?.avatar || DEFAULT_AVATAR,
       bio: currentUser?.profile?.bio || '',
-      location: currentUser?.profile?.country || 'Malaysia',
+      location: currentUser?.profile?.country || '',
       contactEmail: currentUser?.profile?.email || currentUser?.email || '',
       timezone: currentUser?.profile?.timezone || '',
       isPremium: currentUser?.is_premium === true || currentUser?.is_premium === '1',
     },
-    plans: staticProfileData.plans,
-    parentAccessLink: staticProfileData.parentAccessLink,
+    // Remove static plans data - will be from API or empty
+    plans: null,
+    parentAccessLink: null,
   };
 
   const handleEditProfile = () => {

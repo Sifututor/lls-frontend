@@ -5,15 +5,9 @@ import VideoPlayer from '../components/VideoPlayer';
 import CourseTabs from '../components/CourseTabs';
 import DiscussionSection from '../components/DiscussionSection';
 import AITutorBox from '../components/AITutorBox';
+import EmptyState from '../components/EmptyState';
 import {
-  liveClassData,
-  currentLesson,
-  notesData,
-  downloadsData,
-  commentsData,
-  upcomingClassData,
-  recordedClassData,
-  aiChatData
+  liveClassData
 } from '../data/Liveclassdetailsdata';
 
 function Liveclassdetails() {
@@ -33,23 +27,21 @@ function Liveclassdetails() {
             {/* Video Player */}
             <VideoPlayer video={liveClassData.video} />
 
-            {/* Tabs (Lesson, Notes, Downloads) */}
+            {/* Tabs (Lesson, Notes, Downloads) - No static data */}
             <CourseTabs
-              currentLesson={currentLesson}
-              notesData={notesData}
-              downloadsData={downloadsData}
+              currentLesson={null}
+              notesData={[]}
+              downloadsData={[]}
             />
 
-            {/* Discussion Section */}
-            <DiscussionSection commentsData={commentsData} />
+            {/* Discussion Section - No static data */}
+            <DiscussionSection commentsData={[]} />
           </div>
 
           {/* Right Sidebar - No Course Content Accordion */}
           <div className="course-right-sidebar">
-            {/* AI Tutor Box */}
-            <AITutorBox aiChatData={aiChatData} />
-
-         
+            {/* AI Tutor Box - No static chat data */}
+            <AITutorBox />
           </div>
         </div>
     </>

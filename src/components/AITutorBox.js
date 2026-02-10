@@ -1,31 +1,55 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { usePremium } from '../hooks/usePremium';
+import React, { useState, useRef, useEffect } from 'react';
+import { useAiLimit } from '../hooks/useAiLimit';
+import AiLimitModal from './AiLimitModal';
 
-function AITutorBox({ aiChatData }) {
-  const navigate = useNavigate();
-  const { isPremium } = usePremium();
-  const [messages, setMessages] = useState(aiChatData.messages);
+function AITutorBox({ aiChatData = {} }) {
+  // ✅ FIX: Safely access aiChatData with fallbacks
+  const [messages, setMessages] = useState(aiChatData?.messages || []);
   const [inputText, setInputText] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const fileInputRef = useRef(null);
-  const [questionsUsed, setQuestionsUsed] = useState(0);
-  const maxFreeQuestions = 5;
+  const [showLimitModal, setShowLimitModal] = useState(false);
   
-  const canAskQuestion = isPremium || questionsUsed < maxFreeQuestions;
+  // Default suggestions if not provided
+  const suggestions = aiChatData?.suggestions || [
+    'Explain this concept',
+    'Give me an example',
+    'How do I solve this?'
+  ];
+
+  const {
+    canAskQuestion,
+    usedQuestions,
+    maxQuestions,
+    hoursUntilReset,
+    recordQuestion,
+    isPremium,
+  } = useAiLimit();
+
+  useEffect(() => {
+    if (!isPremium && usedQuestions >= maxQuestions) {
+      setShowLimitModal(true);
+    }
+  }, [usedQuestions, maxQuestions, isPremium]);
 
   const handleSendMessage = () => {
-    if (!canAskQuestion) {
-      navigate('/student/subscription');
+    if (!isPremium && !canAskQuestion) {
+      setShowLimitModal(true);
       return;
     }
-    
-    if (inputText.trim() || selectedFile) {
-      if (!isPremium) {
-        setQuestionsUsed(prev => prev + 1);
+
+    if (!inputText.trim() && !selectedFile) return;
+
+    if (!isPremium) {
+      const recorded = recordQuestion();
+      if (!recorded) {
+        setShowLimitModal(true);
+        return;
       }
-      
+    }
+
+    if (inputText.trim() || selectedFile) {
       const newMessage = {
         id: messages.length + 1,
         type: 'user',
@@ -103,7 +127,7 @@ function AITutorBox({ aiChatData }) {
       <div className="ai-tutor-suggestions">
         <div className="suggestion-title">Suggestions</div>
         <div className="suggestion-pills">
-          {aiChatData.suggestions.map((suggestion, index) => (
+          {suggestions.map((suggestion, index) => (
             <button
               key={index}
               className="suggestion-pill"
@@ -146,7 +170,7 @@ function AITutorBox({ aiChatData }) {
         <input
           type="text"
           className="ai-tutor-input"
-          placeholder={canAskQuestion ? "Type your question here..." : "Upgrade for more questions"}
+          placeholder={canAskQuestion ? "Type your question here..." : "Daily limit reached. Upgrade for unlimited access."}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
@@ -178,28 +202,36 @@ function AITutorBox({ aiChatData }) {
 
       {/* Show quota for free users */}
       {!isPremium && (
-        <div className="ai-quota" style={{ 
-          padding: '12px', 
-          background: '#FEF3C7', 
-          borderRadius: '8px', 
+        <div className="ai-quota" style={{
+          padding: '12px',
+          background: '#FEF3C7',
+          borderRadius: '8px',
           marginTop: '12px',
           fontSize: '14px',
           color: '#92400E'
         }}>
-          {questionsUsed}/{maxFreeQuestions} questions today
-          {questionsUsed >= maxFreeQuestions && (
+          {usedQuestions}/{maxQuestions} questions today
+          {usedQuestions >= maxQuestions && (
             <span style={{ display: 'block', marginTop: '4px' }}>
-              Daily limit reached. <a href="/student/subscription" onClick={(e) => { e.preventDefault(); navigate('/student/subscription'); }} style={{ color: '#10B981', textDecoration: 'underline' }}>Upgrade</a> for unlimited.
+              Daily limit reached. <button type="button" onClick={() => setShowLimitModal(true)} style={{ background: 'none', border: 'none', color: '#10B981', textDecoration: 'underline', cursor: 'pointer', padding: 0, font: 'inherit' }}>Upgrade</button> for unlimited.
             </span>
           )}
         </div>
       )}
-      
+
       {isPremium && (
         <p className="ai-tutor-footer">
           Unlimited questions (Premium)
         </p>
       )}
+
+      <AiLimitModal
+        isOpen={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        usedQuestions={usedQuestions}
+        maxQuestions={maxQuestions}
+        hoursUntilReset={hoursUntilReset}
+      />
     </div>
   );
 }

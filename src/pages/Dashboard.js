@@ -14,20 +14,22 @@ import {
 } from '../store/api/authApi';
 import { SectionLoader, Spinner } from '../components/ui/LoadingSpinner';
 import { 
-  statsData as defaultStatsData, 
-  qaData,
-  achievementBadges 
+  statsData as defaultStatsData
 } from '../data/dashboardData';
+import EmptyState from '../components/EmptyState';
+import { usePremium } from '../hooks/usePremium';
 import { showInfo } from '../utils/toast';
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { isPremium } = usePremium();
   
   // API Calls
   const { data: apiResponse, isLoading: coursesLoading } = useGetMyCoursesQuery({});
   const { data: liveClassesResponse, isLoading: liveClassesLoading } = useGetBrowseLiveClassesQuery({});
   const { data: analyticsData, isLoading: analyticsLoading } = useGetStudentDashboardAnalyticsQuery();
   const [joinLiveClass] = useJoinLiveClassMutation();
+
 
   // Transform API analytics to stats - only use API data, no fallback to static
   const getStatsData = () => {
@@ -179,6 +181,7 @@ function Dashboard() {
 
   const continueLearningCourses = getContinueLearningCourses();
 
+
   // Get user name
   const getUserName = () => {
     try {
@@ -201,7 +204,6 @@ function Dashboard() {
         window.open(result.meeting_url, '_blank');
       }
     } catch (error) {
-      console.error('Failed to join class:', error);
       navigate(`/student/live-class/${classId}`);
     }
   };
@@ -237,11 +239,10 @@ function Dashboard() {
                 </p>
               </div>
               <div className="achievement-badges">
-                {achievementBadges.map((badge) => (
-                  <div key={badge.id} className="badge-item">
-                    <img src={badge.icon} alt={badge.alt} className="badge-icon" />
-                  </div>
-                ))}
+                {/* No static badges - show empty state or remove section */}
+                <p style={{ fontSize: '14px', color: '#6B7280', textAlign: 'center', padding: '20px' }}>
+                  Complete courses and quizzes to earn badges
+                </p>
               </div>
             </div>
             <div className="stats-grid">
@@ -283,10 +284,12 @@ function Dashboard() {
             <div className="section-header stats">
               <h3 className="section-title flex">
                 Live Classes
-                <span className="premium-tag">
-                  <img src="/assets/images/icons/120-setting.svg" alt="Premium" />
-                  Premium
-                </span>
+                {!isPremium && (
+                  <span className="premium-tag">
+                    <img src="/assets/images/icons/120-setting.svg" alt="Premium" />
+                    Premium
+                  </span>
+                )}
               </h3>
               <button onClick={handleViewAllClasses} className="view-all" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                 View All Classes
@@ -350,19 +353,25 @@ function Dashboard() {
             <div className="section-header stats">
               <h3 className="section-title flex">
                 Recent Video Q&A
-                <span className="premium-tag">
-                  <img src="/assets/images/icons/120-setting.svg" alt="Premium" />
-                  Premium
-                </span>
+                {!isPremium && (
+                  <span className="premium-tag">
+                    <img src="/assets/images/icons/120-setting.svg" alt="Premium" />
+                    Premium
+                  </span>
+                )}
               </h3>
               <button onClick={handleViewAllQA} className="view-all" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                 View All
               </button>
             </div>
             <div className="qa-list">
-              {qaData.map((qa) => (
-                <QAItem key={qa.id} qa={qa} onClick={() => handleViewQA(qa.slug)} />
-              ))}
+              {/* No static Q&A data - show empty state */}
+              <EmptyState
+                title="No recent Q&A"
+                description="Ask questions in your course videos to get help from tutors"
+                actionText="Browse Courses"
+                actionLink="/student/browse-courses"
+              />
             </div>
           </section>
     </div>

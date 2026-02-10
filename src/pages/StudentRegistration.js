@@ -1,15 +1,19 @@
 // src/pages/StudentRegistration.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useRegisterMutation } from '../store/api/authApi';
+import { useRegisterMutation, useGetFormsQuery } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import { useDispatch } from 'react-redux';
+import { validatePassword } from '../utils/passwordValidation';
 import '../assets/css/auth.css';
 
 function StudentRegistration() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [register, { isLoading }] = useRegisterMutation();
+  
+  // Fetch forms dynamically from API
+  const { data: formsData, isLoading: formsLoading } = useGetFormsQuery();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -24,7 +28,8 @@ function StudentRegistration() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [pdpaConsent, setPdpaConsent] = useState(false);
 
-  const formLevels = ['Form 1', 'Form 2', 'Form 3', 'Form 4', 'Form 5'];
+  // Dynamic form levels from API (with fallback)
+  const forms = formsData || [];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,14 +50,17 @@ function StudentRegistration() {
       return;
     }
 
-    if (formData.password !== formData.password_confirmation) {
-      setError('Passwords do not match');
-      return;
+    // Validate password BEFORE proceeding
+    const passwordValidation = validatePassword(formData.password);
+    
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.errors.join(', '));
+      return; // STOP HERE - don't proceed
     }
 
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
+    if (formData.password !== formData.password_confirmation) {
+      setError('Passwords do not match');
+      return; // STOP HERE
     }
 
     if (!pdpaConsent) {
@@ -167,9 +175,22 @@ function StudentRegistration() {
                   disabled={isLoading}
                   style={{ width: '100%', padding: '12px', border: '1px solid #D1D5DB', borderRadius: '8px' }}
                 >
-                  <option value="">Select Form Level</option>
-                  {formLevels.map(level => (
-                    <option key={level} value={level}>{level}</option>
+                  <option value="">
+                    {formsLoading ? 'Loading form levels...' : 'Select Form Level'}
+                  </option>
+                  {forms.length === 0 && !formsLoading && (
+                    <>
+                      <option value="Form 1">Form 1</option>
+                      <option value="Form 2">Form 2</option>
+                      <option value="Form 3">Form 3</option>
+                      <option value="Form 4">Form 4</option>
+                      <option value="Form 5">Form 5</option>
+                    </>
+                  )}
+                  {forms.map((form) => (
+                    <option key={form.id} value={form.name || form.title || `Form ${form.level}`}>
+                      {form.name || form.title || `Form ${form.level}`}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -247,7 +268,7 @@ function StudentRegistration() {
                     disabled={isLoading}
                     required
                   />
-                  <span>I agree to the <a href="/terms-of-service" target="_blank">Terms of Service</a> and <a href="/privacy-policy" target="_blank">Privacy Policy</a></span>
+                  <span>I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="link-terms">Terms & Conditions</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="link-terms">Privacy Policy</a></span>
                 </label>
               </div>
 

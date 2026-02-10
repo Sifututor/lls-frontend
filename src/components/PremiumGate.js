@@ -30,7 +30,6 @@ function PremiumGate({ children, feature, showUpgradeButton = true }) {
       border: '1px solid #FCD34D',
       margin: '16px 0'
     }}>
-      <span className="lock-icon" style={{ fontSize: '24px', marginRight: '8px' }}>🔒</span>
       <span className="lock-message" style={{ color: '#92400E', marginRight: '12px' }}>
         {featureMessages[feature] || 'Premium feature'}
       </span>

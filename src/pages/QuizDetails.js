@@ -1,9 +1,11 @@
 // src/pages/QuizDetails.js
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { SectionLoader } from '../components/ui/LoadingSpinner';
-import { useGetQuizOverviewQuery } from '../store/api/authApi';
+import { useGetQuizOverviewQuery, useStartQuizAttemptMutation } from '../store/api/authApi';
 import { getTutorProfilePath } from '../utils/tutorProfileUtils';
+import { useQuizLimit } from '../hooks/useQuizLimit';
 
 function QuizDetails() {
   const navigate = useNavigate();
@@ -12,26 +14,39 @@ function QuizDetails() {
 
   // Fetch quiz data from API
   const { data: quizData, isLoading, error } = useGetQuizOverviewQuery(id);
+  const [startQuiz, { isLoading: isStarting }] = useStartQuizAttemptMutation();
+  
+  // ✅ NEW: Quiz daily limit hook (3 attempts/day for free users)
+  const {
+    canStartAttempt,
+    usedAttempts,
+    maxAttempts,
+    remainingAttempts,
+    hoursUntilReset,
+    recordAttempt,
+    isPremium
+  } = useQuizLimit(id);
 
-  // Static data for sections not in API
+  // ⚠️ BACKEND TODO: API should provide these fields in quiz overview response
+  // For now, using fallback data structure (backend team needs to add these fields)
   const staticData = {
-    badges: ['Form 5', 'Computer Science', 'Data Structures & Algorithm Optimization', 'Chapter 2: React Performance'],
-    instructor: {
-      name: 'Puan Siti Farah',
+    // These should come from API: quiz.badges or quiz.course_info
+    badges: quizData?.quiz?.badges || [],
+    
+    // Should come from API: quiz.instructor
+    instructor: quizData?.quiz?.instructor || {
+      name: 'Instructor',
       avatar: '/assets/images/icons/Ellipse 2.svg'
     },
-    description: 'This test evaluates your understanding of basic and advanced sorting algorithms including implementation, complexity analysis, and practical applications.',
-    topics: [
-      'Bubble Sort',
-      'Selection Sort',
-      'Insertion Sort',
-      'Merge Sort',
-      'Quick Sort',
-      'Time & Space Complexity',
-      'Stable vs Unstable Sorting',
-      'Best, Worst, Average Case Analysis'
-    ],
-    instructions: {
+    
+    // Should come from API: quiz.description
+    description: quizData?.quiz?.description || 'Complete this quiz to test your understanding of the topic.',
+    
+    // Should come from API: quiz.topics_covered
+    topics: quizData?.quiz?.topics_covered || quizData?.quiz?.topics || [],
+    
+    // Should come from API: quiz.instructions
+    instructions: quizData?.quiz?.instructions || {
       general: [
         'You must complete the test in one sitting',
         'Timer starts immediately after you click Start Test',
@@ -47,7 +62,9 @@ function QuizDetails() {
         'Score is shown immediately after submission'
       ]
     },
-    requirements: {
+    
+    // Should come from API: quiz.requirements
+    requirements: quizData?.quiz?.requirements || {
       device: [
         { icon: '/assets/images/icons/035-desktop.svg', text: 'Use a laptop or desktop for best experience' },
         { icon: '/assets/images/icons/003-chart.svg', text: 'Stable internet connection required' }
@@ -59,7 +76,9 @@ function QuizDetails() {
         { icon: '/assets/images/icons/022-check.svg', text: 'Pen and paper for rough work', allowed: true }
       ]
     },
-    questionTypes: [
+    
+    // Should come from API: quiz.question_types
+    questionTypes: quizData?.quiz?.question_types || [
       {
         type: 'MCQ',
         icon: '/assets/images/icons/MCQ.png',
@@ -104,7 +123,9 @@ function QuizDetails() {
       { 
         icon: '/assets/images/icons/060-favorite.svg', 
         label: 'Attempts', 
-        value: attempts?.remaining_today || `${quiz.attempts_allowed} attempts`, 
+        value: isPremium 
+          ? 'Unlimited' 
+          : `${remainingAttempts}/${maxAttempts} remaining today`, 
         size: 'short' 
       },
       { 
@@ -116,9 +137,45 @@ function QuizDetails() {
     ];
   };
 
-  const handleStartQuiz = () => {
-    if (agreedToRules) {
-      navigate(`/student/quiz/${id}/take`);
+  const handleStartQuiz = async () => {
+    if (!agreedToRules) {
+      toast.warning('Please agree to the test instructions and rules');
+      return;
+    }
+    
+    // ✅ CHECK QUIZ LIMIT (Free users: 3 attempts/day)
+    if (!canStartAttempt) {
+      toast.error(
+        `You have used all ${maxAttempts} quiz attempts for today. ` +
+        `Your limit will reset in ${hoursUntilReset} hour${hoursUntilReset !== 1 ? 's' : ''}. ` +
+        `Upgrade to Premium for unlimited attempts!`
+      );
+      return;
+    }
+    
+    try {
+      const result = await startQuiz(id).unwrap();
+      
+      // ✅ RECORD ATTEMPT (increments free user count)
+      const recorded = recordAttempt();
+      if (!recorded && !isPremium) {
+        toast.error('Failed to record quiz attempt');
+        return;
+      }
+      
+      const attemptId = result.attempt_id ?? result.attemptId;
+      const timeLimit = result.time_limit ?? result.timeLimit ?? (quizData?.quiz?.time_limit ? quizData.quiz.time_limit * 60 : 600);
+      
+      if (attemptId) {
+        navigate(`/student/quiz-attempt/${attemptId}`, {
+          state: { attemptId, timeLimit: typeof timeLimit === 'number' ? timeLimit : 600, quizId: id },
+        });
+      } else {
+        navigate(`/student/quiz/${id}/take`);
+      }
+    } catch (err) {
+      console.error('Failed to start quiz:', err);
+      toast.error(err?.data?.message || err?.message || 'Failed to start quiz');
     }
   };
 
@@ -312,25 +369,54 @@ function QuizDetails() {
 
       {/* Start Test Section */}
       <div className="quiz-start-section">
+        {/* ✅ Show daily limit warning for free users */}
+        {!isPremium && remainingAttempts <= 1 && remainingAttempts > 0 && (
+          <div className="quiz-limit-warning" style={{
+            padding: '12px 16px',
+            background: '#FFF3CD',
+            border: '1px solid #FFE69C',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            color: '#856404'
+          }}>
+            ⚠️ This is your last attempt for today. Your limit resets in {hoursUntilReset} hour{hoursUntilReset !== 1 ? 's' : ''}.
+          </div>
+        )}
+        
+        {!isPremium && remainingAttempts === 0 && (
+          <div className="quiz-limit-error" style={{
+            padding: '12px 16px',
+            background: '#F8D7DA',
+            border: '1px solid #F5C2C7',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            color: '#842029'
+          }}>
+            ❌ You have used all {maxAttempts} attempts for today. Try again in {hoursUntilReset} hour{hoursUntilReset !== 1 ? 's' : ''} or upgrade to Premium for unlimited attempts!
+          </div>
+        )}
+        
         <label className="quiz-agreement-checkbox">
           <input 
             type="checkbox" 
             id="agreeCheckbox"
             checked={agreedToRules}
             onChange={(e) => setAgreedToRules(e.target.checked)}
+            disabled={!canStartAttempt}
           />
           <span>I have read and agree to all the test instructions and rules</span>
         </label>
         <button 
           className="btn-start-test" 
           id="startTestBtn"
-          disabled={!agreedToRules}
+          disabled={!agreedToRules || isStarting || !canStartAttempt}
           onClick={handleStartQuiz}
+          title={!canStartAttempt ? 'Daily limit reached' : ''}
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M6 4L14 10L6 16V4Z" fill="currentColor"/>
           </svg>
-          Start Test
+          {!canStartAttempt ? 'Limit Reached' : 'Start Test'}
         </button>
       </div>
     </div>

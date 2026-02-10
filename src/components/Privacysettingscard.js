@@ -97,7 +97,7 @@ function Privacysettingscard() {
     
     </div>
       <div className="settings-footer-note">
-        Your data is handled according to our <a href="#" className="settings-link">Privacy Policy</a> and <a href="#" className="settings-link">Terms of Service</a>.
+        Your data is handled according to our <a href="/privacy" target="_blank" rel="noopener noreferrer" className="settings-link">Privacy Policy</a> and <a href="/terms" target="_blank" rel="noopener noreferrer" className="settings-link">Terms & Conditions</a>.
       </div>
       </div>
   );

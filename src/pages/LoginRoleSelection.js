@@ -1,10 +1,44 @@
 // src/pages/LoginRoleSelection.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/auth.css';
 
 function LoginRoleSelection() {
   const navigate = useNavigate();
+  const [isChecking, setIsChecking] = useState(true);
+
+  // Check if user is already authenticated and redirect immediately
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const userData = localStorage.getItem('userData');
+
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData);
+        const userType = (user.user_type || 'student').toLowerCase();
+
+        // Use window.location for instant redirect (no React Router delay)
+        if (userType === 'parent') {
+          window.location.href = '/parent/dashboard';
+        } else if (userType === 'tutor') {
+          window.location.href = '/tutor/dashboard';
+        } else {
+          window.location.href = '/student/dashboard';
+        }
+      } catch (e) {
+        // If parsing fails, clear invalid data
+        localStorage.removeItem('userData');
+        setIsChecking(false);
+      }
+    } else {
+      setIsChecking(false);
+    }
+  }, []);
+
+  // Show nothing while checking (prevents flash)
+  if (isChecking) {
+    return null;
+  }
 
   return (
     <div className="auth-container login-role-selection">

@@ -131,8 +131,8 @@ function TermsConsent() {
                   required
                 />
                 <span>
-                  I agree to the <a href="#terms" className="link-terms">Terms of Service</a> and{' '}
-                  <a href="#privacy" className="link-terms">Privacy Policy</a> *
+                  I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="link-terms">Terms & Conditions</a> and{' '}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="link-terms">Privacy Policy</a> *
                 </span>
               </label>
 

@@ -7,12 +7,10 @@ import { PageLoader } from '../components/ui/LoadingSpinner';
 const RoleBasedRoute = ({ children, allowedRoles = [], requiredPermission = null }) => {
   const { isAuthenticated, isLoading, role, checkPermission, getDashboardPath } = useAuth();
 
-  // IMPORTANT: Show loading while checking auth
   if (isLoading) {
     return <PageLoader message="Loading..." />;
   }
 
-  // Not authenticated → Login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }

@@ -1,6 +1,7 @@
 // src/pages/StudentRegistrationStep1.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import '../assets/css/auth.css';
 
 function StudentRegistrationStep1() {
@@ -13,6 +14,26 @@ function StudentRegistrationStep1() {
 
   const [showPassword, setShowPassword] = useState(false);
 
+  // FIX 2: Load saved data on component mount (Back navigation persistence)
+  useEffect(() => {
+    const savedData = localStorage.getItem('registrationStep1');
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        if (data.fullName) setFormData(prev => ({ ...prev, fullName: data.fullName }));
+        if (data.email) setFormData(prev => ({ ...prev, email: data.email }));
+      } catch (e) {
+        console.error('Failed to parse saved registration data');
+      }
+    }
+    
+    // Load password from sessionStorage (more secure than localStorage)
+    const savedPassword = sessionStorage.getItem('regPassword');
+    if (savedPassword) {
+      setFormData(prev => ({ ...prev, password: savedPassword }));
+    }
+  }, []);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -20,13 +41,78 @@ function StudentRegistrationStep1() {
     });
   };
 
+  // FIX 1: Password validation function (can't be bypassed)
+  const validatePassword = (password) => {
+    const checks = {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+    
+    return {
+      isValid: Object.values(checks).every(Boolean),
+      checks,
+    };
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // ========== FIX 1: VALIDATION THAT CAN'T BE BYPASSED ==========
+    
+    // Validate Full Name
+    if (!formData.fullName || !formData.fullName.trim()) {
+      toast.error('Please enter your full name');
+      return; // STOP
+    }
+    
+    // Validate Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email || !emailRegex.test(formData.email.trim())) {
+      toast.error('Please enter a valid email address');
+      return; // STOP
+    }
+    
+    // Validate Password — CRITICAL: Check even if button was enabled via inspect
+    const { isValid, checks } = validatePassword(formData.password);
+    
+    if (!isValid) {
+      if (!checks.minLength) {
+        toast.error('Password must be at least 8 characters');
+        return;
+      }
+      if (!checks.hasUppercase || !checks.hasLowercase) {
+        toast.error('Password must have uppercase and lowercase letters');
+        return;
+      }
+      if (!checks.hasNumber) {
+        toast.error('Password must include a number');
+        return;
+      }
+      if (!checks.hasSpecial) {
+        toast.error('Password must include a special character');
+        return;
+      }
+      return; // STOP — don't proceed
+    }
+    
+    // ========== END VALIDATION ==========
+    
+    // FIX 2: Save data to localStorage before navigating
+    localStorage.setItem('registrationStep1', JSON.stringify({
+      fullName: formData.fullName.trim(),
+      email: formData.email.trim(),
+    }));
+    
+    // Store password in sessionStorage (cleared when browser closes)
+    sessionStorage.setItem('regPassword', formData.password);
+    
     // Save student info to localStorage for next step
     const studentSignupData = {
-      name: formData.fullName,
-      email: formData.email,
+      name: formData.fullName.trim(),
+      email: formData.email.trim(),
       password: formData.password,
       password_confirmation: formData.password
     };

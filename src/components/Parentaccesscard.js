@@ -9,7 +9,7 @@ function Parentaccesscard({ link, onRegenerate, onCopy }) {
       <div className="profile-link-container">
         <input
           type="text"
-          value={link}
+          value={link || ''}
           readOnly
           className="profile-link-input"
         />

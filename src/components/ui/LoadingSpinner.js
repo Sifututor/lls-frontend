@@ -2,180 +2,99 @@
 import React from 'react';
 import './Loading.css';
 
-// Simple spinner for buttons, small areas
-export function Spinner({ size = 'md', color = 'primary' }) {
-  return (
-    <div className={`spinner spinner-${size} spinner-${color}`}>
-      <div className="spinner-ring"></div>
-    </div>
-  );
-}
+export const Spinner = () => (
+  <div className="spinner-container">
+    <div className="spinner"></div>
+  </div>
+);
 
-// Full page loader with logo
-export function PageLoader({ message = 'Loading...' }) {
-  return (
-    <div className="page-loader">
-      <div className="page-loader-content">
-        <div className="page-loader-logo">
-          <img src="/assets/images/learnest-menu.png" alt="Learnest" />
+export const ButtonLoader = () => (
+  <div className="button-loader">
+    <div className="button-spinner"></div>
+  </div>
+);
+
+export const SectionLoader = () => (
+  <div className="section-loader">
+    <div className="spinner"></div>
+    <p>Loading...</p>
+  </div>
+);
+
+export const PageLoader = ({ message = 'Loading...' }) => (
+  <div className="loading-screen">
+    <div className="loading-screen-content">
+      <div className="loading-screen-icon">
+        {/* SVG Book Icon */}
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path 
+            d="M12 58V22C12 19.5 13.5 17 17 16C24 13.5 34 12.5 40 16V56C32 53 22 54 17 56C13.5 57 12 58 12 58Z" 
+            stroke="#4ADE80" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            fill="none"
+          />
+          <path 
+            d="M68 58V22C68 19.5 66.5 17 63 16C56 13.5 46 12.5 40 16V56C48 53 58 54 63 56C66.5 57 68 58 68 58Z" 
+            stroke="#4ADE80" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            fill="none"
+          />
+          <path 
+            d="M40 16V56" 
+            stroke="#4ADE80" 
+            strokeWidth="2" 
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+      {message && message !== 'Loading...' && (
+        <p className="loading-screen-text">{message}</p>
+      )}
+    </div>
+  </div>
+);
+
+export const SkeletonCard = () => (
+  <div className="skeleton-card">
+    <div className="skeleton-image"></div>
+    <div className="skeleton-content">
+      <div className="skeleton-title"></div>
+      <div className="skeleton-text"></div>
+      <div className="skeleton-text short"></div>
+    </div>
+  </div>
+);
+
+export const SkeletonCourseDetails = () => (
+  <div className="skeleton-course-details">
+    <div className="skeleton-header"></div>
+    <div className="skeleton-video"></div>
+    <div className="skeleton-tabs"></div>
+    <div className="skeleton-content-area">
+      <div className="skeleton-text"></div>
+      <div className="skeleton-text"></div>
+      <div className="skeleton-text short"></div>
+    </div>
+  </div>
+);
+
+export const SkeletonLiveClasses = () => (
+  <div className="skeleton-live-classes">
+    {[1, 2, 3].map((i) => (
+      <div key={i} className="skeleton-class-card">
+        <div className="skeleton-image"></div>
+        <div className="skeleton-content">
+          <div className="skeleton-title"></div>
+          <div className="skeleton-text"></div>
         </div>
-        <div className="page-loader-spinner">
-          <Spinner size="lg" />
-        </div>
-        <p className="page-loader-text">{message}</p>
       </div>
-    </div>
-  );
-}
+    ))}
+  </div>
+);
 
-// Inline loader for sections
-export function SectionLoader({ message = 'Loading...', height = '200px' }) {
-  return (
-    <div className="section-loader" style={{ minHeight: height }}>
-      <div className="section-loader-content">
-        <Spinner size="md" />
-        <p>{message}</p>
-      </div>
-    </div>
-  );
-}
-
-// Skeleton loader for cards
-export function SkeletonCard() {
-  return (
-    <div className="skeleton-card">
-      <div className="skeleton skeleton-image"></div>
-      <div className="skeleton-content">
-        <div className="skeleton skeleton-badge"></div>
-        <div className="skeleton skeleton-title"></div>
-        <div className="skeleton skeleton-text"></div>
-        <div className="skeleton skeleton-text short"></div>
-      </div>
-    </div>
-  );
-}
-
-// Skeleton for course details page
-export function SkeletonCourseDetails() {
-  return (
-    <div className="skeleton-course-details">
-      <div className="skeleton skeleton-video"></div>
-      <div className="skeleton-course-info">
-        <div className="skeleton skeleton-title large"></div>
-        <div className="skeleton skeleton-text"></div>
-        <div className="skeleton skeleton-text short"></div>
-        <div className="skeleton-meta">
-          <div className="skeleton skeleton-avatar"></div>
-          <div className="skeleton skeleton-text tiny"></div>
-        </div>
-      </div>
-      <div className="skeleton-tabs">
-        <div className="skeleton skeleton-tab"></div>
-        <div className="skeleton skeleton-tab"></div>
-        <div className="skeleton skeleton-tab"></div>
-      </div>
-      <div className="skeleton-content-area">
-        <div className="skeleton skeleton-text"></div>
-        <div className="skeleton skeleton-text"></div>
-        <div className="skeleton skeleton-text short"></div>
-      </div>
-    </div>
-  );
-}
-
-// Skeleton for list items
-export function SkeletonList({ count = 3 }) {
-  return (
-    <div className="skeleton-list">
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="skeleton-list-item">
-          <div className="skeleton skeleton-avatar small"></div>
-          <div className="skeleton-list-content">
-            <div className="skeleton skeleton-text"></div>
-            <div className="skeleton skeleton-text short"></div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Skeleton for profile/sidebar
-export function SkeletonProfile() {
-  return (
-    <div className="skeleton-profile">
-      <div className="skeleton skeleton-avatar large"></div>
-      <div className="skeleton skeleton-title"></div>
-      <div className="skeleton skeleton-text short"></div>
-    </div>
-  );
-}
-
-// Button loading state
-export function ButtonLoader({ text = 'Loading...' }) {
-  return (
-    <span className="button-loader">
-      <Spinner size="sm" color="white" />
-      <span>{text}</span>
-    </span>
-  );
-}
-
-// Skeleton for Live Class Cards
-export function SkeletonLiveClassCard() {
-  return (
-    <div className="skeleton-live-class-card">
-      <div className="skeleton skeleton-thumbnail"></div>
-      <div className="skeleton-card-content">
-        <div className="skeleton-badges">
-          <div className="skeleton skeleton-badge-status"></div>
-          <div className="skeleton skeleton-badge-subject"></div>
-        </div>
-        <div className="skeleton skeleton-title"></div>
-        <div className="skeleton skeleton-instructor">
-          <div className="skeleton skeleton-avatar small"></div>
-          <div className="skeleton skeleton-text tiny"></div>
-        </div>
-        <div className="skeleton skeleton-text short"></div>
-        <div className="skeleton skeleton-button"></div>
-      </div>
-    </div>
-  );
-}
-
-// Skeleton for Live Classes Page (full layout)
-export function SkeletonLiveClasses() {
-  return (
-    <div className="skeleton-live-classes">
-      <div className="skeleton-header">
-        <div className="skeleton skeleton-title large"></div>
-        <div className="skeleton skeleton-text short"></div>
-      </div>
-      <div className="skeleton-tabs">
-        <div className="skeleton skeleton-tab active"></div>
-        <div className="skeleton skeleton-tab"></div>
-        <div className="skeleton skeleton-tab"></div>
-      </div>
-      <div className="skeleton skeleton-section-title"></div>
-      <div className="skeleton-cards-grid">
-        <SkeletonLiveClassCard />
-        <SkeletonLiveClassCard />
-        <SkeletonLiveClassCard />
-        <SkeletonLiveClassCard />
-      </div>
-    </div>
-  );
-}
-
-export default {
-  Spinner,
-  PageLoader,
-  SectionLoader,
-  SkeletonCard,
-  SkeletonCourseDetails,
-  SkeletonList,
-  SkeletonProfile,
-  ButtonLoader,
-  SkeletonLiveClassCard,
-  SkeletonLiveClasses,
-};
+// Default export for backward compatibility
+export default Spinner;

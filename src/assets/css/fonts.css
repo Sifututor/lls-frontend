@@ -1,0 +1,24 @@
+/* ===== INTER FONT - LOCAL HOSTING ===== */
+/* Using Google Fonts CDN for reliability */
+
+/* Inter - Light (300) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Fallback for private/incognito mode - System fonts */
+:root {
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+                  'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 
+                  'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Apply to body */
+body {
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure all text elements inherit */
+* {
+  font-family: inherit;
+}

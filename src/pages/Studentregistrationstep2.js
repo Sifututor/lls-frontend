@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { useRegisterMutation } from '../store/api/authApi';
+import { useRegisterMutation, useGetFormsQuery, useGetSchoolsQuery } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import { showSuccess, showError, showWarning } from '../utils/toast';
 import '../assets/css/auth.css';
@@ -11,6 +11,10 @@ function StudentRegistrationStep2() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [register, { isLoading, error }] = useRegisterMutation();
+  
+  // FIX 4: Fetch dynamic data from API
+  const { data: formsData, isLoading: formsLoading } = useGetFormsQuery();
+  const { data: schoolsData, isLoading: schoolsLoading } = useGetSchoolsQuery();
   
   // Get step 1 data from localStorage
   const [signupData, setSignupData] = useState(null);
@@ -52,8 +56,11 @@ function StudentRegistrationStep2() {
     });
   };
 
-  // Form levels
-  const formLevels = ['Form 1', 'Form 2', 'Form 3', 'Form 4', 'Form 5'];
+  // FIX 4: Get form levels from API (with fallback)
+  const formLevels = formsData || ['Form 1', 'Form 2', 'Form 3', 'Form 4', 'Form 5'];
+  
+  // Get schools from API (optional)
+  const schools = schoolsData || [];
 
   // Malaysian states
   const malaysianStates = [
@@ -156,8 +163,10 @@ function StudentRegistrationStep2() {
       localStorage.setItem('pendingVerificationEmail', signupData.email);
       localStorage.setItem('pendingVerificationName', signupData.name);
       
-      // Clear signup data
+      // FIX 2: Clear all registration data after success
       localStorage.removeItem('studentSignupData');
+      localStorage.removeItem('registrationStep1');
+      sessionStorage.removeItem('regPassword');
 
       // Navigate to success
       navigate('/create-account/student/success');
@@ -231,25 +240,59 @@ function StudentRegistrationStep2() {
                 onChange={handleChange}
                 required
                 className="form-select"
+                disabled={formsLoading}
               >
-                <option value="">Form Level *</option>
-                {formLevels.map(level => (
-                  <option key={level} value={level}>{level}</option>
-                ))}
+                <option value="">
+                  {formsLoading ? 'Loading form levels...' : 'Form Level *'}
+                </option>
+                {formLevels.map((level, index) => {
+                  // Handle both string array and object array
+                  const levelValue = typeof level === 'string' ? level : (level.name || level.title || `Form ${level.id}`);
+                  const levelId = typeof level === 'string' ? level : (level.id || level.name);
+                  return (
+                    <option key={levelId || index} value={levelValue}>
+                      {levelValue}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
-            {/* School Name - Optional */}
+            {/* School Name - Optional (with dropdown if API data available) */}
             <div className="form-group">
               <label htmlFor="schoolName"></label>
-              <input
-                type="text"
-                id="schoolName"
-                name="schoolName"
-                placeholder="School Name (Optional)"
-                value={formData.schoolName}
-                onChange={handleChange}
-              />
+              {schools.length > 0 ? (
+                <select
+                  id="schoolName"
+                  name="schoolName"
+                  value={formData.schoolName}
+                  onChange={handleChange}
+                  className="form-select"
+                  disabled={schoolsLoading}
+                >
+                  <option value="">
+                    {schoolsLoading ? 'Loading schools...' : 'School Name (Optional)'}
+                  </option>
+                  {schools.map((school, index) => {
+                    const schoolName = typeof school === 'string' ? school : (school.name || school.title);
+                    const schoolId = typeof school === 'string' ? school : (school.id || school.name);
+                    return (
+                      <option key={schoolId || index} value={schoolName}>
+                        {schoolName}
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  id="schoolName"
+                  name="schoolName"
+                  placeholder="School Name (Optional)"
+                  value={formData.schoolName}
+                  onChange={handleChange}
+                />
+              )}
             </div>
 
             {/* State - Optional */}
@@ -325,8 +368,8 @@ function StudentRegistrationStep2() {
                   required
                 />
                 <span>
-                  I agree to the <a href="/terms-of-service" target="_blank" className="link-terms">Terms of Service</a> and{' '}
-                  <a href="/privacy-policy" target="_blank" className="link-terms">Privacy Policy</a> <span className="required-star">*</span>
+                  I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="link-terms">Terms & Conditions</a> and{' '}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="link-terms">Privacy Policy</a> <span className="required-star">*</span>
                 </span>
               </label>
 

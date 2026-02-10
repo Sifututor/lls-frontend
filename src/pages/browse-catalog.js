@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import FilterBar from '../components/FilterBar';
 import BrowseCourseCard from '../components/Browsecoursecard';
 import { SkeletonCard } from '../components/ui/LoadingSpinner';
-import { useGetBrowseCoursesQuery } from '../store/api/authApi';
+import { useGetBrowseCoursesQuery, useGetFormsQuery } from '../store/api/authApi';
 
 function BrowseCourses() {
   const navigate = useNavigate();
@@ -16,8 +16,9 @@ function BrowseCourses() {
   });
   const [showActiveFilters, setShowActiveFilters] = useState(false);
 
-  // API Call
+  // API Calls - Get courses and forms
   const { data: apiResponse, isLoading, isError, refetch } = useGetBrowseCoursesQuery({});
+  const { data: formsDataDirect, isLoading: formsDirectLoading } = useGetFormsQuery();
 
   // Process API data
   const { browseCourses, filterOptions } = useMemo(() => {
@@ -55,14 +56,19 @@ function BrowseCourses() {
 
     // Filter options from API
     const subjects = filtersData.subjects?.map(s => s.title) || [];
-    const formLevels = filtersData.levels?.map(l => l.title) || [];
+    
+    // Use dedicated forms API instead of course filters
+    const formLevels = formsDataDirect 
+      ? formsDataDirect.map(form => form.name || form.title || `Form ${form.level}`)
+      : (filtersData.levels?.map(l => l.title) || []);
+    
     const tutors = [...new Set(coursesArray.map(c => c.tutor?.name).filter(Boolean))];
 
     return {
       browseCourses: transformedCourses,
       filterOptions: { subjects, formLevels, tutors }
     };
-  }, [apiResponse]);
+  }, [apiResponse, formsDataDirect]);
 
   // Filter handlers
   const handleFilterChange = (filterType, value) => {

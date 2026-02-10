@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 import { useLoginMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import '../assets/css/auth.css';
@@ -9,9 +10,9 @@ import '../assets/css/auth.css';
 function ParentLogin({ onLogin }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
+
   const [login, { isLoading }] = useLoginMutation();
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -34,25 +35,61 @@ function ParentLogin({ onLogin }) {
     e.preventDefault();
     setError('');
 
+    // FIX 3: Validate before API call
+    if (!formData.email || !formData.email.trim()) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    
+    if (!formData.password) {
+      toast.error('Please enter your password');
+      return;
+    }
+
     try {
       const response = await login({
         email: formData.email,
         password: formData.password
       }).unwrap();
 
-      dispatch(setCredentials({
-        user: response.user,
-        token: response.token
-      }));
+      if (response.token && response.user) {
+        // 1. Dispatch to Redux (authApi already saved to localStorage)
+        dispatch(setCredentials({
+          user: response.user,
+          token: response.token
+        }));
 
-      if (onLogin) {
-        onLogin('parent', response.user || response);
+        // 2. Call onLogin callback if provided
+        if (onLogin) {
+          onLogin('parent', response.user || response);
+        }
+
+        // FIX 3: Show success toast
+        toast.success('Login successful! Redirecting...', {
+          autoClose: 1000,
+        });
+
+        // 3. Force immediate navigation without delay
+        // Use window.location for clean redirect (no flash/jerk)
+        setTimeout(() => {
+          window.location.href = '/select-student';
+        }, 1000);
       }
-
-      navigate('/select-student');
-
     } catch (err) {
-      setError(err.data?.message || err.message || 'Invalid email or password');
+      // FIX 3: PROPER ERROR TOAST
+      const errorMessage = err?.data?.message || err?.data?.error || 'Invalid email or password';
+      
+      // Show toast error
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+      });
+      
+      // Also set local error state if shown in UI
+      setError(errorMessage);
     }
   };
 

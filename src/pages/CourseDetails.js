@@ -1,5 +1,5 @@
 // src/pages/CourseDetails.js
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CourseHeader from '../components/CourseHeader';
 import VideoPlayer from '../components/VideoPlayer';
@@ -11,17 +11,9 @@ import { SkeletonCourseDetails } from '../components/ui/LoadingSpinner';
 import { useGetCourseDetailsQuery } from '../store/api/authApi';
 import { getTutorProfilePath } from '../utils/tutorProfileUtils';
 
-// Static data imports (same as before)
+// Keep only minimal static data for structure/icons
 import {
-  courseData as staticCourseData,
-  currentLesson,
-  notesData,
-  downloadsData,
-  commentsData,
-  courseContentData,
-  upcomingClassData,
-  recordedClassData,
-  aiChatData
+  courseData as staticCourseData
 } from '../data/courseDetailsData';
 
 function CourseDetails() {
@@ -38,14 +30,13 @@ function CourseDetails() {
     skip: !slug,
   });
 
-  // ✅ Get current lesson ID from API response or static data
+  // ✅ Get current lesson ID from API response only
   // Try multiple paths to get the lesson ID
   const currentLessonId = 
     apiResponse?.course?.current_lesson_id || 
     apiResponse?.course?.lessons?.[0]?.id ||
     apiResponse?.current_lesson?.id ||
-    currentLesson?.id || 
-    2; // Default fallback
+    null; // No static fallback
 
 
   // Build courseData
@@ -63,6 +54,37 @@ function CourseDetails() {
     progress: apiResponse.course.progress_percentage || 0,
     video: staticCourseData.video
   } : null;
+
+  // Extract downloadable materials from API (course.chapters[].lessons[].supplementary_materials_url)
+  const downloadsDataFromApi = useMemo(() => {
+    const course = apiResponse?.course || apiResponse?.data?.course || apiResponse?.data;
+    const chapters = course?.chapters;
+    if (!chapters || !Array.isArray(chapters)) return [];
+
+    const materials = [];
+    chapters.forEach((chapter) => {
+      const lessons = chapter.lessons || chapter.lesson || [];
+      lessons.forEach((lesson) => {
+        const url = lesson.supplementary_materials_url || lesson.supplementary_material_url;
+        if (url) {
+          materials.push({
+            id: lesson.id,
+            lessonId: lesson.id,
+            lessonTitle: lesson.title,
+            chapterTitle: chapter.title,
+            url,
+            name: lesson.title ? `${lesson.title} - Materials` : 'Document',
+            displayName: lesson.title ? `${lesson.title} - Materials` : 'Document',
+            size: chapter.title ? `PDF • ${chapter.title}` : 'PDF',
+          });
+        }
+      });
+    });
+    return materials;
+  }, [apiResponse]);
+
+  // Use ONLY API downloads - no static fallback
+  const downloadsDataResolved = downloadsDataFromApi;
 
   const handleBookmarkClick = (timestampData) => {
     setBookmarkTimestamp(timestampData);
@@ -122,10 +144,11 @@ function CourseDetails() {
           />
 
           {/* Tabs (Lesson, Notes, Downloads) */}
+          {/* No static data for notes/comments - will be from API */}
           <CourseTabs
-            currentLesson={currentLesson}
-            notesData={notesData}
-            downloadsData={downloadsData}
+            currentLesson={apiResponse?.current_lesson || null}
+            notesData={[]}
+            downloadsData={downloadsDataResolved}
             lessonId={currentLessonId}
             bookmarkTimestamp={bookmarkTimestamp}
             onBookmarkHandled={handleBookmarkHandled}
@@ -134,17 +157,17 @@ function CourseDetails() {
           {/* ✅ Discussion Section - Pass lessonId correctly */}
           <DiscussionSection 
             lessonId={currentLessonId} 
-            commentsData={commentsData} 
+            commentsData={[]}
           />
         </div>
 
         {/* Right Sidebar */}
         <div className="course-right-sidebar">
           {/* Course Content Accordion */}
-          <CourseContentAccordion courseContentData={courseContentData} />
+          <CourseContentAccordion courseContentData={apiResponse?.course?.chapters || []} />
 
-          {/* AI Tutor Box */}
-          <AITutorBox aiChatData={aiChatData} />
+          {/* AI Tutor Box - No static chat data */}
+          <AITutorBox />
 
           {/* Upcoming Classes Card */}
           <div className="sidebar-card">
@@ -159,34 +182,26 @@ function CourseDetails() {
               </button>
             </div>
 
-            <div className="upcoming-class-item">
-              <div className="class-thumbnail">
-                <img src={upcomingClassData.thumbnail} alt="Class" />
-                <div className="class-badge-overlay">
-                  <span className="badge-scheduled">{upcomingClassData.status}</span>
-                  <span className="badge-time">{upcomingClassData.time}</span>
-                  <span className="badge-duration">{upcomingClassData.duration}</span>
-                </div>
-              </div>
-              <div className="class-info-sidebar">
-                <div
-                  className="class-instructor-small"
-                  onClick={() => {
-                    const path = getTutorProfilePath(upcomingClassData.instructor);
-                    if (path) navigate(path);
-                  }}
-                  role={getTutorProfilePath(upcomingClassData.instructor) ? 'button' : undefined}
-                  style={getTutorProfilePath(upcomingClassData.instructor) ? { cursor: 'pointer' } : undefined}
-                >
-                  <img src={upcomingClassData.instructor.avatar} alt="Instructor" />
-                  <span>{upcomingClassData.instructor.name}</span>
-                </div>
-                <h5 className="class-title-small">{upcomingClassData.title}</h5>
-                <p className="class-description-small">
-                  {upcomingClassData.description}
-                </p>
-                <button className="btn-notify-me">Notify Me</button>
-              </div>
+            {/* No static upcoming class data - show empty state */}
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '12px' }}>
+                No upcoming live classes
+              </p>
+              <button 
+                className="btn-view-classes"
+                onClick={() => navigate('/student/live-classes')}
+                style={{
+                  padding: '8px 16px',
+                  background: '#9FE870',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#163300',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                View All Classes
+              </button>
             </div>
           </div>
 
@@ -203,34 +218,26 @@ function CourseDetails() {
               </button>
             </div>
 
-            <div className="recorded-class-item">
-              <div className="class-thumbnail">
-                <img src={recordedClassData.thumbnail} alt="Class" />
-                <div className="class-badge-overlay">
-                  <span className="badge-recorded">Recorded</span>
-                  <span className="badge-subject">{recordedClassData.subject}</span>
-                  <span className="badge-duration">{recordedClassData.duration}</span>
-                </div>
-              </div>
-              <div className="class-info-sidebar">
-                <div
-                  className="class-instructor-small"
-                  onClick={() => {
-                    const path = getTutorProfilePath(recordedClassData.instructor);
-                    if (path) navigate(path);
-                  }}
-                  role={getTutorProfilePath(recordedClassData.instructor) ? 'button' : undefined}
-                  style={getTutorProfilePath(recordedClassData.instructor) ? { cursor: 'pointer' } : undefined}
-                >
-                  <img src={recordedClassData.instructor.avatar} alt="Instructor" />
-                  <span>{recordedClassData.instructor.name}</span>
-                </div>
-                <h5 className="class-title-small">{recordedClassData.title}</h5>
-                <p className="class-description-small">
-                  {recordedClassData.description}
-                </p>
-                <button className="btn-watch-recording">Watch Recording</button>
-              </div>
+            {/* No static recorded class data - show empty state */}
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '12px' }}>
+                No recorded sessions
+              </p>
+              <button 
+                className="btn-view-recordings"
+                onClick={() => navigate('/student/past-sessions')}
+                style={{
+                  padding: '8px 16px',
+                  background: '#9FE870',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#163300',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                View Past Sessions
+              </button>
             </div>
           </div>
         </div>

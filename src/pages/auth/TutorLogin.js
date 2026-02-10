@@ -53,14 +53,13 @@ function TutorLogin({ onLogin }) {
       const user = response.user || response;
       const userType = (user.user_type || '').toLowerCase();
 
-      // Check if user is tutor
       if (userType !== 'tutor') {
         setError('Invalid tutor credentials. Please use your tutor account.');
         return;
       }
 
       dispatch(setCredentials({
-        user: user,
+        user,
         token: response.token
       }));
 
@@ -68,7 +67,6 @@ function TutorLogin({ onLogin }) {
         onLogin('tutor', user);
       }
 
-      // Remember Me: persist or clear email in localStorage
       if (formData.rememberMe) {
         localStorage.setItem('rememberedEmail', formData.email);
         localStorage.setItem('rememberMe', 'true');
@@ -77,9 +75,7 @@ function TutorLogin({ onLogin }) {
         localStorage.removeItem('rememberMe');
       }
 
-      // Navigate to tutor dashboard
       navigate('/tutor/dashboard');
-
     } catch (err) {
       setError(err.data?.message || err.message || 'Invalid email or password');
     }

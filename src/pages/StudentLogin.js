@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 import { ButtonLoader } from '../components/ui/LoadingSpinner';
 import { useLoginMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
@@ -10,9 +11,9 @@ import '../assets/css/auth.css';
 function StudentLogin({ onLogin }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
+
   const [login, { isLoading }] = useLoginMutation();
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -44,35 +45,70 @@ function StudentLogin({ onLogin }) {
     e.preventDefault();
     setError('');
 
+    // FIX 3: Validate before API call
+    if (!formData.email || !formData.email.trim()) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    
+    if (!formData.password) {
+      toast.error('Please enter your password');
+      return;
+    }
+
     try {
       const response = await login({
         email: formData.email,
         password: formData.password
       }).unwrap();
 
-      dispatch(setCredentials({
-        user: response.user,
-        token: response.token
-      }));
+      if (response.token && response.user) {
+        // 1. Handle remember me FIRST
+        if (formData.rememberMe) {
+          localStorage.setItem('rememberedEmail', formData.email);
+          localStorage.setItem('rememberMe', 'true');
+        } else {
+          localStorage.removeItem('rememberedEmail');
+          localStorage.removeItem('rememberMe');
+        }
 
-      if (onLogin) {
-        onLogin('student', response.user || response);
+        // 2. Dispatch to Redux (authApi already saved to localStorage)
+        dispatch(setCredentials({
+          user: response.user,
+          token: response.token
+        }));
+
+        // 3. Call onLogin callback if provided
+        if (onLogin) {
+          onLogin('student', response.user || response);
+        }
+
+        // FIX 3: Show success toast
+        toast.success('Login successful! Redirecting...', {
+          autoClose: 1000,
+        });
+
+        // 4. Force immediate navigation without delay
+        // Use window.location for clean redirect (no flash/jerk)
+        setTimeout(() => {
+          window.location.href = '/student/dashboard';
+        }, 1000);
       }
-
-      // Remember Me: persist or clear email in localStorage
-      if (formData.rememberMe) {
-        localStorage.setItem('rememberedEmail', formData.email);
-        localStorage.setItem('rememberMe', 'true');
-      } else {
-        localStorage.removeItem('rememberedEmail');
-        localStorage.removeItem('rememberMe');
-      }
-
-      // Navigate to student dashboard
-      navigate('/student/dashboard');
-
     } catch (err) {
-      setError(err.data?.message || err.message || 'Invalid email or password');
+      // FIX 3: PROPER ERROR TOAST
+      const errorMessage = err?.data?.message || err?.data?.error || 'Invalid email or password';
+      
+      // Show toast error
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+      });
+      
+      // Also set local error state if shown in UI
+      setError(errorMessage);
     }
   };
 

@@ -15,7 +15,24 @@ function CreateAccountStep1() {
     confirmPassword: ''
   });
 
+  // Load saved data on mount
   useEffect(() => {
+    const savedData = localStorage.getItem('createAccountData');
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        setFormData(prev => ({
+          ...prev,
+          fullName: data.fullName || '',
+          email: data.email || '',
+          // Don't restore password for security
+        }));
+      } catch (e) {
+        console.error('Failed to parse saved form data');
+      }
+    }
+    
+    // Also check context data
     if (parentData?.name) setFormData((f) => ({ ...f, fullName: parentData.name }));
     if (parentData?.email) setFormData((f) => ({ ...f, email: parentData.email }));
   }, [parentData?.name, parentData?.email]);
@@ -30,12 +47,54 @@ function CreateAccountStep1() {
     });
   };
 
+  // Password validation
+  const validatePassword = (password) => {
+    const errors = [];
+    
+    if (password.length < 8) {
+      errors.push('At least 8 characters');
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push('At least one uppercase letter');
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push('At least one lowercase letter');
+    }
+    if (!/[0-9]/.test(password)) {
+      errors.push('At least one number');
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      errors.push('At least one special character');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Validate password BEFORE proceeding
+    const passwordValidation = validatePassword(formData.password);
+    
+    if (!passwordValidation.isValid) {
+      showWarning(passwordValidation.errors.join(', '));
+      return; // STOP HERE - don't proceed
+    }
+    
     if (formData.password !== formData.confirmPassword) {
       showWarning('Passwords do not match!');
-      return;
+      return; // STOP HERE
     }
+
+    // Save to localStorage before navigating
+    localStorage.setItem('createAccountData', JSON.stringify({
+      fullName: formData.fullName,
+      email: formData.email,
+      // Store other non-sensitive fields
+    }));
 
     setParentData({
       name: formData.fullName,
@@ -47,7 +106,7 @@ function CreateAccountStep1() {
     navigate('/register/terms');
   };
 
-  // Password validation
+  // Password validation indicators (for UI)
   const has8Chars = formData.password.length >= 8;
   const hasUpperLower = /[a-z]/.test(formData.password) && /[A-Z]/.test(formData.password);
   const hasNumber = /\d/.test(formData.password);

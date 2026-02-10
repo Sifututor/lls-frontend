@@ -12,6 +12,8 @@ import TutorLogin from '../pages/auth/TutorLogin';
 import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/Resetpassword';
 import LandingPage from '../pages/LandingPage';
+import TermsAndConditions from '../pages/TermsAndConditions';
+import PrivacyPolicy from '../pages/PrivacyPolicy';
 
 // Student Registration Pages (Multi-Step)
 import StudentRegistrationStep1 from '../pages/Studentregistrationstep1';
@@ -110,6 +112,12 @@ const AppRoutes = () => {
 
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Legal pages (public) */}
+      <Route path="/terms" element={<TermsAndConditions />} />
+      <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
       {/* ========== STUDENT REGISTRATION (Multi-Step) ========== */}
       {/* Step 1: Basic Info (Name, Email, Password) */}

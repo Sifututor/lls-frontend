@@ -108,3 +108,14 @@ ul, ol {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--green-dark);
 }
+
+/* Hide premium badges/promo for premium users (optional, via body class) */
+body.is-premium .premium-badge,
+body.is-premium .premium-icon,
+body.is-premium .premium-tag,
+body.is-premium .go-premium-card,
+body.is-premium .upgrade-prompt,
+body.is-premium .premium-promo,
+body.is-premium [class*="premium-upsell"] {
+    display: none !important;
+}

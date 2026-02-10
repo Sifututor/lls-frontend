@@ -171,6 +171,17 @@ const StudentRoutes = () => (
     />
 
     <Route
+      path="/student/quiz-attempt/:attemptId"
+      element={
+        <RoleBasedRoute allowedRoles={[ROLES.STUDENT]}>
+          <StudentLayout title="Take Quiz">
+            <QuizTake />
+          </StudentLayout>
+        </RoleBasedRoute>
+      }
+    />
+
+    <Route
       path="/student/quiz/:id/review"
       element={
         <RoleBasedRoute allowedRoles={[ROLES.STUDENT]}>

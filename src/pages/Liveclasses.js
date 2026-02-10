@@ -5,7 +5,7 @@ import FilterBar from '../components/FilterBar';
 import Liveclassescarousel from '../components/Liveclassescarousel';
 import LiveClassCard from '../components/LiveClassCard';
 import { SkeletonLiveClasses } from '../components/ui/LoadingSpinner';
-import { useGetBrowseLiveClassesQuery, useJoinLiveClassMutation } from '../store/api/authApi';
+import { useGetBrowseLiveClassesQuery, useJoinLiveClassMutation, useGetFormsQuery } from '../store/api/authApi';
 import { usePremium } from '../hooks/usePremium';
 import { showInfo } from '../utils/toast';
 
@@ -20,8 +20,9 @@ function LiveClasses() {
   });
   const [showActiveFilters, setShowActiveFilters] = useState(false);
 
-  // API Call
+  // API Calls - Get live classes and forms
   const { data: apiResponse, isLoading, isError, refetch } = useGetBrowseLiveClassesQuery({});
+  const { data: formsDataDirect, isLoading: formsDirectLoading } = useGetFormsQuery();
   const [joinLiveClass] = useJoinLiveClassMutation();
 
   // Transform API data to component format
@@ -110,6 +111,11 @@ function LiveClasses() {
     // Get unique tutors for filter
     const allClasses = [...ongoing, ...upcoming, ...scheduled];
     const tutors = [...new Set(allClasses.map(c => c.tutor?.name).filter(Boolean))];
+    
+    // Use dedicated forms API
+    const formLevels = formsDataDirect 
+      ? formsDataDirect.map(form => form.name || form.title || `Form ${form.level}`)
+      : [];
 
     return {
       ongoingClasses: transformedOngoing,
@@ -117,11 +123,11 @@ function LiveClasses() {
       scheduledClasses: transformedScheduled,
       filterOptions: {
         subjects: [],
-        formLevels: [],
+        formLevels: formLevels,
         tutors: tutors
       }
     };
-  }, [apiResponse]);
+  }, [apiResponse, formsDataDirect]);
 
   // Filter handlers
   const handleFilterChange = (key, value) => {

@@ -392,7 +392,6 @@ const VideoPlayer = forwardRef(({
                     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
                       <path d="M6 3C5.44772 3 5 3.44772 5 4V19L11 16L17 19V4C17 3.44772 16.5523 3 16 3H6Z" fill="currentColor" stroke="currentColor" strokeWidth="2"/>
                     </svg>
-                    <span style={{ fontSize: '10px', marginLeft: '4px' }}>🔒</span>
                   </button>
                 )}
 
@@ -439,7 +438,7 @@ const VideoPlayer = forwardRef(({
                     </>
                   ) : (
                     <div className="control-btn speed-btn locked" title="Premium feature - Speed Control" style={{ opacity: 0.5, cursor: 'not-allowed' }}>
-                      <span className="speed-text">🔒 1x</span>
+                      <span className="speed-text">1x</span>
                     </div>
                   )}
                 </div>

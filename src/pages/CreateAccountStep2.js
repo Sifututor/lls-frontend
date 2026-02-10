@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { useRegisterMutation, useGetMeQuery } from '../store/api/authApi';
+import { useRegisterMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import { showError, showWarning } from '../utils/toast';
 import '../assets/css/auth.css';
@@ -105,6 +105,11 @@ function CreateAccountStep2({ signupData: propSignupData, childrenData: propChil
       localStorage.setItem('pendingVerificationEmail', signupData.email);
       localStorage.setItem('pendingVerificationName', signupData.name);
 
+      // Clear registration form data after successful registration
+      localStorage.removeItem('createAccountData');
+      localStorage.removeItem('signupData');
+      localStorage.removeItem('childrenData');
+
       // Navigate to success
       navigate('/create-account/success');
       
@@ -179,8 +184,8 @@ function CreateAccountStep2({ signupData: propSignupData, childrenData: propChil
                   required
                 />
                 <span>
-                  I agree to the <a href="#terms" className="link-terms">Terms of Service</a> and{' '}
-                  <a href="#privacy" className="link-terms">Privacy Policy</a> *
+                  I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="link-terms">Terms & Conditions</a> and{' '}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="link-terms">Privacy Policy</a> *
                 </span>
               </label>
 

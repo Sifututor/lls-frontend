@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import CourseHeader from '../components/CourseHeader';
 import QuizTimer from '../components/Quiztimer';
 import QuizQuestionCard from '../components/Quizquestioncard';
@@ -9,36 +9,135 @@ import QuizLegend from '../components/Quizlegend';
 import QuizReviewScreen from '../components/Quizreviewscreen';
 import QuizResultScreen from '../components/Quizresultscreen';
 import EndQuizModal from '../components/Endquizmodal';
-import { quizQuestions, quizSettings } from '../data/Quiztakedata';
+import { SectionLoader } from '../components/ui/LoadingSpinner';
+import { useGetQuizQuestionsQuery, useSubmitQuizAttemptMutation } from '../store/api/authApi';
+
+// ✅ REMOVED: Static quiz data import - now using API data only
+// import { quizQuestions as staticQuestions, quizSettings as staticSettings } from '../data/Quiztakedata';
+
+function mapApiQuestionToCard(q) {
+  const options = q.options && typeof q.options === 'object'
+    ? Object.entries(q.options).map(([key, text]) => ({
+        letter: key.length === 1 ? key.toUpperCase() : key,
+        text: String(text),
+      }))
+    : (q.question_type === 'true_false'
+        ? [{ letter: 'True', text: 'True' }, { letter: 'False', text: 'False' }]
+        : []);
+  return {
+    id: q.id,
+    question: q.question_text || q.question,
+    options,
+  };
+}
 
 function QuizTake() {
-  const { id } = useParams();
+  const params = useParams();
+  const { id, attemptId } = params;
   const navigate = useNavigate();
+  const location = useLocation();
+  const stateTime = location.state?.timeLimit;
+  const stateQuizId = location.state?.quizId;
+
+  // ✅ ALWAYS use API flow - no static data fallback
+  const { data: questionsData, isLoading: questionsLoading } = useGetQuizQuestionsQuery(attemptId, { skip: !attemptId });
+  const [submitQuiz, { isLoading: isSubmitting }] = useSubmitQuizAttemptMutation();
+
+  const questions = useMemo(() => {
+    if (!questionsData?.questions) return [];
+    return questionsData.questions.map(mapApiQuestionToCard);
+  }, [questionsData]);
+
+  const totalCount = questions.length;
+  const timeLimitFromApi = questionsData?.time_remaining ?? stateTime ?? (typeof stateTime === 'number' ? stateTime : 600);
+  
+  const quizSettings = useMemo(() => ({
+    totalQuestions: totalCount,
+    timeLimit: timeLimitFromApi,
+    passingScore: questionsData?.passing_score ?? 70, // Default 70%
+    attemptsRemaining: questionsData?.attempts_remaining ?? 3,
+    totalAttempts: 3,
+  }), [totalCount, timeLimitFromApi, questionsData]);
+
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [userAnswers, setUserAnswers] = useState(Array(quizSettings.totalQuestions).fill(null));
-  const [timeRemaining, setTimeRemaining] = useState(quizSettings.timeLimit);
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [timeRemaining, setTimeRemaining] = useState(
+    typeof stateTime === 'number' ? stateTime : 600
+  );
   const [showReview, setShowReview] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [results, setResults] = useState(null);
-  
-  // End Quiz Modal State
   const [showEndQuizModal, setShowEndQuizModal] = useState(false);
+  const submittedOnTimeUp = useRef(false);
 
-  // Timer Effect
+  useEffect(() => {
+    if (questionsData?.time_remaining != null) {
+      setTimeRemaining(questionsData.time_remaining);
+    }
+  }, [questionsData?.time_remaining]);
+
+  useEffect(() => {
+    if (totalCount > 0 && userAnswers.length !== totalCount) {
+      setUserAnswers(Array(totalCount).fill(null));
+    }
+  }, [totalCount, userAnswers.length]);
+
+  const handleSubmitQuiz = useCallback(async () => {
+    // ✅ Always require attemptId (API flow only, no static fallback)
+    if (!attemptId) {
+      console.error('No attempt ID - cannot submit quiz');
+      alert('Failed to submit quiz: No attempt ID found. Please start the quiz again.');
+      return;
+    }
+
+    try {
+      const payload = Object.keys(answers).reduce((acc, qId) => {
+        acc[String(qId)] = answers[qId];
+        return acc;
+      }, {});
+      const result = await submitQuiz({ attemptId, answers: payload }).unwrap();
+      const correct = result.correct ?? result.score ?? 0;
+      const total = result.total_questions ?? totalCount;
+      const percentage = result.percentage ?? (total ? Math.round((correct / total) * 100) : 0);
+      const passed = result.passed ?? (percentage >= (quizSettings.passingScore || 70));
+      setResults({
+        correct: result.correct ?? correct,
+        incorrect: result.incorrect ?? (total - correct),
+        skipped: result.skipped ?? 0,
+        percentage,
+        passed,
+      });
+      setShowResult(true);
+      setShowReview(false);
+    } catch (err) {
+      console.error('Submit failed:', err);
+      alert(err?.data?.message || err?.message || 'Failed to submit quiz');
+    }
+  }, [attemptId, answers, submitQuiz, totalCount, quizSettings.passingScore]);
+
+  const handleShowReview = useCallback(() => setShowReview(true), []);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeRemaining(prev => {
-        if (prev <= 0) {
-          clearInterval(timer);
-          handleShowReview();
-          return 0;
-        }
+        if (prev <= 1) return 0;
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (timeRemaining !== 0) return;
+    if (submittedOnTimeUp.current) return;
+    submittedOnTimeUp.current = true;
+    if (attemptId) {
+      handleSubmitQuiz();
+    } else {
+      handleShowReview();
+    }
+  }, [timeRemaining, attemptId]);
 
   // Format Time Helper
   const formatTime = (seconds) => {
@@ -52,6 +151,10 @@ function QuizTake() {
     const newAnswers = [...userAnswers];
     newAnswers[currentQuestion] = letter;
     setUserAnswers(newAnswers);
+    if (questions[currentQuestion]) {
+      const qId = questions[currentQuestion].id;
+      setAnswers(prev => ({ ...prev, [String(qId)]: letter.toLowerCase() }));
+    }
   };
 
   // Navigate to Question
@@ -62,7 +165,7 @@ function QuizTake() {
 
   // Navigation Handlers
   const handleNext = () => {
-    if (currentQuestion < quizQuestions.length - 1) {
+    if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       handleShowReview();
@@ -73,11 +176,6 @@ function QuizTake() {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
     }
-  };
-
-  // Review Screen
-  const handleShowReview = () => {
-    setShowReview(true);
   };
 
   const handleBackToQuiz = () => {
@@ -99,36 +197,12 @@ function QuizTake() {
     handleSubmitQuiz();
   };
 
-  // Submit Quiz
-  const handleSubmitQuiz = () => {
-    let correct = 0;
-    let incorrect = 0;
-    let skipped = 0;
-
-    quizQuestions.forEach((q, index) => {
-      if (userAnswers[index] === null) {
-        skipped++;
-      } else if (userAnswers[index] === q.correctAnswer) {
-        correct++;
-      } else {
-        incorrect++;
-      }
-    });
-
-    const percentage = Math.round((correct / quizQuestions.length) * 100);
-    const passed = percentage >= quizSettings.passingScore;
-
-    setResults({ correct, incorrect, skipped, percentage, passed });
-    setShowResult(true);
-    setShowReview(false);
-  };
-
   // Calculated Values
   const answeredCount = userAnswers.filter(a => a !== null).length;
 
   // Quiz Header Data
   const quizHeaderData = {
-    title: 'Sorting Algorithms Quiz',
+    title: questionsData?.title || 'Quiz',
     badges: [
       { id: 1, text: 'Form 5' },
       { id: 2, text: 'Computer Science' },
@@ -138,8 +212,25 @@ function QuizTake() {
       name: 'Puan Siti Farah',
       avatar: '/assets/images/icons/Ellipse 2.svg'
     },
-    progress: Math.round((answeredCount / quizQuestions.length) * 100)
+    progress: totalCount ? Math.round((answeredCount / totalCount) * 100) : 0
   };
+
+  if (questionsLoading) {
+    return (
+      <div className="quiz-details-content">
+        <SectionLoader message="Loading questions..." height="400px" />
+      </div>
+    );
+  }
+
+  const noQuestions = !questionsLoading && totalCount === 0;
+  if (noQuestions) {
+    return (
+      <div className="quiz-details-content">
+        <p>No questions found. <button type="button" onClick={() => navigate(-1)}>Go back</button></p>
+      </div>
+    );
+  }
 
   // Render Review Screen
   if (showReview) {
@@ -148,7 +239,7 @@ function QuizTake() {
         <CourseHeader courseData={quizHeaderData} />
         
         <QuizReviewScreen
-            questions={quizQuestions}
+            questions={questions}
             userAnswers={userAnswers}
             onBackToQuiz={handleBackToQuiz}
             onSubmitQuiz={handleSubmitQuiz}
@@ -167,13 +258,14 @@ function QuizTake() {
         <QuizResultScreen
             results={results}
             passed={results.passed}
+            quizId={stateQuizId}
           />
       </>
     );
   }
 
   // Main Quiz Screen
-  const question = quizQuestions[currentQuestion];
+  const question = questions[currentQuestion];
 
   return (
     <>
@@ -185,7 +277,7 @@ function QuizTake() {
             <QuizQuestionCard
               question={question}
               currentQuestion={currentQuestion}
-              totalQuestions={quizQuestions.length}
+              totalQuestions={questions.length}
               selectedAnswer={userAnswers[currentQuestion]}
               onSelectAnswer={selectAnswer}
               onNext={handleNext}
@@ -199,13 +291,13 @@ function QuizTake() {
             <QuizTimer
               timeRemaining={timeRemaining}
               answeredCount={answeredCount}
-              totalQuestions={quizQuestions.length}
+              totalQuestions={questions.length}
               formatTime={formatTime}
             />
 
             {/* Question Grid */}
             <QuizGrid
-              questions={quizQuestions}
+              questions={questions}
               userAnswers={userAnswers}
               currentQuestion={currentQuestion}
               onGoToQuestion={goToQuestion}
@@ -230,7 +322,7 @@ function QuizTake() {
         onClose={handleCloseEndQuizModal}
         onEndQuiz={handleConfirmEndQuiz}
         answeredCount={answeredCount}
-        totalQuestions={quizQuestions.length}
+        totalQuestions={questions.length}
         attemptsRemaining={quizSettings.attemptsRemaining || 2}
         totalAttempts={quizSettings.totalAttempts || 3}
       />

@@ -312,7 +312,7 @@ function TopNavbar({ title, breadcrumb }) {
                         <p>SPM Revision: Additional Mathematics</p>
                         <div className="notification-time">
                           <span>10 min ago</span>
-                          {isPremium && (
+                          {!isPremium && (
                             <span className="premium-badge">
                               <img
                                 src="/assets/images/icons/120-setting.svg"

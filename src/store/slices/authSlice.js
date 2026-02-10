@@ -42,7 +42,23 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.isAuthenticated = true;
     },
+    updateUser: (state, action) => {
+      // Update user data in state
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+        // Also update localStorage
+        try {
+          localStorage.setItem('userData', JSON.stringify(state.user));
+          Cookies.set('userData', JSON.stringify(state.user), { expires: 7, path: '/' });
+        } catch (e) {
+          // Silent error
+        }
+      }
+    },
     logout: (state) => {
+      // Get user ID before clearing for AI chat cleanup
+      const userId = state.user?.id;
+      
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
@@ -51,6 +67,13 @@ const authSlice = createSlice({
       localStorage.removeItem('userData');
       localStorage.removeItem('userType');
       localStorage.removeItem('isPremium');
+      
+      // ✅ FIX: Clear AI Tutor user-specific data on logout
+      if (userId) {
+        localStorage.removeItem(`ai_tutor_chat_${userId}`);
+        localStorage.removeItem(`ai_tutor_session_${userId}`);
+      }
+      
       Cookies.remove('authToken', { path: '/' });
       Cookies.remove('tokenExpiry', { path: '/' });
       Cookies.remove('userData', { path: '/' });
@@ -59,12 +82,12 @@ const authSlice = createSlice({
     },
     updateUserProfile: (state, action) => {
       const payload = action.payload;
-      if (!state.user) return;
+      
+      if (!state.user) {
+        return;
+      }
 
-      // Extract profile data from any API response format:
-      // Format A: { user: { profile: {...} }, profile: {...} }  — from GET
-      // Format B: { id, user_id, first_name, profile_image, ... } — from POST (this is what we get!)
-      // Format C: { profile: { first_name, ... } }
+      // Extract profile data from any API response format
       let profileData;
 
       if (payload.user && payload.user.profile) {
@@ -101,13 +124,13 @@ const authSlice = createSlice({
           expires: 7, path: '/', sameSite: 'Lax',
         });
       } catch (e) {
-        // silent
+        // Silent error
       }
     },
   },
 });
 
-export const { setCredentials, logout, updateUserProfile } = authSlice.actions;
+export const { setCredentials, updateUser, logout, updateUserProfile } = authSlice.actions;
 export default authSlice.reducer;
 
 export const selectCurrentUser = (state) => state.auth.user;

@@ -1,7 +1,6 @@
 // src/hooks/useAuth.js
 import { useMemo } from 'react';
 import Cookies from 'js-cookie';
-import { useGetMeQuery } from '../store/api/authApi';
 import { ROLES, getRoleDashboard, hasPermission } from '../utils/roleConfig';
 
 export const useAuth = () => {
@@ -9,32 +8,23 @@ export const useAuth = () => {
   const storedUserType = localStorage.getItem('userType') || Cookies.get('userType');
   const storedUser = localStorage.getItem('userData') || Cookies.get('userData');
 
-  // Only call API if token exists
-  const { data: user, isLoading, error } = useGetMeQuery(undefined, {
-    skip: !token, // Skip if no token
-  });
-
+  // ✅ FIX: Don't call /me API here - it's called only during login/profile update
+  // Read user data from localStorage only (NO API CALLS!)
   const authState = useMemo(() => {
-    // API returns { user: {...} } or direct user object
-    const userData = user?.user || user || (storedUser ? JSON.parse(storedUser) : null);
-
-    // Normalize role to lowercase to match ROLES constants
+    const userData = storedUser ? JSON.parse(storedUser) : null;
     const rawRole = userData?.user_type || storedUserType || null;
-    // Ensure role is always a string and lowercase
     const normalizedRole = rawRole ? String(rawRole).toLowerCase().trim() : null;
-
-    // Determine authentication state - token must exist and not be in error state
-    const isAuthenticated = !!token && !error;
+    const isAuthenticated = !!token && !!userData;
 
     return {
       isAuthenticated,
-      isLoading: token ? isLoading : false, // Not loading if no token
-      error,
+      isLoading: false, // No API call = never loading
+      error: null, // No API call = no error
       user: userData,
       role: normalizedRole,
       token,
     };
-  }, [user, isLoading, error, token]);
+  }, [token, storedUserType, storedUser]);
 
   const checkPermission = (permission) => {
     return hasPermission(authState.role, permission);
