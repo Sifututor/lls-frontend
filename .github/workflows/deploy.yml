@@ -43,6 +43,12 @@ jobs:
       - name: 📝 Create .htaccess
         run: |
           cat > build/.htaccess << 'EOF'
+          # Allow access (fix 403 Forbidden on Apache 2.4+)
+          <IfModule mod_authz_core.c>
+            Require all granted
+          </IfModule>
+          Options -Indexes +FollowSymLinks
+
           <IfModule mod_rewrite.c>
             RewriteEngine On
             RewriteBase /
@@ -84,9 +90,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          port: 19199
-          source: "build/*"
-          target: ${{ secrets.SSH_DIR }}
+          port: 22
+          source: "build/**"
+          target: "public_html/learnest-frontend.tutorla.tech"
           strip_components: 1
 
       # Step 8: Deployment notification

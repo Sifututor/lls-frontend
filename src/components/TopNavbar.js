@@ -88,9 +88,24 @@ function TopNavbar({ title, breadcrumb }) {
       return 'Parent Account';
     } else if (userInfo.role === 'tutor') {
       return 'Tutor Account';
-    } else {
-      return 'Form 4 • Science Stream';
     }
+    // Dynamic: form_level and stream from profile / userData
+    const raw = currentUser || (() => {
+      try {
+        const s = localStorage.getItem('userData') || Cookies.get('userData');
+        return s ? JSON.parse(s) : null;
+      } catch { return null; }
+    })();
+    const profile = raw?.profile || {};
+    const formLevel = profile.form_level || raw?.form_level || '';
+    const stream = profile.stream || raw?.stream || profile.stream_name || raw?.stream_name || '';
+    const formDisplay = formLevel
+      ? (formLevel.startsWith('Form') ? formLevel : formLevel.replace(/^form_/, 'Form '))
+      : '';
+    const streamDisplay = stream || 'Science Stream';
+    if (formDisplay && streamDisplay) return `${formDisplay} • ${streamDisplay}`;
+    if (formDisplay) return formDisplay;
+    return 'Form 4 • Science Stream';
   };
 
   const getBreadcrumbData = () => {

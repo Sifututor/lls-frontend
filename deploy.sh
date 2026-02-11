@@ -36,6 +36,12 @@ npm run build
 # ============================================
 echo "📝 Creating .htaccess file..."
 cat > build/.htaccess << 'EOF'
+# Allow access (fix 403 Forbidden on Apache 2.4+)
+<IfModule mod_authz_core.c>
+  Require all granted
+</IfModule>
+Options -Indexes +FollowSymLinks
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
