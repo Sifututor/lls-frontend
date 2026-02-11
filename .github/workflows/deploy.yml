@@ -77,16 +77,17 @@ jobs:
           </IfModule>
           EOF
 
-      # Step 7: Deploy to cPanel via SFTP
-      - name: 🚀 Deploy to cPanel via SFTP
-        uses: Dylan700/sftp-upload-action@latest
+      # Step 7: Deploy to cPanel via FTP
+      - name: 🚀 Deploy to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
-          port: 22
-          uploads: |
-            ./build/ => ${{ secrets.FTP_DIR }}
+          port: 21
+          protocol: ftp
+          local-dir: ./build/
+          server-dir: ${{ secrets.FTP_DIR }}
 
       # Step 8: Deployment notification
       - name: ✅ Deployment Complete
