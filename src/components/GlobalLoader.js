@@ -9,9 +9,10 @@ function GlobalLoader({ message }) {
         <div className="loading-screen-icon">
           {/* SVG Book Icon */}
           <img src="/assets/images/loading.gif" alt="loading" />
+
         </div>
         {message && (
-          <p className="loading-screen-text">{message}</p>
+          <p className="loading-screen-text">{message} fhfghfhfgh</p>
         )}
       </div>
     </div>
