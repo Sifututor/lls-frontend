@@ -92,7 +92,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           source: "build/**"
-          target: "public_html/learnest-frontend.tutorla.tech"
+          target: ${{ secrets.SSH_DIR }}
           strip_components: 1
 
       # Step 8: Deployment notification
