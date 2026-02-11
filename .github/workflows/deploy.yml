@@ -78,16 +78,15 @@ jobs:
           EOF
 
       # Step 7: Deploy to cPanel via SFTP
-      - name: 🚀 Deploy to cPanel
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+      - name: 🚀 Deploy to cPanel via SFTP
+        uses: Dylan700/sftp-upload-action@latest
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
-          local_path: ./build/*
-          remote_path: ${{ secrets.FTP_DIR }}
-          sftp_only: true
           port: 22
+          uploads: |
+            ./build/ => ${{ secrets.FTP_DIR }}
 
       # Step 8: Deployment notification
       - name: ✅ Deployment Complete
