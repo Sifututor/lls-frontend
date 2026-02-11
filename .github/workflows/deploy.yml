@@ -21,20 +21,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          # Disable cache to force fresh install
+          # cache: 'npm'
 
-      # Step 3: Install dependencies
+      # Step 3: Clean npm cache
+      - name: 🧹 Clean npm cache
+        run: npm cache clean --force
+
+      # Step 4: Install dependencies
       - name: 📦 Install dependencies
         run: npm ci --legacy-peer-deps
 
-      # Step 4: Build for production
+      # Step 5: Build for production
       - name: 🔨 Build production
         run: npm run build
         env:
           REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
           CI: false  # Ignore warnings as errors
 
-      # Step 5: Create .htaccess
+      # Step 6: Create .htaccess
       - name: 📝 Create .htaccess
         run: |
           cat > build/.htaccess << 'EOF'
@@ -72,7 +77,7 @@ jobs:
           </IfModule>
           EOF
 
-      # Step 6: Deploy to cPanel via FTP
+      # Step 7: Deploy to cPanel via FTP
       - name: 🚀 Deploy to cPanel
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -83,7 +88,7 @@ jobs:
           server-dir: ${{ secrets.FTP_DIR }}
           dangerous-clean-slate: false  # Set true to delete old files
 
-      # Step 7: Deployment notification
+      # Step 8: Deployment notification
       - name: ✅ Deployment Complete
         run: |
           echo "============================================"
