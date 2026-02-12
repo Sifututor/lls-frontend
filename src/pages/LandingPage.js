@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
+import featureBadgeIcon from '../assets/images/icons/landing-page-icon.svg';
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -14,7 +16,7 @@ function LandingPage() {
   };
 
   return (
-    <div className="auth-container landing-page">
+    <div className="auth-container landing-page" style={{ '--auth-bg': `url(${authBg})`, '--feature-badge-icon': `url(${featureBadgeIcon})` }}>
       <div className="auth-card">
         {/* Header */}
         <div className="auth-header">

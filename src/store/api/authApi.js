@@ -1,6 +1,7 @@
 // src/store/api/authApi.js
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
+import { updateUser } from '../slices/authSlice';
 
 // const BASE_URL = 'http://10.0.0.178:8000/api';
 const BASE_URL = 'https://lms-sifu.tutorla.tech/api';
@@ -154,9 +155,10 @@ export const authApi = createApi({
       providesTags: ['User'],
       transformResponse: (response) => {
         if (response.user || response.data) {
-          const userData = response.user || response.data || response;
+          // API can return { user } or { data: { user } }
+          const userData = response.user || response.data?.user || response.data || response;
           
-          // Save complete user data including profile image
+          // Save complete user data including profile image and form_level
           const userToSave = {
             ...userData,
             profile_image: userData.profile_image || userData.profile?.profile_image || userData.avatar,
@@ -177,6 +179,17 @@ export const authApi = createApi({
         
         return response;
       },
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const userData = data?.user || data?.data?.user || data?.data || data;
+          if (userData && userData.id) {
+            dispatch(updateUser({ ...userData }));
+          }
+        } catch (_e) {
+          // ignore
+        }
+      },
     }),
 
     // Logout
@@ -195,7 +208,6 @@ export const authApi = createApi({
         Cookies.remove('isPremium', { path: '/' });
         return response;
       },
-      invalidatesTags: ['Auth', 'User'],
     }),
 
     // Refresh Token

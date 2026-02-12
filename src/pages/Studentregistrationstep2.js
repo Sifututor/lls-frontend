@@ -6,6 +6,7 @@ import { useRegisterMutation, useGetFormsQuery, useGetSchoolsQuery } from '../st
 import { setCredentials } from '../store/slices/authSlice';
 import { showSuccess, showError, showWarning } from '../utils/toast';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function StudentRegistrationStep2() {
   const navigate = useNavigate();
@@ -105,7 +106,7 @@ function StudentRegistrationStep2() {
       
       return data;
     } catch (err) {
-      console.error('/me API Error:', err);
+      if (process.env.NODE_ENV === 'development') console.error('/me API Error:', err);
       return null;
     }
   };
@@ -188,7 +189,7 @@ function StudentRegistrationStep2() {
   }
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="mian-account-card">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

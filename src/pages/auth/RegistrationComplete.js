@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/css/auth.css';
+import authBg from '../../assets/images/landing-page-bg.png';
 
 function RegistrationComplete() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ function RegistrationComplete() {
   };
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="mian-account-card">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

@@ -7,6 +7,7 @@ import { ButtonLoader } from '../components/ui/LoadingSpinner';
 import { useLoginMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function StudentLogin({ onLogin }) {
   const navigate = useNavigate();
@@ -113,7 +114,7 @@ function StudentLogin({ onLogin }) {
   };
 
   return (
-    <div className="auth-container student-login-page">
+    <div className="auth-container student-login-page" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="login-selection">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

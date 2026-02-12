@@ -23,13 +23,17 @@
     content: "";
     position: absolute;
     inset: 0;
-    /* background-image: url('/assets/images/landing-page-bg.png'); */
-    background-color: #f8f9fa;
+    background-image: var(--auth-bg, none);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.03;
+    opacity: 0.05;
     z-index: 0;
+}
+
+.auth-container > * {
+    position: relative;
+    z-index: 1;
 }
 
 .auth-header {
@@ -190,11 +194,13 @@ p.form-label {
 
 .feature-badge::before {
     content: "";
-    /* background-image: url('/assets/images/icons/landing-page-icon.svg'); */
     width: 16px;
     height: 16px;
+    background-image: var(--feature-badge-icon, none);
     background-size: contain;
+    background-position: center;
     background-repeat: no-repeat;
+    flex-shrink: 0;
 }
 
 .auth-footer {
@@ -404,8 +410,7 @@ p.form-label {
   -webkit-appearance: none;
   -moz-appearance: none;
 
-  /* CUSTOM ARROW */
-  /* background-image: url("/assets/images/icons/select-arrow.svg"); */
+  /* CUSTOM ARROW - set via inline --select-arrow if needed */
   background-repeat: no-repeat;
   background-position: right 18px center;
   background-size: 14px;

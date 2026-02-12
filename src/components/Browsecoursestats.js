@@ -18,7 +18,7 @@ function BrowseCourseStats({ stats, isSaved, onSave, onEnroll }) {
       setEnrolled(true);
       
     } catch (error) {
-      console.error('❌ Enrollment failed:', error);
+      if (process.env.NODE_ENV === 'development') console.error('Enrollment failed:', error);
       
       // Check if already enrolled
       if (error?.data?.message?.toLowerCase().includes('already enrolled')) {

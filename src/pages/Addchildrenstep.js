@@ -5,6 +5,7 @@ import { useAddChildrenMutation } from '../store/api/authApi';
 import { useRegistration } from '../context/RegistrationContext';
 import { showError, showWarning } from '../utils/toast';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function AddChildrenStep() {
   const navigate = useNavigate();
@@ -121,7 +122,7 @@ function AddChildrenStep() {
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="mian-account-card">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

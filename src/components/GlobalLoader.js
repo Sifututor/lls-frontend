@@ -1,10 +1,11 @@
 // src/components/GlobalLoader.js
 import React from 'react';
 import './GlobalLoader.css';
+import loadingBg from '../assets/images/landing-page-bg.png';
 
 function GlobalLoader({ message }) {
   return (
-    <div className="loading-screen">
+    <div className="loading-screen" style={{ '--loading-bg': `url(${loadingBg})` }}>
       <div className="loading-screen-content">
         <div className="loading-screen-icon">
           {/* SVG Book Icon */}
@@ -12,7 +13,7 @@ function GlobalLoader({ message }) {
 
         </div>
         {message && (
-          <p className="loading-screen-text">{message} fhfghfhfgh</p>
+          <p className="loading-screen-text">{message}</p>
         )}
       </div>
     </div>

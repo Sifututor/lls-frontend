@@ -29,7 +29,7 @@ function BrowseCourseCard({ course, onClick }) {
       }, 500);
       
     } catch (error) {
-      console.error('❌ Enrollment failed:', error);
+      if (process.env.NODE_ENV === 'development') console.error('Enrollment failed:', error);
       
       // Check if already enrolled
       if (error?.data?.message?.toLowerCase().includes('already enrolled')) {

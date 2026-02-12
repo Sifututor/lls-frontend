@@ -1,19 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Profilecard from '../components/Profilecard';
 import Studentemailcard from '../components/Studentemailcard';
 import Logoutbutton from '../components/Logoutbutton';
 import Plansection from '../components/Plansection';
 import Parentaccesscard from '../components/Parentaccesscard';
 import Dataprivacycard from '../components/Dataprivacycard';
-import { selectCurrentUser } from '../store/slices/authSlice';
+import { logout, selectCurrentUser } from '../store/slices/authSlice';
+import { useLogoutMutation } from '../store/api/authApi';
 
 const DEFAULT_AVATAR = '/assets/images/icons/Ellipse 3.svg';
 
 function Profile() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
+  const [logoutApi] = useLogoutMutation();
 
   const profileData = {
     user: {
@@ -40,7 +43,9 @@ function Profile() {
   const handleSubmitEmail = () => {};
 
   const handleLogout = () => {
-    // Logout logic
+    dispatch(logout());
+    navigate('/', { replace: true });
+    logoutApi().catch(() => {});
   };
 
   const handleUpgradePlan = () => {

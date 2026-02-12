@@ -4,6 +4,9 @@
 # Production build
 /build
 
+# Build zip artifacts
+build-*.zip
+
 # Environment variables
 .env
 .env.local

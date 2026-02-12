@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRegistration } from '../context/RegistrationContext';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function CreateAccountSuccess() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ function CreateAccountSuccess() {
   };
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="mian-account-card">
         {/* Logo */}
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>

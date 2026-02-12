@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function LoginRoleSelection() {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ function LoginRoleSelection() {
   }
 
   return (
-    <div className="auth-container login-role-selection">
+    <div className="auth-container login-role-selection" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="login-selection">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

@@ -83,7 +83,7 @@ function Aitutor() {
         const parsed = JSON.parse(savedSession);
         setActiveSession(parsed);
       } catch (e) {
-        console.error('Failed to parse saved session');
+        if (process.env.NODE_ENV === 'development') console.error('Failed to parse saved session');
         localStorage.removeItem(SESSION_STORAGE_KEY);
       }
     }

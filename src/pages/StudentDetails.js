@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function StudentDetails({ onSubmit, onBack }) {
   const [formData, setFormData] = useState({
@@ -24,7 +25,7 @@ function StudentDetails({ onSubmit, onBack }) {
   };
 
   return (
-    <div className="auth-container student-details">
+    <div className="auth-container student-details" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="auth-card-white">
         {/* Back Button */}
         <button className="btn-back-white" onClick={onBack}>

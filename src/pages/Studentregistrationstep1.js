@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function StudentRegistrationStep1() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ function StudentRegistrationStep1() {
         if (data.fullName) setFormData(prev => ({ ...prev, fullName: data.fullName }));
         if (data.email) setFormData(prev => ({ ...prev, email: data.email }));
       } catch (e) {
-        console.error('Failed to parse saved registration data');
+        if (process.env.NODE_ENV === 'development') console.error('Failed to parse saved registration data');
       }
     }
     
@@ -129,7 +130,7 @@ function StudentRegistrationStep1() {
   const isPasswordValid = has8Chars && hasUpperLower && hasNumber && hasSpecial;
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="mian-account-card">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

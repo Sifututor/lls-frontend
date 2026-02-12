@@ -67,7 +67,7 @@ function Deleteaccountmodal({ isOpen, onClose }) {
         setError(data.message || 'Failed to delete account. Please check your password.');
       }
     } catch (err) {
-      console.error('Delete account error:', err);
+      if (process.env.NODE_ENV === 'development') console.error('Delete account error:', err);
       setError('Something went wrong. Please try again.');
     } finally {
       setIsDeleting(false);

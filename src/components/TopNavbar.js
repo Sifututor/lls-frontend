@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Cookies from "js-cookie";
 import { logout, selectCurrentUser } from "../store/slices/authSlice";
-import { useLogoutMutation } from "../store/api/authApi";
+import { useLogoutMutation, useGetMeQuery } from "../store/api/authApi";
 import { getUserType, isPremiumUser } from "../store/api/authApi";
 import { LayoutContext } from "../context/LayoutContext";
 
@@ -13,6 +13,7 @@ function TopNavbar({ title, breadcrumb }) {
   const location = useLocation();
   const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
+  const { data: meResponse } = useGetMeQuery(undefined, { skip: !currentUser?.id });
 
   const userName = currentUser?.profile
     ? `${currentUser.profile.first_name || ''} ${currentUser.profile.last_name || ''}`.trim() || currentUser?.name
@@ -69,7 +70,7 @@ function TopNavbar({ title, breadcrumb }) {
           role: userData.user_type || userType
         };
       } catch (e) {
-        console.error('Error parsing user data:', e);
+        if (process.env.NODE_ENV === 'development') console.error('Error parsing user data:', e);
       }
     }
 
@@ -89,23 +90,21 @@ function TopNavbar({ title, breadcrumb }) {
     } else if (userInfo.role === 'tutor') {
       return 'Tutor Account';
     }
-    // Dynamic: form_level and stream from profile / userData
-    const raw = currentUser || (() => {
+    // Prefer form_level from getMe API response, then Redux, then localStorage
+    const apiUser = meResponse?.user || meResponse?.data?.user;
+    const raw = apiUser || currentUser || (() => {
       try {
         const s = localStorage.getItem('userData') || Cookies.get('userData');
         return s ? JSON.parse(s) : null;
       } catch { return null; }
     })();
-    const profile = raw?.profile || {};
-    const formLevel = profile.form_level || raw?.form_level || '';
-    const stream = profile.stream || raw?.stream || profile.stream_name || raw?.stream_name || '';
+    const user = raw?.user || raw;
+    const profile = user?.profile || raw?.profile || {};
+    const formLevel = user?.form_level ?? raw?.form_level ?? profile.form_level ?? '';
     const formDisplay = formLevel
-      ? (formLevel.startsWith('Form') ? formLevel : formLevel.replace(/^form_/, 'Form '))
+      ? (formLevel.startsWith('Form') ? formLevel : String(formLevel).replace(/^form_/, 'Form '))
       : '';
-    const streamDisplay = stream || 'Science Stream';
-    if (formDisplay && streamDisplay) return `${formDisplay} • ${streamDisplay}`;
-    if (formDisplay) return formDisplay;
-    return 'Form 4 • Science Stream';
+    return formDisplay || 'Form level not set';
   };
 
   const getBreadcrumbData = () => {
@@ -203,15 +202,10 @@ function TopNavbar({ title, breadcrumb }) {
     };
   }, [notificationOpen, profileOpen]);
 
-  const handleLogout = async () => {
-    try {
-      await logoutApi().unwrap();
-    } catch (err) {
-      console.error("Logout API error:", err);
-    } finally {
-      dispatch(logout());
-      navigate("/", { replace: true });
-    }
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/", { replace: true });
+    logoutApi().catch(() => {});
   };
 
   const handleSidebarToggle = () => {

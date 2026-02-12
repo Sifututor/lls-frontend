@@ -163,7 +163,7 @@ function LiveClasses() {
         window.open(result.meeting_url, '_blank');
       }
     } catch (error) {
-      console.error('Failed to join class:', error);
+      if (process.env.NODE_ENV === 'development') console.error('Failed to join class:', error);
       // Navigate to live class details page if join fails
       navigate(`/student/live-class/${classId}`);
     }

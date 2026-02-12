@@ -174,7 +174,7 @@ function QuizDetails() {
         navigate(`/student/quiz/${id}/take`);
       }
     } catch (err) {
-      console.error('Failed to start quiz:', err);
+      if (process.env.NODE_ENV === 'development') console.error('Failed to start quiz:', err);
       toast.error(err?.data?.message || err?.message || 'Failed to start quiz');
     }
   };

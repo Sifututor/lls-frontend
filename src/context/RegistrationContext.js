@@ -56,7 +56,7 @@ function loadState() {
       return { ...initialState, ...parsed };
     }
   } catch (e) {
-    console.warn('RegistrationContext: failed to load state', e);
+    if (process.env.NODE_ENV === 'development') console.warn('RegistrationContext: failed to load state', e);
   }
   return { ...initialState };
 }
@@ -65,7 +65,7 @@ function saveState(state) {
   try {
     sessionStorage.setItem(REGISTRATION_STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
-    console.warn('RegistrationContext: failed to save state', e);
+    if (process.env.NODE_ENV === 'development') console.warn('RegistrationContext: failed to save state', e);
   }
 }
 

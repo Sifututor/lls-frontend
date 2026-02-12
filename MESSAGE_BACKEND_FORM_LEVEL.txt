@@ -1,0 +1,14 @@
+Copy-paste yeh message backend developer ko bhejo:
+---
+/me API (GET) me abhi user.form_level null aa raha hai. DB me students ka form_level sahi hai (e.g. "Form 2") but response me include nahi ho raha.
+
+Please /me endpoint me user object return karte waqt users table se form_level column bhi select karke bhejo. Example:
+
+response.data.user = {
+  id, name, email, user_type,
+  form_level: user.form_level,   // <-- yeh add karo (DB se)
+  profile: ...
+}
+
+Jab form_level response me aayega tab frontend topbar me automatically "Form 2" dikha dega.
+---

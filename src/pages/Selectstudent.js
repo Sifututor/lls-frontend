@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRegistration } from '../context/RegistrationContext';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function SelectStudent() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ function SelectStudent() {
   };
 
   return (
-    <div className="auth-container student-selection">
+    <div className="auth-container student-selection" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="login-selection">
       {/* Logo */}
        <div className="auth-logo-center clickable" onClick={() => navigate('/')}>

@@ -15,7 +15,7 @@ export const usePremium = () => {
         const userData = typeof raw === 'string' ? JSON.parse(raw) : raw;
         isPremiumUser = userData.is_premium === true || userData.is_premium === 1 || userData.is_premium === '1';
       } catch (err) {
-        console.error('Error parsing userData:', err);
+        if (process.env.NODE_ENV === 'development') console.error('Error parsing userData:', err);
       }
       setIsPremium(isPremiumStorage || isPremiumUser);
       setIsLoading(false);
@@ -34,7 +34,7 @@ export const usePremium = () => {
       const userData = typeof raw === 'string' ? JSON.parse(raw) : raw;
       isPremiumUser = userData.is_premium === true || userData.is_premium === 1 || userData.is_premium === '1';
     } catch (err) {
-      console.error('Error parsing userData:', err);
+      if (process.env.NODE_ENV === 'development') console.error('Error parsing userData:', err);
     }
     setIsPremium(isPremiumStorage || isPremiumUser);
   };

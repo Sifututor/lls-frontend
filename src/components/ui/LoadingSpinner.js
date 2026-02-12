@@ -1,6 +1,7 @@
 // src/components/ui/LoadingSpinner.js
 import React from 'react';
 import './Loading.css';
+import loadingBg from '../../assets/images/landing-page-bg.png';
 
 export const Spinner = () => (
   <div className="spinner-container">
@@ -22,7 +23,7 @@ export const SectionLoader = () => (
 );
 
 export const PageLoader = ({ message = 'Loading...' }) => (
-  <div className="loading-screen">
+  <div className="loading-screen" style={{ '--loading-bg': `url(${loadingBg})` }}>
     <div className="loading-screen-content">
       <div className="loading-screen-icon">
         {/* SVG Book Icon */}

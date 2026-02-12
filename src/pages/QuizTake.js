@@ -86,7 +86,7 @@ function QuizTake() {
   const handleSubmitQuiz = useCallback(async () => {
     // ✅ Always require attemptId (API flow only, no static fallback)
     if (!attemptId) {
-      console.error('No attempt ID - cannot submit quiz');
+      if (process.env.NODE_ENV === 'development') console.error('No attempt ID - cannot submit quiz');
       alert('Failed to submit quiz: No attempt ID found. Please start the quiz again.');
       return;
     }
@@ -111,7 +111,7 @@ function QuizTake() {
       setShowResult(true);
       setShowReview(false);
     } catch (err) {
-      console.error('Submit failed:', err);
+      if (process.env.NODE_ENV === 'development') console.error('Submit failed:', err);
       alert(err?.data?.message || err?.message || 'Failed to submit quiz');
     }
   }, [attemptId, answers, submitQuiz, totalCount, quizSettings.passingScore]);

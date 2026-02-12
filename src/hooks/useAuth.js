@@ -1,30 +1,36 @@
 // src/hooks/useAuth.js
 import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import Cookies from 'js-cookie';
 import { ROLES, getRoleDashboard, hasPermission } from '../utils/roleConfig';
+import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
 
 export const useAuth = () => {
+  // ✅ Routing uses Redux so logout → navigate("/") shows login immediately (no redirect back to dashboard)
+  const reduxAuthenticated = useSelector(selectIsAuthenticated);
+  const reduxUser = useSelector(selectCurrentUser);
+
   const token = localStorage.getItem('authToken') || Cookies.get('authToken');
   const storedUserType = localStorage.getItem('userType') || Cookies.get('userType');
   const storedUser = localStorage.getItem('userData') || Cookies.get('userData');
 
-  // ✅ FIX: Don't call /me API here - it's called only during login/profile update
-  // Read user data from localStorage only (NO API CALLS!)
+  // Prefer Redux for isAuthenticated/role so route guards react to logout in same render
   const authState = useMemo(() => {
-    const userData = storedUser ? JSON.parse(storedUser) : null;
+    const userData = reduxUser || (storedUser ? JSON.parse(storedUser) : null);
     const rawRole = userData?.user_type || storedUserType || null;
     const normalizedRole = rawRole ? String(rawRole).toLowerCase().trim() : null;
-    const isAuthenticated = !!token && !!userData;
+    // Redux is source of truth for routing so logout takes effect immediately
+    const isAuthenticated = reduxAuthenticated;
 
     return {
       isAuthenticated,
-      isLoading: false, // No API call = never loading
-      error: null, // No API call = no error
+      isLoading: false,
+      error: null,
       user: userData,
       role: normalizedRole,
-      token,
+      token: token || null,
     };
-  }, [token, storedUserType, storedUser]);
+  }, [reduxAuthenticated, reduxUser, token, storedUserType, storedUser]);
 
   const checkPermission = (permission) => {
     return hasPermission(authState.role, permission);

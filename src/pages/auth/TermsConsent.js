@@ -7,6 +7,7 @@ import { setCredentials } from '../../store/slices/authSlice';
 import { useRegistration } from '../../context/RegistrationContext';
 import { showError, showWarning } from '../../utils/toast';
 import '../../assets/css/auth.css';
+import authBg from '../../assets/images/landing-page-bg.png';
 
 function TermsConsent() {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ function TermsConsent() {
       }
       return data;
     } catch (err) {
-      console.error('/me API Error:', err);
+      if (process.env.NODE_ENV === 'development') console.error('/me API Error:', err);
       return null;
     }
   };
@@ -100,7 +101,7 @@ function TermsConsent() {
   }
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="mian-account-card">
         <div className="auth-card-white">
           <div className="progress-bars">

@@ -6,6 +6,7 @@ import { setCredentials } from '../store/slices/authSlice';
 import { useDispatch } from 'react-redux';
 import { validatePassword } from '../utils/passwordValidation';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function StudentRegistration() {
   const navigate = useNavigate();
@@ -107,7 +108,7 @@ function StudentRegistration() {
   };
 
   return (
-    <div className="auth-container student-login-page">
+    <div className="auth-container student-login-page" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="login-selection">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

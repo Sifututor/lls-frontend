@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useActivateStudentMutation, useGetStudentActivationInfoQuery } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function StudentActivation() {
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ function StudentActivation() {
       navigate('/activate-student/success');
       
     } catch (err) {
-      console.error('Activation error:', err);
+      if (process.env.NODE_ENV === 'development') console.error('Activation error:', err);
       setErrorMessage(err?.data?.message || 'Activation failed. Please try again.');
     }
   };
@@ -94,7 +95,7 @@ function StudentActivation() {
   // Loading state
   if (infoLoading) {
     return (
-      <div className="auth-container signup-step">
+      <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
         <div className="mian-account-card">
           <div className="auth-logo-center">
             <img src="/assets/images/landingpage-logo.png" alt="Learnest" />
@@ -112,7 +113,7 @@ function StudentActivation() {
   // Error state - Invalid or expired token
   if (infoError || !token) {
     return (
-      <div className="auth-container signup-step">
+      <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
         <div className="mian-account-card">
           <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
             <img src="/assets/images/landingpage-logo.png" alt="Learnest" />
@@ -137,7 +138,7 @@ function StudentActivation() {
   }
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="mian-account-card">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

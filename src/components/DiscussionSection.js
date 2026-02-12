@@ -208,7 +208,7 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
       setIsAnonymous(false);
       refetch();
     } catch (err) {
-      console.error('Post question error:', err);
+      if (process.env.NODE_ENV === 'development') console.error('Post question error:', err);
       showError(err?.data?.message || 'Failed to post question');
     }
   };
@@ -225,7 +225,7 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
       setUpvotedComments(prev => new Set([...prev, commentId]));
       refetch();
     } catch (err) {
-      console.error('Upvote error:', err);
+      if (process.env.NODE_ENV === 'development') console.error('Upvote error:', err);
       if (err?.data?.message === 'You have already upvoted this question') {
         setUpvotedComments(prev => new Set([...prev, commentId]));
       } else if (err?.data?.message === 'Premium subscription required') {
@@ -294,7 +294,7 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
       setReplyText('');
       refetch();
     } catch (err) {
-      console.error('Reply error:', err);
+      if (process.env.NODE_ENV === 'development') console.error('Reply error:', err);
       showError(err?.data?.message || 'Failed to post reply');
     }
   };

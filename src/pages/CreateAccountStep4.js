@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function CreateAccountStep4({ signupData, onComplete }) {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ function CreateAccountStep4({ signupData, onComplete }) {
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="auth-card-white">
         {/* Logo - Clickable */}
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>

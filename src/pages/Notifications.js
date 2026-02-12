@@ -35,7 +35,7 @@ function Notifications() {
       await markAllNotificationsRead().unwrap();
       refetch();
     } catch (err) {
-      console.error('Error marking all as read:', err);
+      if (process.env.NODE_ENV === 'development') console.error('Error marking all as read:', err);
     }
   };
 
@@ -43,7 +43,7 @@ function Notifications() {
     try {
       await markNotificationRead(id).unwrap();
     } catch (err) {
-      console.error('Error marking notification as read:', err);
+      if (process.env.NODE_ENV === 'development') console.error('Error marking notification as read:', err);
     }
   };
 

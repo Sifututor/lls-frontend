@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function StudentRegistrationSuccess() {
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ function StudentRegistrationSuccess() {
           }
         }
       } catch (error) {
-        console.error('[EmailVerify] Error:', error);
+        if (process.env.NODE_ENV === 'development') console.error('[EmailVerify] Error:', error);
         setVerificationStatus('error');
         setVerificationMessage('Network error. Please try again.');
         
@@ -182,7 +183,7 @@ function StudentRegistrationSuccess() {
   };
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="mian-account-card">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRegistration } from '../context/RegistrationContext';
 import { showWarning } from '../utils/toast';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function CreateAccountStep1() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ function CreateAccountStep1() {
           // Don't restore password for security
         }));
       } catch (e) {
-        console.error('Failed to parse saved form data');
+        if (process.env.NODE_ENV === 'development') console.error('Failed to parse saved form data');
       }
     }
     
@@ -113,7 +114,7 @@ function CreateAccountStep1() {
   const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="mian-account-card">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

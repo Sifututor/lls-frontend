@@ -6,6 +6,7 @@ import { useRegisterMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import { showError, showWarning } from '../utils/toast';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function CreateAccountStep2({ signupData: propSignupData, childrenData: propChildrenData, onComplete }) {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ function CreateAccountStep2({ signupData: propSignupData, childrenData: propChil
       
       return data;
     } catch (err) {
-      console.error('/me API Error:', err);
+      if (process.env.NODE_ENV === 'development') console.error('/me API Error:', err);
       return null;
     }
   };
@@ -126,7 +127,7 @@ function CreateAccountStep2({ signupData: propSignupData, childrenData: propChil
   };
 
   return (
-    <div className="auth-container signup-step">
+    <div className="auth-container signup-step" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="mian-account-card">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />

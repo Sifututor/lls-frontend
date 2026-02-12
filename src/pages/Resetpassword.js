@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function ResetPassword() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ function ResetPassword() {
 
   if (!token || !email) {
     return (
-      <div className="auth-container reset-password-page">
+      <div className="auth-container reset-password-page" style={{ '--auth-bg': `url(${authBg})` }}>
         <div className="login-selection">
           <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
             <img src="/assets/images/landingpage-logo.png" alt="Learnest" />
@@ -93,7 +94,7 @@ function ResetPassword() {
   }
 
   return (
-    <div className="auth-container reset-password-page">
+    <div className="auth-container reset-password-page" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="login-selection">
         {/* Logo */}
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>

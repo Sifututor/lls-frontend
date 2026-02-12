@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { useLoginMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import '../assets/css/auth.css';
+import authBg from '../assets/images/landing-page-bg.png';
 
 function ParentLogin({ onLogin }) {
   const navigate = useNavigate();
@@ -94,7 +95,7 @@ function ParentLogin({ onLogin }) {
   };
 
   return (
-    <div className="auth-container parent-login-page">
+    <div className="auth-container parent-login-page" style={{ '--auth-bg': `url(${authBg})` }}>
       <div className="login-selection">
         <div className="auth-logo-center clickable" onClick={() => navigate('/')}>
           <img src="/assets/images/landingpage-logo.png" alt="Learnest" />
