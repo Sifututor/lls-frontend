@@ -1,5 +1,40 @@
 /* src/assets/css/tutor.css - Tutor module styles */
 
+/* ========== Tutor Sidebar (image-accurate: # icon, green main, light grey sub) ========== */
+.tutor-sidebar .nav-icon-hash {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1;
+}
+
+.tutor-sidebar .nav-item.active {
+  background: #9FE870;
+  color: #163300;
+}
+
+.tutor-sidebar .nav-subitem {
+  padding: 10px 16px 10px 40px;
+  color: #163300;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.tutor-sidebar .nav-subitem:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.tutor-sidebar .nav-subitem.active {
+  background: #E5E5E5;
+  color: #163300;
+}
+
 :root {
   --tutor-primary: #4CAF50;
   --tutor-primary-dark: #388E3C;
@@ -477,9 +512,10 @@
 }
 
 .tutor-login-page .link-forgot {
-  font-size: 0.875rem;
-  color: var(--tutor-primary);
+  font-size: 18px;
+  color: #163300;
   text-decoration: none;
+  font-weight: 600;
 }
 
 .tutor-login-page .link-forgot:hover {

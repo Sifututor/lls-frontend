@@ -1,0 +1,133 @@
+/**
+ * Upload Live Class page – Dashboard quick link wala form. (Upload Recording = sidebar detail.)
+ * Ek main div .tutor-upload-card (tutor-live-class-main-card) me sab content; andar sections me border/bg nahi.
+ * Colors: #163300, #9FE870, #FAFAFA, #CFCFCF, #9A9A9A. Inter, radius 10px/20px.
+ */
+
+.tutor-live-class-wrapper {
+  max-width: 100%;
+  margin-top: 60px;
+}
+
+/* Main div – upar niche sab ka wrapper, sirf isme bg + border */
+.tutor-live-class-wrapper .tutor-upload-card.tutor-live-class-main-card {
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.tutor-live-class-form-fields {
+  margin-bottom: 24px;
+}
+
+/* Andar ke sections – border/bg nahi */
+.tutor-live-class-section {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: 24px;
+}
+
+.tutor-live-class-section-title {
+  font-family: Inter, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 16px 0;
+}
+
+.tutor-live-class-section .tutor-upload-dropzone {
+  margin-bottom: 16px;
+}
+
+.tutor-live-class-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.tutor-live-class-preview-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.tutor-live-class-preview-thumb {
+  width: 120px;
+  height: 80px;
+  background: #1f2937;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tutor-live-class-play-icon {
+  color: #fff;
+  font-size: 24px;
+}
+
+.tutor-live-class-preview-name {
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #9A9A9A;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tutor-live-class-files-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 32px;
+}
+
+.tutor-live-class-file-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tutor-live-class-file-name {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #163300;
+}
+
+.tutor-live-class-file-size {
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #9A9A9A;
+}
+
+.tutor-live-class-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.tutor-live-class-btn-upload {
+  padding: 14px 24px;
+  background: #9FE870;
+  border: none;
+  border-radius: 20px;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tutor-live-class-btn-upload:hover {
+  background: #8CD75C;
+}

@@ -174,6 +174,136 @@ function TopNavbar({ title, breadcrumb }) {
       };
     }
 
+    // Tutor Upload Lesson: Content / Upload Video
+    if (path === '/tutor/courses/upload') {
+      return {
+        parentName: 'Content',
+        parentLink: '/tutor/courses',
+        currentName: breadcrumb || 'Upload Video'
+      };
+    }
+
+    // Tutor Create Quiz: Content / Create Quiz
+    if (path === '/tutor/courses/quiz/create') {
+      return {
+        parentName: 'Content',
+        parentLink: '/tutor/courses',
+        currentName: breadcrumb || 'Create Quiz'
+      };
+    }
+
+    // Tutor Pending Approval: Content / Pending Approval
+    if (path === '/tutor/courses/pending') {
+      return {
+        parentName: 'Content',
+        parentLink: '/tutor/courses',
+        currentName: breadcrumb || 'Pending Approval'
+      };
+    }
+
+    // Tutor Live Classes – My Live Classes: Live Classes / My Live Classes
+    if (path === '/tutor/live-classes') {
+      return {
+        parentName: 'Live Classes',
+        parentLink: '/tutor/live-classes',
+        currentName: breadcrumb || 'My Live Classes'
+      };
+    }
+
+    // Tutor Live Classes – Schedule Class: Live Classes / Schedule Class
+    if (path === '/tutor/live-classes/schedule') {
+      return {
+        parentName: 'Live Classes',
+        parentLink: '/tutor/live-classes',
+        currentName: breadcrumb || 'Schedule Class'
+      };
+    }
+
+    // Tutor Live Classes – Upload Recording (detail, sidebar): Live Classes / Upload Recording
+    if (path === '/tutor/live-classes/upload-recording') {
+      return {
+        parentName: 'Live Classes',
+        parentLink: '/tutor/live-classes',
+        currentName: breadcrumb || 'Upload Recording'
+      };
+    }
+
+    // Tutor Live Classes – Upload Live Class (form, quick link): Live Classes / Upload Live Class
+    if (path === '/tutor/live-classes/upload-live-class') {
+      return {
+        parentName: 'Live Classes',
+        parentLink: '/tutor/live-classes',
+        currentName: breadcrumb || 'Upload Live Class'
+      };
+    }
+
+    // Tutor Engagement – Video Q&A: Engagement / Video Q&A
+    if (path === '/tutor/engagement/qna') {
+      return {
+        parentName: 'Engagement',
+        parentLink: '/tutor/engagement',
+        currentName: breadcrumb || 'Video Q&A'
+      };
+    }
+
+    // Tutor Engagement – Student Progress: Engagement / Student Progress
+    if (path === '/tutor/engagement/progress') {
+      return {
+        parentName: 'Engagement',
+        parentLink: '/tutor/engagement',
+        currentName: breadcrumb || 'Student Progress'
+      };
+    }
+
+    if (path === '/tutor/engagement/progress-cards') {
+      return {
+        parentName: 'Engagement',
+        parentLink: '/tutor/engagement',
+        currentName: breadcrumb || 'Student Progress Cards'
+      };
+    }
+
+    if (path.startsWith('/tutor/engagement/progress-cards/student/')) {
+      return {
+        parentName: 'Student Progress Cards',
+        parentLink: '/tutor/engagement/progress-cards',
+        currentName: breadcrumb || 'Student Profile'
+      };
+    }
+
+    if (path === '/tutor/engagement/quiz-results') {
+      return {
+        parentName: 'Engagement',
+        parentLink: '/tutor/engagement',
+        currentName: breadcrumb || 'Quiz Results'
+      };
+    }
+
+    if (path === '/tutor/profile') {
+      return {
+        parentName: 'Dashboard',
+        parentLink: '/tutor/dashboard',
+        currentName: breadcrumb || 'Profile'
+      };
+    }
+
+    if (path === '/tutor/verification-form') {
+      return {
+        parentName: 'Dashboard',
+        parentLink: '/tutor/dashboard',
+        currentName: breadcrumb || 'Verification Form'
+      };
+    }
+
+    // Tutor course inner: Content / My Courses / <Course Title>
+    if (path.startsWith('/tutor/courses/') && path !== '/tutor/courses') {
+      return {
+        parentName: 'Content / My Courses',
+        parentLink: '/tutor/courses',
+        currentName: location.state?.courseTitle || breadcrumb || 'Course'
+      };
+    }
+
     return null;
   };
 
@@ -378,7 +508,59 @@ function TopNavbar({ title, breadcrumb }) {
             />
           </div>
 
-          {profileOpen && (
+          {profileOpen && userInfo.role === 'tutor' && (
+            <div className="profile-dropdown active">
+              <div className="profile-dropdown-header">
+                <img
+                  src={userAvatar}
+                  alt="Avatar"
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/icons/Ellipse 3.svg'; }}
+                />
+                <div className="profile-dropdown-info">
+                  <h4>Tutor</h4>
+                  <p style={{ fontSize: 12, color: "#6B7280", margin: 0 }}>
+                    {userEmail}
+                  </p>
+                </div>
+              </div>
+              <div className="profile-dropdown-menu">
+                <div
+                  className="profile-menu-item"
+                  onClick={() => {
+                    navigate("/tutor/profile");
+                    setProfileOpen(false);
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <img src="/assets/images/icons/059-pencil.svg" alt="" />
+                  <span>Profile</span>
+                </div>
+                <div
+                  className="profile-menu-item"
+                  onClick={() => {
+                    navigate("/tutor/verification-form");
+                    setProfileOpen(false);
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <img src="/assets/images/icons/profile-setting.svg" alt="" />
+                  <span>Verification</span>
+                </div>
+              </div>
+              <div className="profile-dropdown-footer">
+                <button
+                  className="logout-btn"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  type="button"
+                >
+                  {isLoggingOut ? "Signing out..." : "Sign out"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {profileOpen && userInfo.role !== 'tutor' && (
             <div className="profile-dropdown active">
               <div className="profile-dropdown-header">
                 <img
@@ -388,8 +570,7 @@ function TopNavbar({ title, breadcrumb }) {
                 />
                 <div className="profile-dropdown-info">
                   <h4>
-                    {userInfo.role === 'parent' ? 'Parent' : 
-                     userInfo.role === 'tutor' ? 'Tutor' : 'Student'}
+                    {userInfo.role === 'parent' ? 'Parent' : 'Student'}
                   </h4>
                   <p style={{ fontSize: 12, color: "#6B7280", margin: 0 }}>
                     {userEmail}

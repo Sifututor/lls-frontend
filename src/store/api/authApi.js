@@ -45,6 +45,14 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
       Cookies.remove('userType', { path: '/' });
       Cookies.remove('isPremium', { path: '/' });
     } catch (_) {}
+    // Redirect to login when session expires (skip if already on any login page or request was login/register)
+    const req = typeof args === 'string' ? args : args?.url ?? '';
+    const isAuthRequest = String(req).includes('/login') || String(req).includes('/register');
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    const isOnLoginPage = path === '/login' || path.includes('/login') || path === '/tutor/login' || path === '/login/student' || path === '/login/parent';
+    if (typeof window !== 'undefined' && !isAuthRequest && !isOnLoginPage) {
+      window.location.href = '/login';
+    }
   }
   return result;
 };
@@ -75,7 +83,7 @@ export const authApi = createApi({
             Cookies.set('tokenExpiry', expiryTime.toString(), cookieOptions);
           }
           
-          // Save user data from login response first
+          // Save user data from login response
           if (data.user) {
             localStorage.setItem('userData', JSON.stringify(data.user));
             Cookies.set('userData', JSON.stringify(data.user), cookieOptions);
@@ -85,12 +93,8 @@ export const authApi = createApi({
             localStorage.setItem('isPremium', data.user.is_premium ? 'true' : 'false');
             Cookies.set('isPremium', data.user.is_premium ? 'true' : 'false', cookieOptions);
           }
-          
-          // Fetch fresh user data from /me after login
-          setTimeout(() => {
-            dispatch(authApi.endpoints.getMe.initiate(undefined, { forceRefetch: true }));
-          }, 100);
-          
+          // Clear all cached API data so new user does not see previous user's data
+          dispatch(authApi.util.resetApiState());
         } catch (error) {
           // Silent error - login still works, just no fresh data fetch
         }
@@ -195,19 +199,26 @@ export const authApi = createApi({
     // Logout
     logout: builder.mutation({
       query: () => ({ url: '/logout', method: 'POST' }),
-      transformResponse: (response) => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('tokenExpiry');
-        localStorage.removeItem('userData');
-        localStorage.removeItem('userType');
-        localStorage.removeItem('isPremium');
-        Cookies.remove('authToken', { path: '/' });
-        Cookies.remove('tokenExpiry', { path: '/' });
-        Cookies.remove('userData', { path: '/' });
-        Cookies.remove('userType', { path: '/' });
-        Cookies.remove('isPremium', { path: '/' });
-        return response;
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(authApi.util.resetApiState());
+        } catch (_e) {
+          dispatch(authApi.util.resetApiState());
+        } finally {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('tokenExpiry');
+          localStorage.removeItem('userData');
+          localStorage.removeItem('userType');
+          localStorage.removeItem('isPremium');
+          Cookies.remove('authToken', { path: '/' });
+          Cookies.remove('tokenExpiry', { path: '/' });
+          Cookies.remove('userData', { path: '/' });
+          Cookies.remove('userType', { path: '/' });
+          Cookies.remove('isPremium', { path: '/' });
+        }
       },
+      transformResponse: (response) => response,
     }),
 
     // Refresh Token
@@ -451,17 +462,61 @@ export const authApi = createApi({
     }),
 
     addBookmark: builder.mutation({
-      query: ({ lessonId, timestamp, note }) => ({
-        url: `/lesson/${lessonId}/bookmark`,
-        method: 'POST',
-        body: { timestamp, note },
-      }),
-      invalidatesTags: ['Notes'],
+      query: ({ lessonId, timestamp, note }) => {
+        const secs = typeof timestamp === 'number' ? timestamp : parseInt(timestamp, 10) || 0;
+        return {
+          url: `/lesson/${lessonId}/bookmark`,
+          method: 'POST',
+          body: {
+            timestamp: secs,
+            timestamp_seconds: secs,
+            note: note || '',
+            content: note || '',
+          },
+        };
+      },
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const payload = data?.data || data;
+          const lessonId = _arg.lessonId;
+          if (payload && lessonId != null) {
+            dispatch(
+              authApi.util.updateQueryData('getLessonNotes', lessonId, (draft) => {
+                if (!draft) draft = { notes: [] };
+                if (!Array.isArray(draft.notes)) draft.notes = [];
+                draft.notes.push({
+                  id: payload.id,
+                  timestamp: payload.timestamp,
+                  timestamp_seconds: payload.timestamp ?? 0,
+                  note: payload.note ?? payload.content ?? '',
+                  content: payload.content ?? payload.note ?? '',
+                  created_at: payload.created_at ?? null,
+                });
+              })
+            );
+          }
+        } catch (_e) {}
+      },
+      invalidatesTags: (result, error, { lessonId }) => [{ type: 'Notes', id: String(lessonId) }, 'Notes'],
     }),
 
     getLessonNotes: builder.query({
       query: (lessonId) => `/lesson/${lessonId}/notes`,
-      providesTags: ['Notes'],
+      transformResponse: (response) => {
+        if (!response) return { notes: [] };
+        const arr =
+          response?.data?.notes ??
+          response?.data?.bookmarks ??
+          response?.data?.data ??
+          (Array.isArray(response?.data) ? response.data : null) ??
+          response?.notes ??
+          response?.bookmarks ??
+          (Array.isArray(response) ? response : null) ??
+          [];
+        return { notes: Array.isArray(arr) ? arr : [] };
+      },
+      providesTags: (result, error, lessonId) => [{ type: 'Notes', id: String(lessonId) }, 'Notes'],
     }),
 
     deleteNote: builder.mutation({
@@ -470,6 +525,59 @@ export const authApi = createApi({
         method: 'DELETE',
       }),
       invalidatesTags: ['Notes'],
+    }),
+
+    // Alternative: create note via POST /lesson/:id/notes (if backend uses this instead of bookmark)
+    createLessonNote: builder.mutation({
+      query: ({ lessonId, timestamp_seconds, content }) => ({
+        url: `/lesson/${lessonId}/notes`,
+        method: 'POST',
+        body: { timestamp_seconds: timestamp_seconds ?? 0, content: content || '' },
+      }),
+      async onQueryStarted({ lessonId, timestamp_seconds, content }, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const payload = data?.data || data;
+          if (payload && lessonId != null) {
+            dispatch(
+              authApi.util.updateQueryData('getLessonNotes', lessonId, (draft) => {
+                if (!draft) draft = { notes: [] };
+                if (!Array.isArray(draft.notes)) draft.notes = [];
+                draft.notes.push({
+                  id: payload.id,
+                  timestamp: timestamp_seconds ?? 0,
+                  timestamp_seconds: timestamp_seconds ?? 0,
+                  note: content ?? payload.note ?? payload.content ?? '',
+                  content: content ?? payload.content ?? payload.note ?? '',
+                  created_at: payload.created_at ?? null,
+                });
+              })
+            );
+          }
+        } catch (_e) {}
+      },
+      invalidatesTags: (result, error, { lessonId }) => [{ type: 'Notes', id: String(lessonId) }, 'Notes'],
+    }),
+
+    // ========== VIDEO PROGRESS ==========
+    saveVideoProgress: builder.mutation({
+      query: ({ lessonId, last_position, duration_delta }) => ({
+        url: `/lessons/${lessonId}/video-progress`,
+        method: 'POST',
+        body: {
+          last_position: Math.round(Number(last_position) || 0),
+          duration_delta: Math.round(Number(duration_delta) || 0),
+        },
+      }),
+      transformResponse: (response) => {
+        if (response?.status === false) {
+          const e = new Error(response?.message);
+          e.data = { message: response?.message };
+          throw e;
+        }
+        return response?.data ?? response;
+      },
+      invalidatesTags: (result, error, { lessonId }) => [{ type: 'Courses', id: 'PROGRESS' }, 'Courses'],
     }),
 
     // ========== LIVE CLASSES ==========
@@ -544,10 +652,19 @@ export const authApi = createApi({
     getVideoQnA: builder.query({
       query: ({ lessonId, page = 1, sort = 'most-upvoted' }) => {
         const queryParams = new URLSearchParams();
-        queryParams.append('lesson_id', lessonId);
+        if (lessonId) queryParams.append('lesson_id', lessonId);
         if (page) queryParams.append('page', page);
         if (sort) queryParams.append('sort', sort);
         return `/video-qna?${queryParams.toString()}`;
+      },
+      transformResponse: (response) => {
+        if (!response) return { data: { data: [] }, total_comments: 0 };
+        const list = response?.data?.data ?? response?.data ?? (Array.isArray(response?.data) ? response.data : null) ?? [];
+        const total = response?.total_comments ?? (Array.isArray(list) ? list.length : 0);
+        return {
+          data: { ...response?.data, data: Array.isArray(list) ? list : [] },
+          total_comments: total,
+        };
       },
       providesTags: ['VideoQnA'],
     }),
@@ -563,6 +680,10 @@ export const authApi = createApi({
           is_anonymous: isAnonymous ? 1 : 0,
         },
       }),
+      transformResponse: (response) => {
+        if (response?.status === false) { const e = new Error(response?.message); e.data = { message: response?.message }; throw e; }
+        return response;
+      },
       invalidatesTags: ['VideoQnA'],
     }),
 
@@ -571,15 +692,39 @@ export const authApi = createApi({
         url: `/video-qna/${questionId}/upvote`,
         method: 'POST',
       }),
+      transformResponse: (response) => {
+        if (response?.status === false) { const e = new Error(response?.message); e.data = { message: response?.message }; throw e; }
+        return response;
+      },
       invalidatesTags: ['VideoQnA'],
     }),
 
     flagQuestion: builder.mutation({
       query: ({ questionId, reason }) => ({
-        url: `/video-qna/${questionId}/flag`,
+        url: '/video-qna/flag',
         method: 'POST',
-        body: { reason },
+        body: {
+          flaggable_type: 'video_question',
+          flaggable_id: questionId,
+          reason: reason || '',
+        },
       }),
+      transformResponse: (response) => {
+        if (response?.status === false) { const e = new Error(response?.message); e.data = { message: response?.message }; throw e; }
+        return response;
+      },
+      invalidatesTags: ['VideoQnA'],
+    }),
+
+    unflagQuestion: builder.mutation({
+      query: (questionId) => ({
+        url: `/video-qna/${questionId}/unflag`,
+        method: 'POST',
+      }),
+      transformResponse: (response) => {
+        if (response?.status === false) { const e = new Error(response?.message); e.data = { message: response?.message }; throw e; }
+        return response;
+      },
       invalidatesTags: ['VideoQnA'],
     }),
 
@@ -589,6 +734,10 @@ export const authApi = createApi({
         method: 'POST',
         body: { answer_text: answerText },
       }),
+      transformResponse: (response) => {
+        if (response?.status === false) { const e = new Error(response?.message); e.data = { message: response?.message }; throw e; }
+        return response;
+      },
       invalidatesTags: ['VideoQnA'],
     }),
 
@@ -629,6 +778,29 @@ export const authApi = createApi({
       providesTags: (result, error, quizId) => [{ type: 'Quiz', id: quizId }],
     }),
 
+    getQuizAttemptReview: builder.query({
+      query: (attemptId) => `/quiz-attempts/${attemptId}/review`,
+      transformResponse: (response) => {
+        if (!response) return null;
+        const d = response?.data ?? response;
+        const questions = d?.questions ?? [];
+        return {
+          attempt_id: d?.attempt_id ?? d?.attemptId,
+          score: d?.score ?? 0,
+          passed: d?.passed === 1 || d?.passed === true,
+          questions: Array.isArray(questions) ? questions : [],
+          user_answers: d?.user_answers ?? d?.userAnswers ?? {},
+          correct_answers: d?.correct_answers ?? d?.correctAnswers ?? {},
+          correct: d?.correct,
+          incorrect: d?.incorrect,
+          skipped: d?.skipped,
+          total: d?.total,
+          ...d,
+        };
+      },
+      providesTags: (result, error, attemptId) => [{ type: 'Quiz', id: `review-${attemptId}` }],
+    }),
+
     // ========== STUDENT DASHBOARD ==========
     getStudentDashboardAnalytics: builder.query({
       query: () => '/student/dashboard-analytics',
@@ -659,6 +831,99 @@ export const authApi = createApi({
     getTutorSubmissions: builder.query({
       query: () => '/tutor/submissions',
       providesTags: ['Tutor'],
+    }),
+
+    // Tutor courses list (paginated): GET /tutor/courses?page=1
+    getTutorCourses: builder.query({
+      query: (page = 1) => `/tutor/courses?page=${page}`,
+      providesTags: (result) =>
+        result?.courses?.data
+          ? [
+              { type: 'Tutor', id: 'COURSES_LIST' },
+              ...result.courses.data.map((c) => ({ type: 'Tutor', id: `COURSE_${c.id}` })),
+            ]
+          : ['Tutor'],
+    }),
+
+    // Tutor single course detail: GET /tutor/courses/:id
+    getTutorCourseById: builder.query({
+      query: (id) => `/tutor/courses/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Tutor', id: `COURSE_${id}` }],
+    }),
+
+    // Tutor quizzes list: GET /tutor/quizzes?page=1
+    getTutorQuizzes: builder.query({
+      query: (page = 1) => `/tutor/quizzes?page=${page}`,
+      providesTags: (result) =>
+        result?.data?.data
+          ? [
+              { type: 'Tutor', id: 'QUIZZES_LIST' },
+              ...result.data.data.map((q) => ({ type: 'Tutor', id: `QUIZ_${q.id}` })),
+            ]
+          : ['Tutor'],
+    }),
+
+    // Tutor single quiz: GET /tutor/quizzes/:id
+    getTutorQuizById: builder.query({
+      query: (id) => `/tutor/quizzes/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Tutor', id: `QUIZ_${id}` }],
+    }),
+
+    // Create quiz: POST /tutor/quizzes
+    createTutorQuiz: builder.mutation({
+      query: (body) => ({
+        url: '/tutor/quizzes',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Tutor', id: 'QUIZZES_LIST' }],
+    }),
+
+    // Update quiz: PUT /tutor/quizzes/:id
+    updateTutorQuiz: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/tutor/quizzes/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Tutor', id: `QUIZ_${id}` }, { type: 'Tutor', id: 'QUIZZES_LIST' }],
+    }),
+
+    // Delete quiz: DELETE /tutor/quizzes/:id
+    deleteTutorQuiz: builder.mutation({
+      query: (id) => ({
+        url: `/tutor/quizzes/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, id) => [{ type: 'Tutor', id: `QUIZ_${id}` }, { type: 'Tutor', id: 'QUIZZES_LIST' }],
+    }),
+
+    // Tutor profile: GET /tutor/profile, PUT /tutor/profile
+    getTutorProfile: builder.query({
+      query: () => '/tutor/profile',
+      providesTags: [{ type: 'Tutor', id: 'PROFILE' }],
+    }),
+    updateTutorProfile: builder.mutation({
+      query: (body) => ({
+        url: '/tutor/profile',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Tutor', id: 'PROFILE' }, 'User'],
+    }),
+
+    // Tutor verification: GET /tutor/verification, POST /tutor/verification
+    getTutorVerification: builder.query({
+      query: () => '/tutor/verification',
+      providesTags: [{ type: 'Tutor', id: 'VERIFICATION' }],
+    }),
+    submitTutorVerification: builder.mutation({
+      query: (body) => ({
+        url: '/tutor/verification',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Tutor', id: 'VERIFICATION' }],
     }),
   }),
 });
@@ -707,6 +972,8 @@ export const {
   useAddBookmarkMutation,
   useGetLessonNotesQuery,
   useDeleteNoteMutation,
+  useCreateLessonNoteMutation,
+  useSaveVideoProgressMutation,
   // Live Classes
   useGetBrowseLiveClassesQuery,
   useJoinLiveClassMutation,
@@ -720,6 +987,7 @@ export const {
   usePostVideoQuestionMutation,
   useUpvoteQuestionMutation,
   useFlagQuestionMutation,
+  useUnflagQuestionMutation,
   usePostVideoReplyMutation,
   useGetQuestionRepliesQuery,
   // Quiz
@@ -728,6 +996,7 @@ export const {
   useGetQuizQuestionsQuery,
   useSubmitQuizAttemptMutation,
   useGetQuizAttemptsQuery,
+  useGetQuizAttemptReviewQuery,
   // Student Dashboard
   useGetStudentDashboardAnalyticsQuery,
   // Tutor
@@ -736,4 +1005,15 @@ export const {
   useGetTutorStudentsProgressQuery,
   useGetTutorPendingQnAQuery,
   useGetTutorSubmissionsQuery,
+  useGetTutorCoursesQuery,
+  useGetTutorCourseByIdQuery,
+  useGetTutorQuizzesQuery,
+  useGetTutorQuizByIdQuery,
+  useCreateTutorQuizMutation,
+  useUpdateTutorQuizMutation,
+  useDeleteTutorQuizMutation,
+  useGetTutorProfileQuery,
+  useUpdateTutorProfileMutation,
+  useGetTutorVerificationQuery,
+  useSubmitTutorVerificationMutation,
 } = authApi;

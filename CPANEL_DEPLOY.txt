@@ -1,0 +1,16 @@
+=== Latest build zip - cPanel pe kaise lagaye (sab files latest) ===
+
+1. Apne PC pe fresh build + zip banao:
+   npm run build
+   npm run zip
+   (ya ek saath: npm run build:zip)
+
+2. Jo zip bane (learnest-build-YYYY-MM-DD.zip) use cPanel File Manager me public_html me upload karo.
+
+3. Extract karte waqt ZAROOR:
+   - "Replace existing files" / "Overwrite" / "Yes to all" choose karo
+   - Taake index.html, asset-manifest.json, static/, assets/ sab latest se replace ho jayein.
+
+4. Agar overwrite nahi kiya to index.html purani reh jati hai aur site purani build dikhati hai.
+
+5. Extract ke baad zip file delete kar sakte ho (optional).

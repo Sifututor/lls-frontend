@@ -1,0 +1,238 @@
+/**
+ * My Live Classes – image-accurate, tutor theme.
+ * Style: #163300, #9FE870, #FAFAFA, #CFCFCF, #9A9A9A, Inter, radius 10px/20px, padding 24px.
+ */
+
+.tutor-live-wrapper {
+  max-width: 100%;
+  margin-top: 60px;
+  min-height: 60vh;
+  background: transparent;
+}
+
+/* ===== HEADER ===== */
+.tutor-live-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.tutor-live-header-left {
+  flex: 1;
+}
+
+.tutor-live-title {
+  font-family: Inter, sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.tutor-live-subtitle {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #9A9A9A;
+  margin: 0;
+}
+
+.tutor-live-btn-schedule {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: #9FE870;
+  border: none;
+  border-radius: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #163300;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+
+
+.tutor-live-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 20px;
+  height: 20px;
+
+  font-size: 16px;  /* yeh increase karo */
+  
+  color: #9FE870;
+  background: #163300;
+
+  border-radius: 50%;
+}
+
+
+
+
+/* ===== CLASS LIST – cards with separator ===== */
+.tutor-live-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-radius: 20px;
+}
+
+.tutor-live-card {
+  display: flex;
+  gap: 20px;
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+
+
+/* Time block – light green, rounded, horizontal time (3:00 + PM) */
+.tutor-live-time-block {
+  background: #DCFCE7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.tutor-live-time-main {
+  font-family: Inter, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #329256;
+}
+
+.tutor-live-time-period {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #329256;
+
+}
+
+.tutor-live-card-body {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+
+
+.tutor-live-card-title {
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #163300;
+  margin: 0 0 8px 0;
+}
+
+.tutor-live-card-details {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #9A9A9A;
+  margin: 0 0 8px 0;
+}
+
+.tutor-live-meeting-link {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #6366F1;
+  background: #EFF6FF;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+
+
+.tutor-live-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Gray buttons – Copy Link, Cancel, Edit Class */
+.tutor-live-btn-gray {
+  padding: 15px 20px;
+  background: #F1F1F1;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #163300;
+  cursor: pointer;
+}
+
+
+
+/* Green – Start Class */
+.tutor-live-btn-green {
+  padding: 15px 20px;
+  background: #9FE870;
+  border: none;
+  border-radius: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #163300;
+  cursor: pointer;
+}
+
+/* Upload Recording – light green bg, dark text */
+.tutor-live-btn-upload {
+  padding: 10px 20px;
+  background: #F1F1F1;
+  border: none;
+  border-radius: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #163300;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid #CFCFCF;
+}
+
+
+
+@media (max-width: 768px) {
+  .tutor-live-card {
+    flex-direction: column;
+  }
+
+  .tutor-live-time-block {
+    width: 100%;
+    min-width: 100%;
+    flex-direction: row;
+    gap: 4px;
+  }
+
+  .tutor-live-card-body {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tutor-live-card-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

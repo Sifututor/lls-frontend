@@ -135,7 +135,7 @@ function TopNavbar({ title, breadcrumb }) {
       };
     }
 
-    if (path.startsWith('/student/quiz/') && path.includes('/review')) {
+    if ((path.startsWith('/student/quiz/') || path.startsWith('/student/quiz-attempt/')) && path.includes('/review')) {
       return {
         parentName: 'My Courses',
         parentLink: '/student/my-courses',

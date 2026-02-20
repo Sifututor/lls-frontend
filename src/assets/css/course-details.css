@@ -262,7 +262,7 @@ body {
     background: #000;
 }
 
-/* Thumbnail Overlay */
+/* Thumbnail Overlay - show thumbnail or neutral background so no black flash */
 .video-thumbnail-overlay {
     position: absolute;
     top: 0;
@@ -271,7 +271,7 @@ body {
     height: 100%;
     cursor: pointer;
     z-index: 2;
-    background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 100%);
+    background: #1a1a1a linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 100%);
 }
 
 .video-thumbnail {
@@ -345,7 +345,6 @@ body {
 .btn-next-lesson:hover {
     background: var(--primary-green-hover);
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 12px 32px rgba(159, 232, 112, 0.5);
 }
 
 .btn-next-lesson svg {
@@ -518,6 +517,12 @@ body {
     min-width: 100px;
 }
 
+/* Next/Previous Lesson buttons - icon only, tooltip on hover */
+.control-btn-lesson {
+    display: inline-flex;
+    align-items: center;
+}
+
 /* Volume Slider - Custom Design */
 .volume-slider {
     width: 80px;
@@ -543,7 +548,6 @@ body {
 
 .volume-slider::-webkit-slider-thumb:hover {
     transform: scale(1.2);
-    box-shadow: 0 0 8px rgba(159, 232, 112, 0.6);
 }
 
 .volume-slider::-moz-range-thumb {
@@ -558,7 +562,6 @@ body {
 
 .volume-slider::-moz-range-thumb:hover {
     transform: scale(1.2);
-    box-shadow: 0 0 8px rgba(159, 232, 112, 0.6);
 }
 
 /* Quality Menu - YouTube Style */
@@ -2596,7 +2599,6 @@ span.badge-subject {
 /* Hover Effect */
 .quiz-stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* Two Column Layout */

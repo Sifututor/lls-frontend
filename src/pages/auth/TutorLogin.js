@@ -181,7 +181,7 @@ function TutorLogin({ onLogin }) {
                 className="btn-primary btn-full"
                 disabled={isLoading}
               >
-                {isLoading ? <ButtonLoader text="Signing in..." /> : 'Tutor Login'}
+                {isLoading ? <ButtonLoader text="Signing in..." /> : 'Sign In'}
               </button>
             </form>
 

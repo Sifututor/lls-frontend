@@ -45,7 +45,7 @@ export const notificationsData = [
     description: 'Dr. Amirul Hassan answered: "How to solve simultaneous equations?"',
     time: '5 hours ago',
     actionText: 'View Answer',
-    actionLink: '/recent-video-qa',
+    actionLink: '/student/video-qa',
     isRead: false,
     category: 'Q&A'
   },

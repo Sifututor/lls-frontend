@@ -1,5 +1,8 @@
 // src/components/Dataexportcard.js
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
+
+const COMING_SOON = 'This feature is coming soon.';
 
 function Dataexportcard() {
   const [exports] = useState([
@@ -8,11 +11,11 @@ function Dataexportcard() {
   ]);
 
   const handleRequestArchive = () => {
-    // API call will go here
+    toast.info(COMING_SOON);
   };
 
   const handleDownload = () => {
-    // Download logic will go here
+    toast.info(COMING_SOON);
   };
 
   return (

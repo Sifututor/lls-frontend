@@ -1,0 +1,239 @@
+/**
+ * Verification Form CSS – Exact Figma Design
+ * Field: bordered box with label (grey small) + value (dark) inside same box
+ * Style Guide: #163300, #9FE870, #FAFAFA, #CFCFCF, #9A9A9A
+ */
+
+ .tvf-wrapper {
+  margin-top: 60px;
+}
+
+.tvf-title {
+  font-family: Inter, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 20px 0;
+}
+
+/* ===== SECTION CARD ===== */
+.tvf-section {
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.tvf-section-title {
+  font-family: Inter, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 20px 0;
+}
+
+/* ===== GRIDS ===== */
+.tvf-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.tvf-grid-1 {
+  grid-template-columns: 1fr;
+}
+
+.tvf-grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.tvf-grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.tvf-grid-4 {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+/* ===== FIELD - Label + Input in same bordered box ===== */
+.tvf-field {
+  border: 1px solid #CFCFCF;
+  border-radius: 12px;
+  padding: 12px 16px;
+  background: #FAFAFA;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tvf-label {
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #9A9A9A;
+}
+
+.tvf-input,
+.tvf-select {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #163300;
+}
+
+.tvf-input:focus,
+.tvf-select:focus {
+  outline: none;
+}
+
+.tvf-input::placeholder {
+  color: #9A9A9A;
+}
+
+/* Date Input */
+.tvf-date {
+  color: #9A9A9A;
+}
+
+.tvf-date:valid {
+  color: #163300;
+}
+
+/* Select with arrow */
+.tvf-field-select {
+  position: relative;
+}
+
+.tvf-select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 24px;
+}
+
+.tvf-field-select::after {
+  content: '';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #163300;
+  pointer-events: none;
+}
+
+/* ===== DOCUMENTS - 2 columns, each row ===== */
+.tvf-doc-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tvf-doc-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.tvf-doc-item {
+  border: 1px solid #CFCFCF;
+  border-radius: 12px;
+  padding: 16px 20px;
+  background: #FAFAFA;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tvf-doc-label {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #163300;
+}
+
+.tvf-choose-file {
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #329256;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.tvf-choose-file:hover {
+  color: #163300;
+}
+
+.tvf-file-input {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+/* ===== SAVE BUTTON ===== */
+.tvf-save-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: #9FE870;
+  border: none;
+  border-radius: 12px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #163300;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.tvf-save-btn:hover {
+  background: #8CD75C;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1100px) {
+  .tvf-grid-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .tvf-grid-3 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .tvf-doc-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .tvf-grid-2,
+  .tvf-grid-3,
+  .tvf-grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .tvf-section {
+    padding: 16px;
+  }
+
+  .tvf-title {
+    font-size: 22px;
+  }
+
+  .tvf-doc-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

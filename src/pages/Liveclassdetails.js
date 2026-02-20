@@ -5,15 +5,15 @@ import VideoPlayer from '../components/VideoPlayer';
 import CourseTabs from '../components/CourseTabs';
 import DiscussionSection from '../components/DiscussionSection';
 import AITutorBox from '../components/AITutorBox';
-import EmptyState from '../components/EmptyState';
 import {
-  liveClassData
+  liveClassData,
+  currentLesson as staticCurrentLesson,
 } from '../data/Liveclassdetailsdata';
 
 function Liveclassdetails() {
-  // Route uses :slug, but it's actually the class ID
+  // Route uses :slug, but it's actually the class ID. Data is static until API is available.
   const { slug } = useParams();
-  const classId = slug; // Use slug as classId for API calls
+  const classId = slug;
 
   return (
     <>
@@ -24,17 +24,19 @@ function Liveclassdetails() {
         <div className="course-details-wrapper">
           {/* Left Content Area */}
           <div className="course-main-content">
-            {/* Video Player */}
+            {/* Video Player - static URL for now */}
             <VideoPlayer video={liveClassData.video} />
 
-            {/* Tabs (Lesson, Notes, Downloads) - No static data */}
+            {/* Tabs: Lesson from static data; Notes/Downloads disabled for live class */}
             <CourseTabs
-              currentLesson={null}
-              notesData={[]}
+              currentLesson={staticCurrentLesson}
               downloadsData={[]}
+              lessonId={null}
+              courseSlug={null}
+              isLiveClassView
             />
 
-            {/* Discussion Section - No static data */}
+            {/* Discussion not tied to a lesson in live class context */}
             <DiscussionSection commentsData={[]} />
           </div>
 

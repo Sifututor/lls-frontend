@@ -84,16 +84,9 @@ function StudentLogin({ onLogin }) {
           onLogin('student', response.user || response);
         }
 
-        // FIX 3: Show success toast
-        toast.success('Login successful! Redirecting...', {
-          autoClose: 1000,
-        });
-
-        // 4. Force immediate navigation without delay
-        // Use window.location for clean redirect (no flash/jerk)
-        setTimeout(() => {
-          window.location.href = '/student/dashboard';
-        }, 1000);
+        toast.success('Login successful!', { autoClose: 800 });
+        // SPA navigation to avoid full page reload / double load
+        navigate('/student/dashboard', { replace: true });
       }
     } catch (err) {
       // FIX 3: PROPER ERROR TOAST

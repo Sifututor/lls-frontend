@@ -580,7 +580,9 @@
     height: 20px;
 }
 
-.btn-check-answers {
+.btn-check-answers,
+a.btn-check-answers {
+    display: block;
     width: 100%;
     padding: 14px 24px;
     background: transparent;
@@ -591,6 +593,8 @@
     font-weight: 600;
     cursor: pointer;
     margin-bottom: 16px;
+    text-decoration: none;
+    text-align: center;
 }
 
 .result-actions {

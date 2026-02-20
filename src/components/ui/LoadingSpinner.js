@@ -15,10 +15,10 @@ export const ButtonLoader = () => (
   </div>
 );
 
-export const SectionLoader = () => (
-  <div className="section-loader">
+export const SectionLoader = ({ message = 'Loading...', height }) => (
+  <div className="section-loader" style={height ? { minHeight: height } : undefined}>
     <div className="spinner"></div>
-    <p>Loading...</p>
+    {message && <p>{message}</p>}
   </div>
 );
 

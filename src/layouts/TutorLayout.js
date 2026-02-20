@@ -6,7 +6,7 @@ import TopNavbar from '../components/TopNavbar';
 import '../assets/css/layout.css';
 import '../assets/css/tutor.css';
 
-function TutorLayout() {
+function TutorLayout({ children }) {
   const location = useLocation();
 
   const getPageTitle = () => {
@@ -24,7 +24,7 @@ function TutorLayout() {
       <main className="main-content">
         <TopNavbar title={getPageTitle()} />
         <div className="page-content tutor-content">
-          <Outlet />
+          {children != null ? children : <Outlet />}
         </div>
       </main>
     </div>

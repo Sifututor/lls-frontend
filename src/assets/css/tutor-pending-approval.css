@@ -1,0 +1,230 @@
+/**
+ * Tutor Pending Approval page.
+ * Table uses enrolled-students-table from tutor-course-inner.css; status uses tutor-course-inner-status-*.
+ * All new classes prefixed tutor-pending-approval-* to avoid conflicts.
+ * Style guide: #163300, #9FE870, #FAFAFA, #CFCFCF.
+ */
+
+.tutor-pending-approval-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  margin-top: 60px;
+  padding-bottom: 40px;
+}
+
+.tutor-pending-approval-header {
+  margin-bottom: 20px;
+}
+
+.tutor-pending-approval-title {
+  font-family: Inter, sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 8px 0;
+}
+
+.tutor-pending-approval-subtitle {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #9A9A9A;
+  margin: 0;
+}
+
+/* Filter bar: tabs + dropdowns */
+.tutor-pending-approval-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.tutor-pending-approval-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  background: #223D0D;
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.tutor-pending-approval-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 7px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fafafa;
+  cursor: pointer;
+}
+
+
+.tutor-pending-approval-tab.active {
+  background: #9FE870;
+  border-color: #9FE870;
+  color: #163300;
+  box-shadow: 0 2px 20px 0 rgba(0, 0, 0, 0.06);
+}
+
+.tutor-pending-approval-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  background: #DCFCE7;
+  color: #329256;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.tutor-pending-approval-tab.active .tutor-pending-approval-tab-badge {
+  background: #163300;
+  color: #FAFAFA;
+}
+
+.tutor-pending-approval-dropdowns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+
+
+.pending-status {
+  border-radius: 27px;
+  padding: 5px 10px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.pending-status-pending {
+  background: #FFF7ED;
+  color: #F5AB2E;
+}
+
+.pending-status-rejected {
+  background: #FEF2F2;
+  color: #FF5252;
+}
+
+.pending-status-published {
+
+  background: #DCFCE7;
+  color: #329256;
+}
+
+.tutor-pending-approval-select {
+  padding: 10px 36px 10px 16px;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  background: #FAFAFA;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #163300;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23163300' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+
+.tutor-pending-approval-select:focus {
+  outline: none;
+  border-color: #9FE870;
+}
+
+/* Table wrapper – reuses same look as enrolled-students-table-wrapper */
+.tutor-pending-approval-table-wrapper {
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  margin-bottom: 20px;
+}
+
+.tutor-pending-approval-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+}
+
+.tutor-pending-approval-table thead th {
+  background: #9FE870;
+  color: #163300;
+  font-weight: 600;
+  text-align: left;
+  padding: 14px 18px;
+  font-size: 16px;
+}
+
+.tutor-pending-approval-table thead th:not(:first-child) {
+  border-left: 2px solid rgba(22, 51, 0, 0.18);
+}
+
+.tutor-pending-approval-table tbody td {
+  padding: 14px 18px;
+  color: #374151;
+  border-bottom: 1px solid #EDEFF2;
+}
+
+.tutor-pending-approval-table tbody td:not(:first-child) {
+  border-left: 1px solid #EEF0F2;
+}
+
+.tutor-pending-approval-table tbody tr:nth-child(even) {
+  background: #F6F7F7;
+}
+
+.tutor-pending-approval-table tbody tr:hover {
+  background: #F9FAFB;
+}
+
+.tutor-pending-approval-action-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.tutor-pending-approval-action-btn:hover {
+  color: #163300;
+}
+
+@media (max-width: 768px) {
+  .tutor-pending-approval-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tutor-pending-approval-tabs {
+    justify-content: flex-start;
+  }
+
+  .tutor-pending-approval-dropdowns {
+    justify-content: flex-start;
+  }
+
+  .tutor-pending-approval-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .tutor-pending-approval-table {
+    min-width: 600px;
+  }
+}

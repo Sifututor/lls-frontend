@@ -63,8 +63,7 @@ function Sidebar() {
     const liveClassPages = [
       '/student/live-classes',
       '/student/past-sessions',
-      '/student/live-class',
-      '/student/recent-video-qa'
+      '/student/live-class'
     ];
     
     return liveClassPages.some(page => location.pathname.startsWith(page));

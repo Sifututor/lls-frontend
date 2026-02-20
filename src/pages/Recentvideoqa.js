@@ -5,11 +5,10 @@ import { useGetVideoQnAQuery } from '../store/api/authApi';
 import { SectionLoader } from '../components/ui/LoadingSpinner';
 
 function Recentvideoqa() {
-  // Fetch Q&A from API
+  // Video Q&A API: response { status, total_comments, data: { data: [], current_page, ... } }
   const { data: qnaData, isLoading } = useGetVideoQnAQuery({});
   
-  // Extract Q&A list from API response
-  const qaList = qnaData?.data || qnaData?.questions || [];
+  const qaList = qnaData?.data?.data ?? [];
 
   return (
     <div className="dashboard-content">

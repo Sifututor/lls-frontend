@@ -17,7 +17,7 @@ export const useAuth = () => {
   // Prefer Redux for isAuthenticated/role so route guards react to logout in same render
   const authState = useMemo(() => {
     const userData = reduxUser || (storedUser ? JSON.parse(storedUser) : null);
-    const rawRole = userData?.user_type || storedUserType || null;
+    const rawRole = userData?.user_type || storedUserType || (reduxAuthenticated ? 'student' : null);
     const normalizedRole = rawRole ? String(rawRole).toLowerCase().trim() : null;
     // Redux is source of truth for routing so logout takes effect immediately
     const isAuthenticated = reduxAuthenticated;

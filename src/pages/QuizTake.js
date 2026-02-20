@@ -62,8 +62,8 @@ function QuizTake() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [timeRemaining, setTimeRemaining] = useState(
-    typeof stateTime === 'number' ? stateTime : 600
+  const [timeRemaining, setTimeRemaining] = useState(() =>
+    Math.max(0, Math.floor(Number(typeof stateTime === 'number' ? stateTime : 600)))
   );
   const [showReview, setShowReview] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -73,7 +73,7 @@ function QuizTake() {
 
   useEffect(() => {
     if (questionsData?.time_remaining != null) {
-      setTimeRemaining(questionsData.time_remaining);
+      setTimeRemaining(Math.max(0, Math.floor(Number(questionsData.time_remaining))));
     }
   }, [questionsData?.time_remaining]);
 
@@ -121,8 +121,9 @@ function QuizTake() {
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeRemaining(prev => {
-        if (prev <= 1) return 0;
-        return prev - 1;
+        const current = Math.floor(Number(prev) || 0);
+        if (current <= 1) return 0;
+        return current - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
@@ -139,10 +140,11 @@ function QuizTake() {
     }
   }, [timeRemaining, attemptId]);
 
-  // Format Time Helper
+  // Format Time Helper – integer seconds only, MM:SS
   const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const total = Math.max(0, Math.floor(Number(seconds) || 0));
+    const mins = Math.floor(total / 60);
+    const secs = total % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -259,6 +261,7 @@ function QuizTake() {
             results={results}
             passed={results.passed}
             quizId={stateQuizId}
+            attemptId={attemptId}
           />
       </>
     );

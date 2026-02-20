@@ -2,84 +2,161 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { getFullFileUrl } from '../utils/fileUrl';
-import { showError } from '../utils/toast';
+import { showError, showSuccess } from '../utils/toast';
 import { usePremium } from '../hooks/usePremium';
+import { useGetLessonNotesQuery, useAddBookmarkMutation, useDeleteNoteMutation, useCreateLessonNoteMutation } from '../store/api/authApi';
 
-function CourseTabs({ 
-  currentLesson, 
-  notesData = [], 
+function CourseTabs({
+  currentLesson,
   downloadsData = [],
   lessonId,
+  courseSlug,
   bookmarkTimestamp,
-  onBookmarkHandled
+  onBookmarkHandled,
+  getVideoCurrentTime,
+  isLiveClassView = false,
+  notesFromCourse,
+  onNoteAdded,
 }) {
-  // ✅ Premium check for notes and downloads
   const { isPremium } = usePremium();
   const [activeTab, setActiveTab] = useState('lesson');
   const [showNoteInput, setShowNoteInput] = useState(false);
-  const [notes, setNotes] = useState(notesData);
   const [noteText, setNoteText] = useState('');
   const [currentTimestamp, setCurrentTimestamp] = useState('00:00:00');
   const [currentTimestampSeconds, setCurrentTimestampSeconds] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  
+
   const noteInputRef = useRef(null);
+  // Freeze timestamp for the note being added (so it doesn't change when video plays)
+  const frozenTimestampRef = useRef({ seconds: 0, formatted: '00:00:00' });
+
+  // When parent passes notes from course (video_bookmarks), use those; else fetch GET /lesson/:id/notes
+  const useCourseNotes = Array.isArray(notesFromCourse);
+  const { data: notesResponse, isLoading: notesLoading, refetch: refetchNotes, isError: notesError } = useGetLessonNotesQuery(lessonId, { skip: !lessonId || useCourseNotes });
+  const notesErrorShownRef = React.useRef(false);
+  const [addBookmark, { isLoading: addBookmarkLoading }] = useAddBookmarkMutation();
+  const [createLessonNote] = useCreateLessonNoteMutation();
+  const [deleteNote] = useDeleteNoteMutation();
+
+  // Format seconds to HH:MM:SS (API may return timestamp as number e.g. 425)
+  const formatSeconds = (sec) => {
+    if (sec == null || isNaN(sec)) return '00:00';
+    const s = Math.floor(Number(sec));
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const secs = s % 60;
+    if (h > 0) return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+  // When API fails (404/500), treat as empty; show non-blocking toast once
+  React.useEffect(() => {
+    if (notesError && lessonId && !useCourseNotes && !notesErrorShownRef.current) {
+      notesErrorShownRef.current = true;
+      toast.info('Notes list unavailable. You can still add notes with the bookmark.', { autoClose: 4000 });
+    }
+  }, [notesError, lessonId, useCourseNotes]);
+  const rawNotesFromApi = (notesError ? [] : (
+    notesResponse?.notes ??
+    notesResponse?.data?.notes ??
+    notesResponse?.data?.bookmarks ??
+    notesResponse?.data?.data ??
+    notesResponse?.data?.items ??
+    (Array.isArray(notesResponse?.data) ? notesResponse.data : null) ??
+    notesResponse?.bookmarks ??
+    (Array.isArray(notesResponse) ? notesResponse : null) ??
+    []
+  ));
+  const rawNotes = useCourseNotes ? notesFromCourse : rawNotesFromApi;
+  const notes = Array.isArray(rawNotes) ? rawNotes.map((n) => {
+    const secs = n.timestamp_seconds ?? n.timestamp ?? 0;
+    const formatted = n.timestamp_formatted || (typeof n.timestamp === 'number' ? formatSeconds(n.timestamp) : (n.timestamp || formatSeconds(secs)));
+    return {
+      id: n.id,
+      timestamp: formatted,
+      timestamp_seconds: typeof secs === 'number' ? secs : parseInt(secs, 10) || 0,
+      content: n.content ?? n.note
+    };
+  }) : [];
 
   useEffect(() => {
-    if (bookmarkTimestamp) {
+    if (bookmarkTimestamp && lessonId) {
+      const secs = typeof bookmarkTimestamp.timestamp === 'number' ? bookmarkTimestamp.timestamp : parseInt(bookmarkTimestamp.timestamp, 10) || 0;
+      const formatted = bookmarkTimestamp.timestampFormatted || '00:00:00';
+      frozenTimestampRef.current = { seconds: secs, formatted };
+      setCurrentTimestamp(formatted);
+      setCurrentTimestampSeconds(secs);
       setActiveTab('notes');
-      setCurrentTimestamp(bookmarkTimestamp.timestampFormatted);
-      setCurrentTimestampSeconds(bookmarkTimestamp.timestamp);
       setShowNoteInput(true);
-      
-      setTimeout(() => {
-        if (noteInputRef.current) {
-          noteInputRef.current.focus();
-        }
-      }, 100);
-      
-      if (onBookmarkHandled) {
-        onBookmarkHandled();
-      }
+      setTimeout(() => noteInputRef.current?.focus(), 100);
+      if (onBookmarkHandled) onBookmarkHandled();
     }
   }, [bookmarkTimestamp, onBookmarkHandled]);
 
   const handleAddNote = () => {
-    // ✅ Premium gate for notes/bookmarks
+    if (isLiveClassView) {
+      toast.info('Notes are not available for live class sessions yet.');
+      return;
+    }
     if (!isPremium) {
       toast.warning('Notes and bookmarks are a Premium feature. Upgrade to access!');
       return;
     }
-    
+    if (getVideoCurrentTime) {
+      const { seconds, formatted } = getVideoCurrentTime();
+      frozenTimestampRef.current = { seconds, formatted };
+      setCurrentTimestamp(formatted);
+      setCurrentTimestampSeconds(seconds);
+    }
     setShowNoteInput(true);
-    setTimeout(() => {
-      if (noteInputRef.current) {
-        noteInputRef.current.focus();
-      }
-    }, 100);
+    setTimeout(() => noteInputRef.current?.focus(), 100);
   };
 
   const handleSubmitNote = async () => {
-    if (noteText.trim()) {
-      setIsSaving(true);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const newNote = {
-        id: Date.now(),
-        timestamp: currentTimestamp,
-        timestamp_seconds: currentTimestampSeconds,
-        content: noteText.trim()
-      };
-      setNotes([newNote, ...notes]);
-      
+    if (!noteText.trim() || !lessonId) return;
+    if (!isPremium) {
+      toast.warning('Notes and bookmarks are a Premium feature.');
+      return;
+    }
+    const timestampToSend = frozenTimestampRef.current.seconds ?? currentTimestampSeconds;
+    setIsSaving(true);
+    try {
+      await addBookmark({
+        lessonId: Number(lessonId),
+        timestamp: timestampToSend,
+        note: noteText.trim()
+      }).unwrap();
       setNoteText('');
       setShowNoteInput(false);
-      setIsSaving(false);
-      
       setSaveSuccess(true);
+      showSuccess('Note saved successfully!');
       setTimeout(() => setSaveSuccess(false), 3000);
+      if (lessonId && !useCourseNotes) refetchNotes();
+      onNoteAdded?.();
+    } catch (err) {
+      const msg = err?.data?.message || err?.message || '';
+      if (msg.includes('404') || msg.includes('bookmark') || err?.status === 404) {
+        try {
+          await createLessonNote({
+            lessonId: Number(lessonId),
+            timestamp_seconds: timestampToSend,
+            content: noteText.trim()
+          }).unwrap();
+          setNoteText('');
+          setShowNoteInput(false);
+          setSaveSuccess(true);
+          showSuccess('Note saved successfully!');
+          setTimeout(() => setSaveSuccess(false), 3000);
+          if (lessonId && !useCourseNotes) refetchNotes();
+          onNoteAdded?.();
+        } catch (e2) {
+          showError(e2?.data?.message || 'Failed to save note.');
+        }
+      } else {
+        showError(msg || 'Failed to save note.');
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -88,8 +165,13 @@ function CourseTabs({
     setShowNoteInput(false);
   };
 
-  const handleDeleteNote = (noteId) => {
-    setNotes(notes.filter(note => note.id !== noteId));
+  const handleDeleteNote = async (noteId) => {
+    try {
+      await deleteNote(noteId).unwrap();
+      showSuccess('Note deleted.');
+    } catch (err) {
+      showError(err?.data?.message || 'Failed to delete note.');
+    }
   };
 
   const handleDownload = (download) => {
@@ -150,6 +232,12 @@ function CourseTabs({
 
         {/* My Notes Tab */}
         <div className={`tab-content ${activeTab === 'notes' ? 'active' : ''}`}>
+          {isLiveClassView ? (
+            <div className="empty-notes">
+              <p>Notes are not available for live class sessions yet.</p>
+            </div>
+          ) : (
+          <>
           {/* Success Message */}
           {saveSuccess && (
             <div className="note-success-message">
@@ -206,7 +294,11 @@ function CourseTabs({
 
           {/* Notes List */}
           <div className="notes-list">
-            {notes.length > 0 ? (
+            {notesLoading ? (
+              <div className="empty-notes">
+                <p>Loading notes...</p>
+              </div>
+            ) : notes.length > 0 ? (
               notes.map((note) => (
                 <div key={note.id} className="note-item">
                   <div className="note-timestamp">
@@ -240,12 +332,18 @@ function CourseTabs({
               </div>
             )}
           </div>
+          </>
+          )}
         </div>
 
         {/* Downloads Tab */}
         <div className={`tab-content ${activeTab === 'downloads' ? 'active' : ''}`}>
           <div className="downloads-list">
-            {downloadsData.length > 0 ? (
+            {isLiveClassView ? (
+              <div className="empty-downloads">
+                <p>Downloads are not available for live class sessions yet.</p>
+              </div>
+            ) : downloadsData.length > 0 ? (
               downloadsData.map((download, index) => (
                 <div key={download.id || index} className="download-item">
                   <div className="download-info">

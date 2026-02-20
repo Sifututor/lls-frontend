@@ -1,0 +1,215 @@
+/**
+ * Upload Recording (detail) – Sidebar wala page. Layout jo pehle set kiya tha.
+ * Tutor theme: #163300, #9FE870, #FAFAFA, #CFCFCF, #9A9A9A. Inter, 10px/20px radius, 24px padding.
+ */
+
+/* ===== HEADER: title + metadata left, Edit Class right ===== */
+.tutor-rec-header {
+  margin-top: 60px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.tutor-rec-header-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.tutor-rec-title {
+  font-family: Inter, sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 8px 0;
+  line-height: 1.25;
+}
+
+.tutor-rec-metadata {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #9A9A9A;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.tutor-rec-btn-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  background: #9FE870;
+  border: none;
+  border-radius: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #163300;
+  text-decoration: none;
+  cursor: pointer;
+
+}
+
+
+
+.tutor-rec-btn-edit-icon {
+  width: 20px;
+  height: 20px;
+
+}
+
+/* ===== WRAPPER: dono section ek saath, normal color ===== */
+.tutor-rec-wrapper {
+ background: #FAFAFA;
+ border: 1px solid #CFCFCF;
+ border-radius: 20px;
+ padding: 24px;
+}
+
+/* ===== LESSON CARD (Algorithmic Efficiency) ===== */
+.tutor-rec-lesson-cards {
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-sizing: border-box;
+}
+
+.tutor-rec-lesson-title {
+  font-family: Inter, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #163300;
+  margin: 0 0 10px 0;
+}
+
+.tutor-rec-lesson-desc {
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #9A9A9A;
+  margin: 0 0 16px 0;
+}
+
+.tutor-rec-lesson-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #9A9A9A;
+ 
+}
+
+.tutor-rec-lesson-meta-item,
+.tutor-rec-lesson-meta-tag {
+  background: #FAFAFA;
+  border: 1px solid #F1F1F1;
+  border-radius: 16px;
+  padding: 5px 10px;
+}
+
+/* Bahasa Melayu – bina bg, sirf text ===== */
+
+/* ===== DOWNLOADABLE MATERIAL – PDF / ZIP ek saath ===== */
+.tutor-rec-downloads {
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.tutor-rec-downloads-title {
+  font-family: Inter, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #163300;
+  margin: 0 0 16px 0;
+
+}
+
+.tutor-rec-downloads-list {
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 32px;
+  box-sizing: border-box;
+}
+
+.tutor-rec-download-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tutor-rec-download-name {
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #163300;
+  text-decoration: none;
+}
+
+.tutor-rec-download-name:hover {
+  text-decoration: underline;
+}
+
+.tutor-rec-download-size {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #9A9A9A;
+}
+
+/* ===== FOOTER – Scheduled tag right ===== */
+.tutor-rec-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.tutor-rec-scheduled-tag {
+  display: inline-block;
+  padding: 10px 15px;
+  background: #9FE870;
+  border-radius: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #163300;
+  cursor: pointer;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .tutor-rec-header {
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+
+  .tutor-rec-btn-edit {
+    justify-content: center;
+  }
+
+  .tutor-rec-title {
+    font-size: 24px;
+  }
+
+  .tutor-rec-lesson-cards,
+  .tutor-rec-downloads-list {
+    padding: 20px;
+  }
+
+  .tutor-rec-downloads-list {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

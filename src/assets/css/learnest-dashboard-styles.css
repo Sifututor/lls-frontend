@@ -234,7 +234,6 @@ a {
 
 .btn-premium:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
 }
 
 /* ==================== MAIN CONTENT ==================== */
@@ -471,7 +470,6 @@ a {
 
 .badge-item:hover {
     transform: translateY(-4px) scale(1.1);
-    box-shadow: var(--shadow-lg);
 }
 
 .badge-item.active {
@@ -539,7 +537,6 @@ a {
 
 .stat-card:hover {
     transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
     border-color: transparent;
 }
 
@@ -749,7 +746,6 @@ a {
 
 .class-card:hover {
     transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
     border-color: var(--primary-green);
 }
 
@@ -908,7 +904,6 @@ a {
 .btn-join:hover {
     background: linear-gradient(135deg, #1B5E20 0%, #388E3C 100%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(46, 125, 50, 0.3);
 }
 
 .btn-notify {
@@ -940,7 +935,6 @@ a {
 
 .course-card:hover {
     transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
     border-color: var(--primary-green);
 }
 
@@ -1082,7 +1076,6 @@ a {
 .btn-continue:hover {
     background: linear-gradient(135deg, #1B5E20 0%, #388E3C 100%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(46, 125, 50, 0.3);
 }
 
 /* ==================== Q&A LIST ==================== */
@@ -1105,7 +1098,6 @@ a {
 
 .qa-item:hover {
     border-color: var(--primary-green);
-    box-shadow: var(--shadow-md);
     transform: translateX(8px);
 }
 

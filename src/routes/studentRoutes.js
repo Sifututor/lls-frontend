@@ -191,6 +191,16 @@ const StudentRoutes = () => (
         </RoleBasedRoute>
       }
     />
+    <Route
+      path="/student/quiz-attempt/:attemptId/review"
+      element={
+        <RoleBasedRoute allowedRoles={[ROLES.STUDENT]}>
+          <StudentLayout title="Check Answers">
+            <CheckAnswers />
+          </StudentLayout>
+        </RoleBasedRoute>
+      }
+    />
 
     {/* ========== PROFILE & SETTINGS ========== */}
     <Route

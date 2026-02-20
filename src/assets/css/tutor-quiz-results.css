@@ -1,0 +1,371 @@
+/**
+ * Quiz Results – Engagement. Same design as image: title + filters right, tabs, table.
+ * Style: #163300, #9FE870, #FAFAFA, #CFCFCF, #9A9A9A. Table like Student Progress, tabs like Video Q&A.
+ */
+
+.tqr-wrapper {
+  margin-top: 60px;
+  padding-bottom: 40px;
+}
+
+/* ===== HEADER: title left, filters + search right ===== */
+.tqr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tqr-header-left {
+  flex: 0 0 auto;
+}
+
+.tqr-title {
+  font-family: Inter, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 8px 0;
+}
+
+.tqr-subtitle {
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #9A9A9A;
+  margin: 0;
+}
+
+.tqr-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Filters – Video Q&A jaisa */
+.tqr-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tqr-select {
+  padding: 10px 36px 10px 16px;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  background: #FAFAFA;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #163300;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23163300' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.tqr-select:focus {
+  outline: none;
+  border-color: #9FE870;
+}
+
+.tqr-btn-apply {
+  padding: 10px 18px;
+  background: #9FE870;
+  border: none;
+  border-radius: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #163300;
+  cursor: pointer;
+}
+
+.tqr-btn-apply:hover {
+  background: #8CD75C;
+}
+
+/* Search – Video Q&A / Student Progress jaisa */
+.tqr-search-row {
+  display: flex;
+  align-items: center;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  background: #FAFAFA;
+  overflow: hidden;
+  max-width: 257px;
+}
+
+.tqr-search-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  color: #163300;
+}
+
+.tqr-search-input::placeholder {
+  color: #9A9A9A;
+}
+
+.tqr-search-btn {
+  width: 44px;
+  height: 44px;
+  background: #9FE870;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tqr-search-btn:hover {
+  background: #8CD75C;
+}
+
+.tqr-search-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* ===== TABS – Video Q&A jaisa (dark container, active green) ===== */
+.tqr-tabs {
+  display: flex;
+  align-items: center;
+  background: #223D0D;
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 24px;
+  width: fit-content;
+}
+
+.tqr-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 7px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #FAFAFA;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tqr-tab.active {
+  background: #9FE870;
+  color: #163300;
+}
+
+.tqr-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 18px;
+  background: #DCFCE7;
+  color: #163300;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.tqr-tab.active .tqr-tab-badge {
+  background: rgba(22, 51, 0, 0.2);
+  color: #163300;
+}
+
+/* ===== TABLE – Student Progress jaisa ===== */
+.tqr-table-wrapper {
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #FAFAFA;
+  margin-bottom: 20px;
+}
+
+.tqr-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tqr-table thead th {
+  background: #9FE870;
+  color: #163300;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+  padding: 14px 18px;
+}
+
+.tqr-table thead th:not(:first-child) {
+  border-left: 2px solid rgba(22, 51, 0, 0.18);
+}
+
+.tqr-table tbody td {
+  padding: 14px 18px;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  color: #163300;
+  border-bottom: 1px solid #CFCFCF;
+}
+
+.tqr-table tbody td:not(:first-child) {
+  border-left: 1px solid #CFCFCF;
+}
+
+.tqr-table tbody tr:nth-child(even) {
+  background: #FAFAFA;
+}
+
+.tqr-table tbody tr:hover {
+  background: #F1F1F1;
+}
+
+/* Score colors */
+.tqr-score {
+  font-weight: 600;
+}
+
+.tqr-score-green {
+  color: #329256;
+}
+
+.tqr-score-orange {
+  color: #F5AB2E;
+}
+
+.tqr-score-red {
+  color: #DD4040;
+}
+
+/* ===== FOOTER – Student Progress jaisa ===== */
+.tqr-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.tqr-pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tqr-page-btn {
+  padding: 10px 16px;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  background: #FAFAFA;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #163300;
+  cursor: pointer;
+}
+
+.tqr-page-btn:hover:not(:disabled) {
+  background: #F1F1F1;
+}
+
+.tqr-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tqr-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tqr-page-num {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #163300;
+  cursor: pointer;
+}
+
+.tqr-page-num:hover {
+  background: #F1F1F1;
+}
+
+.tqr-page-num.active {
+  background: #163300;
+  color: #FAFAFA;
+}
+
+.tqr-page-dots {
+  padding: 0 8px;
+  color: #9A9A9A;
+  font-size: 14px;
+}
+
+.tqr-disclaimer {
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #163300;
+  margin: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1200px) {
+  .tqr-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tqr-header-right {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tqr-search-row {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .tqr-filters {
+    flex-wrap: wrap;
+  }
+
+  .tqr-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .tqr-table {
+    min-width: 600px;
+  }
+
+  .tqr-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

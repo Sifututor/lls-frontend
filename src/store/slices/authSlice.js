@@ -41,6 +41,14 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
+      const userType = action.payload.user?.user_type;
+      if (userType) {
+        try {
+          const role = String(userType).toLowerCase();
+          localStorage.setItem('userType', role);
+          Cookies.set('userType', role, { path: '/' });
+        } catch (_) {}
+      }
     },
     updateUser: (state, action) => {
       // Update user data in state

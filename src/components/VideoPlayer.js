@@ -1,6 +1,9 @@
 // src/components/VideoPlayer.js
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { usePremium } from '../hooks/usePremium';
+import { useSaveVideoProgressMutation } from '../store/api/authApi';
+
+const PROGRESS_SAVE_INTERVAL_SEC = 5;
 
 const VideoPlayer = forwardRef(({ 
   video, 
@@ -8,9 +11,11 @@ const VideoPlayer = forwardRef(({
   onPreviousLesson, 
   hasNextLesson = true, 
   hasPreviousLesson = true,
-  onBookmarkClick // New prop - callback when bookmark is clicked
+  onBookmarkClick,
+  lessonId, // for video progress API: POST /api/lessons/:id/video-progress
 }, ref) => {
   const { isPremium } = usePremium();
+  const [saveVideoProgress] = useSaveVideoProgressMutation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [showThumbnail, setShowThumbnail] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -29,6 +34,8 @@ const VideoPlayer = forwardRef(({
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
+  const lastSavedPositionRef = useRef(0);
+  const lastProgressSaveTimeRef = useRef(0);
 
   // Expose getCurrentTime method to parent via ref
   useImperativeHandle(ref, () => ({
@@ -45,10 +52,12 @@ const VideoPlayer = forwardRef(({
     setDuration(0);
     setShowNextLesson(false);
     setVideoError(false);
+    lastSavedPositionRef.current = 0;
+    lastProgressSaveTimeRef.current = 0;
     if (videoRef.current) {
       videoRef.current.load();
     }
-  }, [video?.url]);
+  }, [video?.url, lessonId]);
 
   const formatTime = (seconds) => {
     if (!seconds || isNaN(seconds)) return '00:00:00';
@@ -81,10 +90,30 @@ const VideoPlayer = forwardRef(({
     }
   };
 
+  const saveProgress = (position, delta) => {
+    if (!lessonId || delta <= 0) return;
+    const pos = Math.round(Number(position) || 0);
+    const d = Math.round(Number(delta) || 0);
+    if (d <= 0) return;
+    saveVideoProgress({ lessonId, last_position: pos, duration_delta: d })
+      .unwrap()
+      .then(() => {
+        lastSavedPositionRef.current = position;
+      })
+      .catch(() => {});
+  };
+
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
-      if (duration - videoRef.current.currentTime <= 15 && duration > 0) {
+      const t = videoRef.current.currentTime;
+      setCurrentTime(t);
+      if (lessonId && isPlaying) {
+        const elapsed = t - lastSavedPositionRef.current;
+        if (elapsed >= PROGRESS_SAVE_INTERVAL_SEC) {
+          saveProgress(t, elapsed);
+        }
+      }
+      if (duration - t <= 15 && duration > 0) {
         setShowNextLesson(true);
       } else {
         setShowNextLesson(false);
@@ -99,6 +128,11 @@ const VideoPlayer = forwardRef(({
   };
 
   const handleVideoEnded = () => {
+    if (videoRef.current && lessonId) {
+      const t = videoRef.current.currentTime;
+      const delta = Math.max(0, t - lastSavedPositionRef.current);
+      if (delta > 0) saveProgress(t, delta);
+    }
     setIsPlaying(false);
     setShowNextLesson(true);
   };
@@ -109,6 +143,11 @@ const VideoPlayer = forwardRef(({
   };
 
   const handlePause = () => {
+    if (videoRef.current && lessonId) {
+      const t = videoRef.current.currentTime;
+      const delta = Math.max(0, t - lastSavedPositionRef.current);
+      if (delta > 0) saveProgress(t, delta);
+    }
     setIsPlaying(false);
   };
 
@@ -120,7 +159,9 @@ const VideoPlayer = forwardRef(({
     const rect = e.currentTarget.getBoundingClientRect();
     const pos = (e.clientX - rect.left) / rect.width;
     if (videoRef.current && duration) {
-      videoRef.current.currentTime = pos * duration;
+      const newTime = pos * duration;
+      videoRef.current.currentTime = newTime;
+      lastSavedPositionRef.current = newTime;
     }
   };
 
@@ -272,7 +313,8 @@ const VideoPlayer = forwardRef(({
           onPlay={handlePlay}
           onPause={handlePause}
           onError={handleVideoError}
-          crossOrigin="anonymous"
+          poster={video?.thumbnail || '/assets/images/live-classes.png'}
+          preload="metadata"
         >
           {video?.url && <source src={video.url} type="video/mp4" />}
         </video>
@@ -297,31 +339,14 @@ const VideoPlayer = forwardRef(({
               src={video?.thumbnail || '/assets/images/live-classes.png'} 
               alt="Video Thumbnail" 
               className="video-thumbnail"
-              onError={(e) => e.target.src = '/assets/images/live-classes.png'}
+              onError={(e) => { e.target.src = '/assets/images/live-classes.png'; }}
             />
-            <button className="play-button-center">
+            <button type="button" className="play-button-center">
               <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
                 <circle cx="40" cy="40" r="40" fill="white" fillOpacity="0.95"/>
                 <path d="M32 26L56 40L32 54V26Z" fill="#163300"/>
               </svg>
             </button>
-          </div>
-        )}
-
-        {showNextLesson && hasNextLesson && (
-          <div className="next-lesson-overlay">
-            <div className="next-lesson-card">
-              <div className="next-lesson-info">
-                <span className="next-lesson-label">Up Next</span>
-                <h3 className="next-lesson-title">Next Lesson Starting...</h3>
-              </div>
-              <button className="btn-next-lesson-big" onClick={handleNextLesson}>
-                <span>Play Now</span>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
-                </svg>
-              </button>
-            </div>
           </div>
         )}
 
@@ -349,7 +374,7 @@ const VideoPlayer = forwardRef(({
                 </button>
 
                 {hasPreviousLesson && (
-                  <button className="control-btn" onClick={handlePreviousLesson} title="Previous Lesson">
+                  <button className="control-btn control-btn-lesson" onClick={handlePreviousLesson} title="Previous Lesson">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                       <path d="M19 5L9 12L19 19V5Z" fill="white"/>
                       <rect x="5" y="5" width="2" height="14" fill="white"/>
@@ -358,7 +383,7 @@ const VideoPlayer = forwardRef(({
                 )}
 
                 {hasNextLesson && (
-                  <button className="control-btn" onClick={handleNextLesson} title="Next Lesson">
+                  <button className="control-btn control-btn-lesson" onClick={handleNextLesson} title="Next Lesson">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                       <path d="M5 5L15 12L5 19V5Z" fill="white"/>
                       <rect x="17" y="5" width="2" height="14" fill="white"/>

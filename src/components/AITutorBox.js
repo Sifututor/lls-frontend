@@ -1,22 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAiLimit } from '../hooks/useAiLimit';
 import AiLimitModal from './AiLimitModal';
+import { useAskAIMutation } from '../store/api/authApi';
+import { showError } from '../utils/toast';
 
-function AITutorBox({ aiChatData = {} }) {
-  // ✅ FIX: Safely access aiChatData with fallbacks
+function AITutorBox({ aiChatData = {}, courseTitle, lessonTitle, subject: subjectProp }) {
   const [messages, setMessages] = useState(aiChatData?.messages || []);
   const [inputText, setInputText] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [chatId, setChatId] = useState(null);
   const fileInputRef = useRef(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  
-  // Default suggestions if not provided
+
+  const [askAI, { isLoading: isAsking }] = useAskAIMutation();
+
   const suggestions = aiChatData?.suggestions || [
     'Explain this concept',
     'Give me an example',
     'How do I solve this?'
   ];
+
+  const subject = subjectProp || [courseTitle, lessonTitle].filter(Boolean).join(' – ') || 'General';
 
   const {
     canAskQuestion,
@@ -33,13 +38,14 @@ function AITutorBox({ aiChatData = {} }) {
     }
   }, [usedQuestions, maxQuestions, isPremium]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!isPremium && !canAskQuestion) {
       setShowLimitModal(true);
       return;
     }
 
-    if (!inputText.trim() && !selectedFile) return;
+    const text = inputText.trim();
+    if (!text && !selectedFile) return;
 
     if (!isPremium) {
       const recorded = recordQuestion();
@@ -49,26 +55,61 @@ function AITutorBox({ aiChatData = {} }) {
       }
     }
 
-    if (inputText.trim() || selectedFile) {
-      const newMessage = {
-        id: messages.length + 1,
-        type: 'user',
-        text: inputText
-      };
-      setMessages([...messages, newMessage]);
-      setInputText('');
-      setSelectedFile(null);
-      setPreviewUrl('');
+    const userMsg = {
+      id: Date.now(),
+      type: 'user',
+      text: text || (selectedFile ? ' [Image attached]' : '')
+    };
+    setMessages((prev) => [...prev, userMsg]);
+    setInputText('');
+    setSelectedFile(null);
+    setPreviewUrl('');
 
-      // Simulate AI response
-      setTimeout(() => {
-        const aiResponse = {
-          id: messages.length + 2,
-          type: 'ai',
-          text: "I'm processing your question. Let me help you with that..."
-        };
-        setMessages((prev) => [...prev, aiResponse]);
-      }, 1000);
+    const aiPlaceholder = {
+      id: Date.now() + 1,
+      type: 'ai',
+      text: 'Thinking...'
+    };
+    setMessages((prev) => [...prev, aiPlaceholder]);
+
+    try {
+      const payload = {
+        question: text,
+        model: 'gpt-4o-mini',
+        max_tokens: 500,
+        temperature: 0.7
+      };
+      if (chatId) {
+        payload.chat_id = chatId;
+      } else {
+        payload.subject = subject;
+      }
+
+      const result = await askAI(payload).unwrap();
+      const res = result?.data ?? result;
+
+      if (res?.chat_id) setChatId(res.chat_id);
+
+      const answer = res?.answer || result?.answer || 'Sorry, I could not process your question.';
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === aiPlaceholder.id ? { ...m, text: answer } : m
+        )
+      );
+    } catch (err) {
+      const errMsg = err?.data?.message || err?.message || 'Failed to get AI response. Please try again.';
+      if (err?.status === 429) {
+        setShowLimitModal(true);
+      } else {
+        showError(errMsg);
+      }
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === aiPlaceholder.id
+            ? { ...m, text: err?.status === 429 ? 'Daily limit reached. Upgrade for unlimited access.' : errMsg }
+            : m
+        )
+      );
     }
   };
 
@@ -170,14 +211,14 @@ function AITutorBox({ aiChatData = {} }) {
         <input
           type="text"
           className="ai-tutor-input"
-          placeholder={canAskQuestion ? "Type your question here..." : "Daily limit reached. Upgrade for unlimited access."}
+          placeholder={canAskQuestion ? (isAsking ? "Getting answer..." : "Type your question here...") : "Daily limit reached. Upgrade for unlimited access."}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-          disabled={!canAskQuestion}
+          onKeyPress={(e) => e.key === 'Enter' && !isAsking && handleSendMessage()}
+          disabled={!canAskQuestion || isAsking}
         />
 
-        <button className="ai-tutor-send-btn" onClick={handleSendMessage} disabled={!canAskQuestion}>
+        <button className="ai-tutor-send-btn" onClick={handleSendMessage} disabled={!canAskQuestion || isAsking}>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path
               d="M18 2L9 11M18 2L12 18L9 11M18 2L2 8L9 11"

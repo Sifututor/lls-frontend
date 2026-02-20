@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import Profilecard from '../components/Profilecard';
 import Studentemailcard from '../components/Studentemailcard';
 import Logoutbutton from '../components/Logoutbutton';
@@ -9,6 +10,8 @@ import Parentaccesscard from '../components/Parentaccesscard';
 import Dataprivacycard from '../components/Dataprivacycard';
 import { logout, selectCurrentUser } from '../store/slices/authSlice';
 import { useLogoutMutation } from '../store/api/authApi';
+
+const COMING_SOON = 'This feature is coming soon.';
 
 const DEFAULT_AVATAR = '/assets/images/icons/Ellipse 3.svg';
 
@@ -52,15 +55,26 @@ function Profile() {
     navigate('/student/subscription');
   };
 
-  const handleRegenerateLink = () => {};
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(profileData.parentAccessLink);
+  const handleRegenerateLink = () => {
+    toast.info(COMING_SOON);
   };
 
-  const handleDownloadData = () => {};
+  const handleCopyLink = () => {
+    const link = profileData.parentAccessLink;
+    if (link) {
+      navigator.clipboard.writeText(link).then(() => toast.success('Link copied')).catch(() => toast.error('Could not copy'));
+    } else {
+      toast.info(COMING_SOON);
+    }
+  };
 
-  const handleDeleteAccount = () => {};
+  const handleDownloadData = () => {
+    toast.info(COMING_SOON);
+  };
+
+  const handleDeleteAccount = () => {
+    toast.info(COMING_SOON);
+  };
 
   return (
     <div className="profile-page-container">

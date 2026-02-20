@@ -1,0 +1,410 @@
+/**
+ * Tutor Upload Lesson CSS – Exact Figma Design (Image 1)
+ * Style Guide: #163300 (dark green), #9FE870 (light green), #9A9A9A (grey text)
+ * #FAFAFA (bg), #CFCFCF (border), #F1F1F1 (input bg)
+ */
+
+ .tutor-upload-wrapper {
+  max-width: 100%;
+  margin-top: 60px;
+}
+
+/* ===== PAGE HEADER ===== */
+.tutor-upload-header {
+  margin-bottom: 20px;
+}
+
+.tutor-upload-title {
+  font-family: Inter, sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 8px 0;
+}
+
+.tutor-upload-subtitle {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #9A9A9A;
+  margin: 0;
+}
+
+/* ===== LESSON DETAILS CARD ===== */
+.tutor-upload-card {
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.tutor-upload-card-title {
+  font-family: Inter, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 20px 0;
+}
+
+/* Course & Chapter - Side by Side Row */
+.tutor-upload-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.tutor-upload-field {
+  margin-bottom: 16px;
+}
+
+.tutor-upload-row .tutor-upload-field {
+  margin-bottom: 0;
+}
+
+/* Select Dropdown */
+.tutor-upload-select {
+  width: 100%;
+  padding: 16px 44px 16px 20px;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  background: #FAFAFA;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #9A9A9A;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23163300' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 20px center;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.tutor-upload-select:focus {
+  outline: none;
+  border-color: #9FE870;
+}
+
+.tutor-upload-select option {
+  color: #163300;
+}
+
+/* Input Field */
+.tutor-upload-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  background: #FAFAFA;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #163300;
+  box-sizing: border-box;
+}
+
+.tutor-upload-input::placeholder {
+  color: #9A9A9A;
+}
+
+.tutor-upload-input:focus {
+  outline: none;
+  border-color: #9FE870;
+}
+
+/* Textarea */
+.tutor-upload-textarea {
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  background: #FAFAFA;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #163300;
+  resize: vertical;
+  min-height: 60px;
+  box-sizing: border-box;
+}
+
+.tutor-upload-textarea::placeholder {
+  color: #9A9A9A;
+}
+
+.tutor-upload-textarea:focus {
+  outline: none;
+  border-color: #9FE870;
+}
+
+/* ===== VIDEO UPLOAD DROPZONE ===== */
+.tutor-upload-dropzone-wrapper {
+  margin-bottom: 20px;
+}
+
+.tutor-upload-dropzone {
+  border: 1px dashed #9FE870;
+  border-radius: 20px;
+  background: #FAFAFA;
+  padding: 60px 24px;
+  text-align: center;
+  cursor: pointer;
+}
+
+
+
+.tutor-upload-hidden-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tutor-upload-dropzone-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  background: #E8F5E0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tutor-upload-dropzone-icon img {
+  width: 24px;
+  height: 24px;
+}
+
+.tutor-upload-dropzone-text {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  margin: 0 0 8px 0;
+}
+
+.tutor-upload-link {
+  color: #9FE870;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 24px;
+font-style: normal;
+font-weight: 500;
+}
+
+.tutor-upload-or {
+  color: #163300;
+  font-size: 24px;
+font-style: normal;
+font-weight: 500;
+}
+
+.tutor-upload-dropzone-hint {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #9A9A9A;
+  margin: 0;
+}
+
+/* Duration Tag */
+.tutor-upload-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #F1F1F1;
+  border-radius: 8px;
+}
+
+.tutor-upload-duration-dot {
+  width: 42px;
+  height: 42px;
+  background: #D9D9D9;
+  border-radius: 10px;
+}
+
+.tutor-upload-duration-text {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #163300;
+  background: #DCFCE7;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* ===== UPLOAD GUIDELINES ===== */
+.tutor-upload-guidelines {
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 20px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.tutor-upload-guidelines-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.tutor-upload-guidelines-title {
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #163300;
+  margin: 0;
+}
+
+.tutor-upload-guidelines-badge {
+  display: inline-block;
+  padding: 10px;
+  background: #DCFCE7;
+  border-radius: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #163300;
+}
+
+.tutor-upload-guidelines-badge strong {
+  font-weight: 600;
+}
+
+.tutor-upload-guidelines-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.tutor-upload-guideline-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #9A9A9A;
+}
+
+.guideline-check {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* ===== UPLOAD ADDITIONAL RESOURCES ===== */
+.tutor-upload-resources {
+  margin-bottom: 24px;
+}
+
+.tutor-upload-resources-title {
+  font-family: Inter, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 8px 0;
+}
+
+.tutor-upload-resources-subtitle {
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #9A9A9A;
+  margin: 0 0 16px 0;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.tutor-upload-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tutor-upload-btn-draft {
+  padding: 20px;
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #163300;
+  cursor: pointer;
+
+}
+
+
+.tutor-upload-btn-submit {
+  padding: 20px;
+  background: #9FE870;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #163300;
+  cursor: pointer;
+
+}
+
+
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .tutor-upload-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .tutor-upload-title {
+    font-size: 24px;
+  }
+
+  .tutor-upload-guidelines-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tutor-upload-guidelines-list {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tutor-upload-actions {
+    flex-direction: column;
+  }
+
+  .tutor-upload-btn-draft,
+  .tutor-upload-btn-submit {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .tutor-upload-card {
+    padding: 16px;
+  }
+
+  .tutor-upload-dropzone {
+    padding: 40px 16px;
+  }
+
+  .tutor-upload-guidelines {
+    padding: 16px;
+  }
+
+  .tutor-upload-select,
+  .tutor-upload-input,
+  .tutor-upload-textarea {
+    padding: 14px 16px;
+  }
+}

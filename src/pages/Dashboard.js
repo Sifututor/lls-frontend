@@ -12,7 +12,7 @@ import {
   useJoinLiveClassMutation,
   useGetStudentDashboardAnalyticsQuery 
 } from '../store/api/authApi';
-import { SectionLoader, Spinner } from '../components/ui/LoadingSpinner';
+import { SectionLoader, Spinner, SkeletonCard, SkeletonLiveClasses } from '../components/ui/LoadingSpinner';
 import { 
   statsData as defaultStatsData
 } from '../data/dashboardData';
@@ -296,7 +296,7 @@ function Dashboard() {
               </button>
             </div>
             {liveClassesLoading ? (
-              <SectionLoader message="Loading live classes..." height="200px" />
+              <SkeletonLiveClasses />
             ) : liveClassesData.length > 0 ? (
               <div className="live-classes-grid">
                 {liveClassesData.map((classItem) => (
@@ -327,7 +327,12 @@ function Dashboard() {
               </button>
             </div>
             {coursesLoading ? (
-              <SectionLoader message="Loading courses..." height="200px" />
+              <div className="courses-grid">
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
             ) : continueLearningCourses.length > 0 ? (
               <div className="courses-grid">
                 {continueLearningCourses.map((course) => (

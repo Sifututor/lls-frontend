@@ -3,38 +3,42 @@ import { useParams } from 'react-router-dom';
 import { SectionLoader } from '../components/ui/LoadingSpinner';
 import CourseHeader from '../components/CourseHeader';
 import AnswerItem from '../components/Answeritem';
-
-// ✅ REMOVED: Static data import - should use API
-// import { answersData, answerStats } from '../data/Checkanswersdata';
-
-// ⚠️ BACKEND TODO: Create API endpoint GET /api/quiz-attempts/:id/review
-// Should return: { questions: [...], user_answers: [...], correct_answers: [...], stats: {...} }
+import { useGetQuizAttemptReviewQuery } from '../store/api/authApi';
 
 function CheckAnswers() {
-  const { id } = useParams(); // This should be attemptId
+  const { attemptId, id } = useParams();
+  const effectiveAttemptId = attemptId || id;
 
-  // TODO: Replace with actual API call
-  // const { data: reviewData, isLoading } = useGetQuizAttemptReviewQuery(id);
-  
-  // For now, showing a placeholder message
-  // Backend team needs to implement the quiz review endpoint first
-  
-  const isLoading = false;
-  const reviewData = null;
-  
-  // When API is ready, extract data like this:
-  // const answersData = reviewData?.questions || [];
-  // const answerStats = reviewData?.stats || { correct: 0, incorrect: 0, skipped: 0, total: 0 };
-  
-  // Placeholder data structure (to be replaced with API response)
+  const { data: reviewData, isLoading, isError } = useGetQuizAttemptReviewQuery(effectiveAttemptId, {
+    skip: !effectiveAttemptId,
+  });
+
+  const rawQuestions = reviewData?.questions ?? [];
+  const answersData = Array.isArray(rawQuestions)
+    ? rawQuestions.map((q, i) => ({
+        id: q.id ?? i + 1,
+        status: q.status ?? (q.is_correct ? 'correct' : q.user_answer ? 'incorrect' : 'skipped'),
+        question: q.question_text ?? q.question ?? '',
+        options: Array.isArray(q.options)
+          ? q.options.map((o) => ({
+              text: typeof o === 'object' ? (o.text ?? o.label ?? '') : String(o),
+              correct: !!o?.correct,
+              wrong: !!o?.wrong,
+            }))
+          : [],
+        explanation: q.explanation ?? null,
+      }))
+    : [];
   const answerStats = {
-    correct: 0,
-    incorrect: 0,
-    skipped: 0,
-    total: 0
+    correct: reviewData?.correct ?? 0,
+    incorrect: reviewData?.incorrect ?? 0,
+    skipped: reviewData?.skipped ?? 0,
+    total: reviewData?.total ?? (answersData.length || 1),
   };
-  
-  const answersData = [];
+  if (answerStats.total === 0 && answersData.length > 0) {
+    answerStats.total = answersData.length;
+  }
+  const progressPercent = reviewData?.score ?? (answerStats.total > 0 ? Math.round((answerStats.correct / answerStats.total) * 100) : 0);
 
   // Check Answers Header Data
   const checkAnswersHeaderData = {
@@ -46,10 +50,22 @@ function CheckAnswers() {
       name: 'Instructor',
       avatar: '/assets/images/icons/Ellipse 2.svg'
     },
-    progress: answerStats.total > 0 
-      ? Math.round((answerStats.correct / answerStats.total) * 100) 
-      : 0
+    progress: progressPercent
   };
+
+  if (!effectiveAttemptId) {
+    return (
+      <>
+        <CourseHeader courseData={{ title: 'Quiz Review', badges: [{ id: 1, text: 'Error' }], instructor: { name: '', avatar: '' }, progress: 0 }} />
+        <div className="quiz-check-container">
+          <div className="empty-state" style={{ textAlign: 'center', padding: '48px 24px' }}>
+            <h3>Invalid Review Link</h3>
+            <p style={{ color: '#6B7280', marginTop: '8px' }}>Please complete a quiz first to view your answers.</p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -96,7 +112,6 @@ function CheckAnswers() {
                     </div>
                     <div className="stat-info">
                       <div className="stat-value">{answerStats.skipped}</div>
-                      <div className="stat-value">{answerStats.skipped}</div>
                       <div className="stat-label">Skipped</div>
                     </div>
                   </div>
@@ -117,13 +132,15 @@ function CheckAnswers() {
             borderRadius: '16px',
             border: '1px solid #E5E7EB'
           }}>
-            <h3>Quiz Review Not Available</h3>
+            <h3>Quiz Review</h3>
             <p style={{ color: '#6B7280', marginTop: '8px' }}>
-              ⚠️ Backend API endpoint needed: <code>GET /api/quiz-attempts/{id}/review</code>
+              {isError ? 'Failed to load review.' : 'No detailed answers available for this attempt.'}
             </p>
-            <p style={{ color: '#6B7280', fontSize: '14px', marginTop: '16px' }}>
-              This page requires backend implementation to show quiz answers and explanations.
-            </p>
+            {(reviewData?.score != null || reviewData?.passed != null) && (
+              <p style={{ color: '#374151', fontSize: '16px', marginTop: '16px', fontWeight: 600 }}>
+                Score: {reviewData.score}% • {reviewData.passed ? 'Passed' : 'Not Passed'}
+              </p>
+            )}
           </div>
         )}
       </div>

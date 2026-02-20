@@ -161,3 +161,155 @@
     font-size: 12px;
   }
 }
+
+/* ========== SKELETON LOADERS (Facebook-style shimmer) ========== */
+@keyframes skeletonShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-card,
+.skeleton-image,
+.skeleton-content,
+.skeleton-title,
+.skeleton-text,
+.skeleton-course-details .skeleton-header,
+.skeleton-course-details .skeleton-video,
+.skeleton-course-details .skeleton-tabs,
+.skeleton-course-details .skeleton-content-area,
+.skeleton-class-card .skeleton-image,
+.skeleton-class-card .skeleton-content,
+.skeleton-class-card .skeleton-title,
+.skeleton-class-card .skeleton-text {
+  background: linear-gradient(
+    90deg,
+    #e5e7eb 25%,
+    #f3f4f6 50%,
+    #e5e7eb 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.skeleton-card {
+  padding: 0;
+  overflow: hidden;
+  min-height: 200px;
+}
+
+.skeleton-image {
+  height: 140px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.skeleton-content {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-title {
+  height: 18px;
+  width: 80%;
+}
+
+.skeleton-text {
+  height: 14px;
+  width: 100%;
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+/* Skeleton Course Details */
+.skeleton-course-details {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.skeleton-course-details .skeleton-header {
+  height: 120px;
+  width: 100%;
+}
+
+.skeleton-course-details .skeleton-video {
+  height: 320px;
+  width: 100%;
+}
+
+.skeleton-course-details .skeleton-tabs {
+  height: 48px;
+  width: 100%;
+}
+
+.skeleton-course-details .skeleton-content-area {
+  height: 180px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-course-details .skeleton-content-area .skeleton-text {
+  height: 16px;
+}
+
+/* Skeleton Live Classes */
+.skeleton-live-classes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.skeleton-class-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 200px;
+}
+
+.skeleton-class-card .skeleton-image {
+  height: 120px;
+}
+
+.skeleton-class-card .skeleton-content {
+  padding: 12px;
+}
+
+/* Section Loader */
+.section-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 40px 20px;
+  min-height: 120px;
+}
+
+.section-loader .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #65B741;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.section-loader p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

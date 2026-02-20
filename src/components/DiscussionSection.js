@@ -9,6 +9,7 @@ import {
   usePostVideoQuestionMutation,
   useUpvoteQuestionMutation,
   useFlagQuestionMutation,
+  useUnflagQuestionMutation,
   usePostVideoReplyMutation,
   useGetQuestionRepliesQuery,
 } from '../store/api/authApi';
@@ -162,6 +163,7 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
 
   // Debug log
   // ========== API HOOKS ==========
+  // Video Q&A API: response shape { status, total_comments, data: { data: [], current_page, ... } }
   const { 
     data: apiResponse, 
     isLoading, 
@@ -175,12 +177,12 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
   const [postQuestion, { isLoading: isPosting }] = usePostVideoQuestionMutation();
   const [upvoteQuestion] = useUpvoteQuestionMutation();
   const [flagQuestion] = useFlagQuestionMutation();
-  // ✅ Use correct hook name
+  const [unflagQuestion] = useUnflagQuestionMutation();
   const [postReply, { isLoading: isReplying }] = usePostVideoReplyMutation();
 
-  // Get comments from API or fallback to static data
-  const comments = apiResponse?.data?.data || commentsData;
-  const totalComments = apiResponse?.total_comments || comments.length;
+  // Normalized by API transform: data.data = list, total_comments = count
+  const comments = isError ? [] : (apiResponse?.data?.data ?? commentsData);
+  const totalComments = apiResponse?.total_comments ?? comments.length;
 
   // ========== POST COMMENT ==========
   const handlePostComment = async () => {
@@ -209,7 +211,7 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
       refetch();
     } catch (err) {
       if (process.env.NODE_ENV === 'development') console.error('Post question error:', err);
-      showError(err?.data?.message || 'Failed to post question');
+      showError(err?.data?.message || err?.message || 'Failed to post question');
     }
   };
 
@@ -226,23 +228,32 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
       refetch();
     } catch (err) {
       if (process.env.NODE_ENV === 'development') console.error('Upvote error:', err);
-      if (err?.data?.message === 'You have already upvoted this question') {
+      const msg = err?.data?.message || err?.message;
+      if (msg === 'You have already upvoted this question') {
         setUpvotedComments(prev => new Set([...prev, commentId]));
-      } else if (err?.data?.message === 'Premium subscription required') {
+      } else if (msg === 'Premium subscription required') {
         showWarning('Premium subscription required to upvote');
-      }
+      } else if (msg) showError(msg);
     }
   };
 
-  // ========== FLAG ==========
-  const handleFlagClick = (commentId) => {
+  // ========== FLAG / UNFLAG ==========
+  const handleFlagClick = async (commentId) => {
     if (flaggedComments.has(commentId)) {
-      const newFlagged = new Set(flaggedComments);
-      newFlagged.delete(commentId);
-      setFlaggedComments(newFlagged);
+      try {
+        await unflagQuestion(commentId).unwrap();
+        setFlaggedComments(prev => {
+          const next = new Set(prev);
+          next.delete(commentId);
+          return next;
+        });
+        refetch();
+      } catch (err) {
+        if (process.env.NODE_ENV === 'development') console.error('Unflag error:', err);
+        showError(err?.data?.message || err?.message || 'Failed to remove flag');
+      }
       return;
     }
-    
     setSelectedCommentId(commentId);
     setShowFlagModal(true);
   };
@@ -264,8 +275,8 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
       setSelectedCommentId(null);
       refetch();
     } catch (err) {
-      console.error('Flag error:', err);
-      showError(err?.data?.message || 'Failed to flag comment');
+      if (process.env.NODE_ENV === 'development') console.error('Flag error:', err);
+      showError(err?.data?.message || err?.message || 'Failed to flag comment');
     }
   };
 
@@ -295,7 +306,7 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
       refetch();
     } catch (err) {
       if (process.env.NODE_ENV === 'development') console.error('Reply error:', err);
-      showError(err?.data?.message || 'Failed to post reply');
+      showError(err?.data?.message || err?.message || 'Failed to post reply');
     }
   };
 
@@ -325,7 +336,11 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
       </div>
 
       {/* ✅ Add Comment Box - Premium check fixed */}
-      {isPremium ? (
+      {!lessonId ? (
+        <div style={{ textAlign: 'center', padding: '20px', color: '#6B7280' }}>
+          <p>Posting is not available here.</p>
+        </div>
+      ) : isPremium ? (
         <div className="add-comment-box">
           <div className="comment-input-wrapper">
             <img src="/assets/images/icons/Ellipse 3.svg" alt="User" className="comment-avatar" />
@@ -395,7 +410,7 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
         )}
 
         {/* Error State */}
-        {isError && (
+        {lessonId && isError && (
           <div style={{ textAlign: 'center', padding: '20px', color: '#DC2626' }}>
             Failed to load comments
             <button 
@@ -407,8 +422,15 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
           </div>
         )}
 
+        {/* No lesson context (e.g. live class details) */}
+        {!lessonId && !isLoading && (
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#6B7280' }}>
+            <p>Discussion is not available for this session.</p>
+          </div>
+        )}
+
         {/* Empty State */}
-        {!isLoading && !isError && comments.length === 0 && (
+        {lessonId && !isLoading && !isError && comments.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: '#6B7280' }}>
             <p>No comments yet. Be the first to start the discussion!</p>
           </div>
@@ -416,7 +438,7 @@ function DiscussionSection({ lessonId, commentsData = [] }) {
 
         {/* Comments */}
         <div className="comments-list">
-          {comments.map((comment) => {
+          {lessonId && comments.map((comment) => {
             const userName = comment.is_anonymous ? 'Anonymous' : (comment.user?.name || comment.userName);
             const avatar = comment.user?.avatar || '/assets/images/icons/Ellipse 3.svg';
             const time = comment.created_at ? formatTimeAgo(comment.created_at) : comment.time;

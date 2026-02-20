@@ -1,0 +1,217 @@
+/**
+ * Tutor Create Quiz – quiz-specific styles.
+ * Uses same style guide as tutor-upload-lesson.css (#163300, #9FE870, #FAFAFA, #CFCFCF).
+ * All classes prefixed tutor-create-quiz-* to avoid conflicts.
+ */
+
+.tutor-create-quiz-label-required {
+  display: block;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #163300;
+  margin-bottom: 8px;
+}
+
+/* ===== CHECKBOXES ===== */
+.tutor-create-quiz-checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.tutor-create-quiz-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #163300;
+  cursor: pointer;
+}
+
+.tutor-create-quiz-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #CFCFCF;
+  border-radius: 4px;
+  background: #FAFAFA;
+  cursor: pointer;
+  accent-color: #9FE870;
+  flex-shrink: 0;
+}
+
+.tutor-create-quiz-checkbox:checked {
+  background: #9FE870;
+  border-color: #9FE870;
+}
+
+/* ===== QUESTION CARD ===== */
+.tutor-create-quiz-question-card {
+  background: #FAFAFA;
+  border: 1px solid #CFCFCF;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.tutor-create-quiz-question-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tutor-create-quiz-question-input-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.tutor-create-quiz-question-type {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.tutor-create-quiz-type-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #163300;
+  cursor: pointer;
+}
+
+.tutor-create-quiz-type-option input {
+  width: 18px;
+  height: 18px;
+  accent-color: #9FE870;
+  cursor: pointer;
+}
+
+/* ===== OPTIONS A B C D ===== */
+.tutor-create-quiz-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  .tutor-create-quiz-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tutor-create-quiz-option-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tutor-create-quiz-option-letter {
+  width: 42px;
+  height: 42px;
+  background: #163300;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.tutor-create-quiz-option-input {
+  flex: 1;
+  min-width: 0;
+  padding: 16px 20px;
+  border: 1px solid #CFCFCF;
+  border-radius: 10px;
+  background: #FAFAFA;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #163300;
+  box-sizing: border-box;
+}
+
+.tutor-create-quiz-option-input::placeholder {
+  color: #9A9A9A;
+}
+
+.tutor-create-quiz-option-input:focus {
+  outline: none;
+  border-color: #9FE870;
+}
+
+/* ===== ADD ANOTHER QUESTION ===== */
+.tutor-create-quiz-add-question {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border: 2px dashed #9FE870;
+  border-radius: 10px;
+  background: transparent;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #163300;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  margin-bottom: 24px;
+}
+
+.tutor-create-quiz-add-question:hover {
+  background: #E8F5E0;
+  border-color: #7dd956;
+}
+
+.tutor-create-quiz-add-question-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  color: #9FE870;
+}
+
+/* ===== REMOVE QUESTION (optional) ===== */
+.tutor-create-quiz-question-remove {
+  margin-top: 8px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid #CFCFCF;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.tutor-create-quiz-question-remove:hover {
+  background: #FEE2E2;
+  border-color: #EF4444;
+  color: #991B1B;
+}
+
+.tutor-create-quiz-question-block {
+  position: relative;
+}
+
+.tutor-create-quiz-question-block + .tutor-create-quiz-question-block {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px dashed #CFCFCF;
+}
