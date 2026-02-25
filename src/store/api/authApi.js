@@ -3,8 +3,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
 import { updateUser } from '../slices/authSlice';
 
-// const BASE_URL = 'http://10.0.0.178:8000/api';
-const BASE_URL = 'https://lms-sifu.tutorla.tech/api';
+const BASE_URL = 'http://10.0.0.178:8000/api';
+// const BASE_URL = 'https://lms-sifu.tutorla.tech/api';
 
 const cookieOptions = {
   expires: 7,
@@ -577,7 +577,11 @@ export const authApi = createApi({
         }
         return response?.data ?? response;
       },
-      invalidatesTags: (result, error, { lessonId }) => [{ type: 'Courses', id: 'PROGRESS' }, 'Courses'],
+      invalidatesTags: (result, error, { lessonId }) => [
+        'User',
+        { type: 'Courses', id: 'PROGRESS' },
+        'Courses',
+      ],
     }),
 
     // ========== LIVE CLASSES ==========
@@ -770,7 +774,7 @@ export const authApi = createApi({
         method: 'POST',
         body: { answers },
       }),
-      invalidatesTags: ['Quiz'],
+      invalidatesTags: ['Quiz', 'User'],
     }),
 
     getQuizAttempts: builder.query({
@@ -804,6 +808,17 @@ export const authApi = createApi({
     // ========== STUDENT DASHBOARD ==========
     getStudentDashboardAnalytics: builder.query({
       query: () => '/student/dashboard-analytics',
+      providesTags: ['User'],
+    }),
+
+    // User badges - earned from videos, quizzes, streaks
+    getUserBadges: builder.query({
+      query: () => '/badges',
+      transformResponse: (response) => {
+        if (!response) return [];
+        const data = response?.data ?? response;
+        return Array.isArray(data) ? data : (data?.data ?? []);
+      },
       providesTags: ['User'],
     }),
 
@@ -999,6 +1014,7 @@ export const {
   useGetQuizAttemptReviewQuery,
   // Student Dashboard
   useGetStudentDashboardAnalyticsQuery,
+  useGetUserBadgesQuery,
   // Tutor
   useGetTutorDashboardQuery,
   useGetTutorUpcomingClassesQuery,

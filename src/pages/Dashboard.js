@@ -10,8 +10,10 @@ import {
   useGetMyCoursesQuery, 
   useGetBrowseLiveClassesQuery, 
   useJoinLiveClassMutation,
-  useGetStudentDashboardAnalyticsQuery 
+  useGetStudentDashboardAnalyticsQuery,
+  useGetUserBadgesQuery,
 } from '../store/api/authApi';
+import { getBadgeConfig } from '../utils/badgeConfig';
 import { SectionLoader, Spinner, SkeletonCard, SkeletonLiveClasses } from '../components/ui/LoadingSpinner';
 import { 
   statsData as defaultStatsData
@@ -28,7 +30,23 @@ function Dashboard() {
   const { data: apiResponse, isLoading: coursesLoading } = useGetMyCoursesQuery({});
   const { data: liveClassesResponse, isLoading: liveClassesLoading } = useGetBrowseLiveClassesQuery({});
   const { data: analyticsData, isLoading: analyticsLoading } = useGetStudentDashboardAnalyticsQuery();
+  const { data: badgesData = [], isLoading: badgesLoading } = useGetUserBadgesQuery();
   const [joinLiveClass] = useJoinLiveClassMutation();
+
+  // Streak: from analytics or highest streak badge
+  const getStreakDisplay = () => {
+    const streak = analyticsData?.learning_streak ?? analyticsData?.streak;
+    if (streak != null && streak > 0) return `${streak} Day${streak !== 1 ? 's' : ''} Streak`;
+    const streakBadge = (Array.isArray(badgesData) ? badgesData : [])
+      .map((b) => {
+        const m = String(b.badge_type || '').match(/streak_(\d+)/);
+        return m ? parseInt(m[1], 10) : 0;
+      })
+      .filter((n) => n > 0)
+      .sort((a, b) => b - a)[0];
+    if (streakBadge) return `${streakBadge} Day Streak`;
+    return null;
+  };
 
 
   // Transform API analytics to stats - only use API data, no fallback to static
@@ -229,20 +247,45 @@ function Dashboard() {
               <div className="welcome-text">
                 <h1 className="welcome-title">
                   Welcome back, {getUserName()}!
-                  <span className="streak-badge">
-                    <img src="/assets/images/icons/fire.png" alt="Fire" className="streak-icon" />
-                    12 Days Streak
-                  </span>
+                  {getStreakDisplay() && (
+                    <span className="streak-badge">
+                      <img src="/assets/images/icons/fire.png" alt="Fire" className="streak-icon" />
+                      {getStreakDisplay()}
+                    </span>
+                  )}
                 </h1>
                 <p className="welcome-subtitle">
                   You've completed {analyticsLoading ? '--' : getWeeklyGoalPercentage()}% of your weekly goal, Keep it up!
                 </p>
               </div>
               <div className="achievement-badges">
-                {/* No static badges - show empty state or remove section */}
-                <p style={{ fontSize: '14px', color: '#6B7280', textAlign: 'center', padding: '20px' }}>
-                  Complete courses and quizzes to earn badges
-                </p>
+                {badgesLoading ? (
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="badge-item" style={{ opacity: 0.5 }} aria-hidden>
+                        <img src="/assets/images/icons/dashboard-1.png" alt="" className="badge-icon" style={{ width: 24, height: 24 }} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (Array.isArray(badgesData) ? badgesData : []).length > 0 ? (
+                  (Array.isArray(badgesData) ? badgesData : []).map((badge) => {
+                    const config = getBadgeConfig(badge.badge_type);
+                    return (
+                      <div
+                        key={badge.id}
+                        className="badge-item active"
+                        data-tooltip={config.tooltip}
+                        title={config.tooltip}
+                      >
+                        <img src={config.icon} alt={config.label} className="badge-icon" />
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p style={{ fontSize: '14px', color: '#6B7280', textAlign: 'center', padding: '12px 0', margin: 0 }}>
+                    Complete courses and quizzes to earn badges
+                  </p>
+                )}
               </div>
             </div>
             <div className="stats-grid">

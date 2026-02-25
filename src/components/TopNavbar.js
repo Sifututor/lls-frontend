@@ -20,7 +20,7 @@ function TopNavbar({ title, breadcrumb }) {
     : currentUser?.name || 'Student';
   const userAvatar = currentUser?.profile?.profile_image
     || currentUser?.avatar
-    || '/assets/images/icons/Ellipse 3.svg';
+    || '/assets/images/icons/Ellipse3.svg';
   const userEmail = (currentUser?.profile?.email ?? currentUser?.email) || '';
 
   const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
@@ -45,7 +45,7 @@ function TopNavbar({ title, breadcrumb }) {
       const userName = currentUser.profile
         ? `${currentUser.profile.first_name || ''} ${currentUser.profile.last_name || ''}`.trim() || currentUser.name
         : currentUser.name;
-      const userAvatar = currentUser.profile?.profile_image || currentUser.avatar || '/assets/images/icons/Ellipse 3.svg';
+      const userAvatar = currentUser.profile?.profile_image || currentUser.avatar || '/assets/images/icons/Ellipse3.svg';
       const userEmail = currentUser.profile?.email ?? currentUser.email;
       return {
         name: userName || 'User',
@@ -62,7 +62,7 @@ function TopNavbar({ title, breadcrumb }) {
         const userName = userData.profile
           ? `${userData.profile.first_name || ''} ${userData.profile.last_name || ''}`.trim() || userData.name
           : userData.name;
-        const userAvatar = userData.profile?.profile_image || userData.avatar || '/assets/images/icons/Ellipse 3.svg';
+        const userAvatar = userData.profile?.profile_image || userData.avatar || '/assets/images/icons/Ellipse3.svg';
         return {
           name: userName || 'User',
           email: (userData.profile?.email ?? userData.email) || 'user@example.com',
@@ -77,7 +77,7 @@ function TopNavbar({ title, breadcrumb }) {
     return {
       name: 'User',
       email: 'user@example.com',
-      avatar: '/assets/images/icons/Ellipse 3.svg',
+      avatar: '/assets/images/icons/Ellipse3.svg',
       role: userType
     };
   };
@@ -504,7 +504,7 @@ function TopNavbar({ title, breadcrumb }) {
               src={userAvatar}
               alt="User Avatar"
               className="user-avatar"
-              onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/icons/Ellipse 3.svg'; }}
+              onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/icons/Ellipse3.svg'; }}
             />
           </div>
 
@@ -514,7 +514,7 @@ function TopNavbar({ title, breadcrumb }) {
                 <img
                   src={userAvatar}
                   alt="Avatar"
-                  onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/icons/Ellipse 3.svg'; }}
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/icons/Ellipse3.svg'; }}
                 />
                 <div className="profile-dropdown-info">
                   <h4>Tutor</h4>
@@ -566,7 +566,7 @@ function TopNavbar({ title, breadcrumb }) {
                 <img
                   src={userAvatar}
                   alt="Avatar"
-                  onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/icons/Ellipse 3.svg'; }}
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/icons/Ellipse3.svg'; }}
                 />
                 <div className="profile-dropdown-info">
                   <h4>
