@@ -3,8 +3,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
 import { updateUser } from '../slices/authSlice';
 
-const BASE_URL = 'http://10.0.0.178:8000/api';
-// const BASE_URL = 'https://lms-sifu.tutorla.tech/api';
+// const BASE_URL = 'http://10.0.0.178:8000/api';
+const BASE_URL = 'https://lms-sifu.tutorla.tech/api';
 
 const cookieOptions = {
   expires: 7,
