@@ -6,9 +6,13 @@ function StatCard({ data }) {
 
   // Counter animation
   useEffect(() => {
-    const numericValue = typeof data.value === 'string' ? 
-      parseInt(data.value.replace(/[^\d]/g, '')) : data.value;
-    
+    let numericValue;
+    if (typeof data.value === 'string') {
+      numericValue = parseInt(data.value.replace(/[^\d]/g, ''), 10) || 0;
+    } else {
+      const n = Number(data.value);
+      numericValue = Number.isFinite(n) ? n : 0;
+    }
     const duration = 2000;
     const steps = 60;
     const increment = numericValue / steps;
@@ -30,7 +34,8 @@ function StatCard({ data }) {
   // Progress bar animation
   useEffect(() => {
     const timer = setTimeout(() => {
-      setProgressWidth(data.progress);
+      const p = Number(data.progress);
+      setProgressWidth(Number.isFinite(p) ? Math.min(100, Math.max(0, p)) : 0);
     }, 100);
     return () => clearTimeout(timer);
   }, [data.progress]);

@@ -23,14 +23,42 @@ const DEFAULT_STATS = [
   { id: 4, type: 'orange', label: '', icon: '/assets/images/icons/127-time.svg', value: 0, title: 'Pending Q&A', progressText: 'Weekly Goal', progressValue: '—', progress: 0 },
 ];
 
+function toNum(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function mapDashboardToStats(d) {
   if (!d) return DEFAULT_STATS;
   const data = d?.data ?? d;
+
+  const assigned = data.assigned_students;
+  const assignedTotal = typeof assigned === 'object' && assigned !== null ? toNum(assigned.total) : toNum(assigned ?? data.students_count);
+  const assignedWeek = typeof assigned === 'object' && assigned !== null ? toNum(assigned.this_week) : 0;
+  const assignedProgress = assignedWeek > 0 ? `${assignedWeek} this week` : '—';
+
+  const lessons = data.lessons_uploaded;
+  const lessonsTotal = typeof lessons === 'object' && lessons !== null ? toNum(lessons.total) : toNum(lessons ?? data.lessons_count);
+  const lessonsWeek = typeof lessons === 'object' && lessons !== null ? toNum(lessons.this_week) : 0;
+  const lessonsProgress = lessonsWeek > 0 ? `${lessonsWeek} this week` : '—';
+
+  const quiz = data.quiz_created ?? data.quizzes_created;
+  const quizTotal = typeof quiz === 'object' && quiz !== null ? toNum(quiz.total) : toNum(quiz ?? data.quizzes_count);
+  const quizMonth = typeof quiz === 'object' && quiz !== null ? toNum(quiz.this_month) : 0;
+  const quizProgress = quizMonth > 0 ? `${quizMonth} this month` : '—';
+
+  const qa = data.qa;
+  const qaPending = typeof qa === 'object' && qa !== null ? toNum(qa.pending) : toNum(data.pending_qa ?? data.pending_qna_count);
+  const qaAnswered = typeof qa === 'object' && qa !== null ? toNum(qa.answered) : 0;
+  const qaProgress = qaAnswered > 0 ? `${qaAnswered} answered` : '—';
+
+  const progressPct = (val, total) => (total > 0 ? Math.min(100, Math.round((val / total) * 100)) : 0);
+
   return [
-    { ...DEFAULT_STATS[0], value: data.assigned_students ?? data.students_count ?? 0, progressValue: data.students_progress ?? '—', progress: data.students_progress_pct ?? 0 },
-    { ...DEFAULT_STATS[1], value: data.lessons_uploaded ?? data.lessons_count ?? 0, progressValue: data.lessons_progress ?? '—', progress: data.lessons_progress_pct ?? 0 },
-    { ...DEFAULT_STATS[2], value: data.quizzes_created ?? data.quizzes_count ?? 0, progressValue: data.quiz_performance ?? '—', progress: data.quiz_progress_pct ?? 0 },
-    { ...DEFAULT_STATS[3], value: data.pending_qa ?? data.pending_qna_count ?? 0, progressValue: data.weekly_goal ?? '—', progress: data.weekly_goal_pct ?? 0 },
+    { ...DEFAULT_STATS[0], value: assignedTotal, progressValue: assignedProgress, progress: progressPct(assignedWeek, assignedTotal) || 0 },
+    { ...DEFAULT_STATS[1], value: lessonsTotal, progressValue: lessonsProgress, progress: progressPct(lessonsWeek, lessonsTotal) || 0 },
+    { ...DEFAULT_STATS[2], value: quizTotal, progressValue: quizProgress, progress: progressPct(quizMonth, quizTotal) || 0 },
+    { ...DEFAULT_STATS[3], value: qaPending, progressValue: qaProgress, progress: progressPct(qaAnswered, qaAnswered + qaPending) || 0 },
   ];
 }
 
