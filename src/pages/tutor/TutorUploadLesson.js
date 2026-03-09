@@ -1,8 +1,5 @@
-/**
- * Tutor Upload Lesson page – Dynamic: courses/chapters from API, create via POST /tutor/lessons
- */
 import React, { useState, useRef, useEffect } from 'react';
-import { useGetTutorCoursesQuery, useGetTutorCourseByIdQuery, useCreateTutorLessonMutation } from '../../store/api/authApi';
+import { useGetCoursesWithChaptersQuery, useCreateTutorLessonMutation } from '../../store/api/authApi';
 import { showSuccess, showError } from '../../utils/toast';
 import '../../assets/css/tutor-upload-lesson.css';
 
@@ -19,13 +16,12 @@ function TutorUploadLesson() {
   const videoInputRef = useRef(null);
   const resourceInputRef = useRef(null);
 
-  const { data: coursesRes } = useGetTutorCoursesQuery(1);
-  const { data: courseDetail } = useGetTutorCourseByIdQuery(courseId, { skip: !courseId });
+  const { data: coursesList = [] } = useGetCoursesWithChaptersQuery();
   const [createLesson, { isLoading: submitting }] = useCreateTutorLessonMutation();
 
-  const courses = coursesRes?.courses?.data ?? coursesRes?.data ?? [];
-  const course = courseDetail?.course ?? courseDetail;
-  const chapters = course?.chapters ?? [];
+  const courses = Array.isArray(coursesList) ? coursesList : [];
+  const selectedCourse = courses.find((c) => String(c.id) === String(courseId));
+  const chapters = selectedCourse?.chapters ?? [];
 
   useEffect(() => {
     setChapterId('');

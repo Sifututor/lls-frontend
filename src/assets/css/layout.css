@@ -398,6 +398,13 @@ button.btn-upgrade-small {
     line-height: normal;
 }
 
+.top-navbar .dashboard-title.topbar-breadcrumb {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: min(55vw, 520px);
+}
+
 a.dashboard-link.inner {
     font-weight: 600;
 }

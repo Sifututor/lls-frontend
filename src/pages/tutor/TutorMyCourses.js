@@ -39,6 +39,7 @@ function TutorMyCourses() {
   const rawList = data?.success && data?.courses?.data ? data.courses.data : [];
   const mappedList = rawList.map((c) => ({
     id: c.id,
+    slug: c.slug || (c.id != null ? String(c.id) : ''),
     title: c.title || 'Untitled',
     subject: SUBJECT_IDS[c.subject_id] || c.subject_id != null ? `Subject ${c.subject_id}` : '—',
     level: LEVEL_IDS[c.level_id] || c.level_id != null ? `Form ${c.level_id}` : '—',

@@ -1,7 +1,5 @@
-/**
- * Backend server base URL (no /api). Used for storage/file URLs.
- */
-export const FILE_SERVER_BASE = 'http://10.0.0.178:8000';
+import { FILE_SERVER_BASE } from '../config/apiConfig';
+export { FILE_SERVER_BASE };
 
 /**
  * Convert relative file path to full backend URL.

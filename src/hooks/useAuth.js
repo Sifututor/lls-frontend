@@ -1,12 +1,12 @@
 // src/hooks/useAuth.js
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import Cookies from 'js-cookie';
 import { ROLES, getRoleDashboard, hasPermission } from '../utils/roleConfig';
-import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
+import { selectCurrentUser, selectIsAuthenticated, logout as logoutAction } from '../store/slices/authSlice';
 
 export const useAuth = () => {
-  // ✅ Routing uses Redux so logout → navigate("/") shows login immediately (no redirect back to dashboard)
+  const dispatch = useDispatch();
   const reduxAuthenticated = useSelector(selectIsAuthenticated);
   const reduxUser = useSelector(selectCurrentUser);
 
@@ -45,16 +45,7 @@ export const useAuth = () => {
   };
 
   const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-    localStorage.removeItem('userType');
-    localStorage.removeItem('tokenExpiry');
-    localStorage.removeItem('isPremium');
-    Cookies.remove('authToken', { path: '/' });
-    Cookies.remove('userData', { path: '/' });
-    Cookies.remove('userType', { path: '/' });
-    Cookies.remove('tokenExpiry', { path: '/' });
-    Cookies.remove('isPremium', { path: '/' });
+    dispatch(logoutAction());
     window.location.href = '/login';
   };
 

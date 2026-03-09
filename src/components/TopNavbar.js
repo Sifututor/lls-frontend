@@ -8,6 +8,15 @@ import { useLogoutMutation, useGetMeQuery } from "../store/api/authApi";
 import { getUserType, isPremiumUser } from "../store/api/authApi";
 import { LayoutContext } from "../context/LayoutContext";
 
+const BREADCRUMB_TITLE_MAX_LENGTH = 28;
+
+function truncateBreadcrumbTitle(text) {
+  if (!text || typeof text !== 'string') return text || '';
+  const t = text.trim();
+  if (t.length <= BREADCRUMB_TITLE_MAX_LENGTH) return t;
+  return t.slice(0, BREADCRUMB_TITLE_MAX_LENGTH).trim() + '…';
+}
+
 function TopNavbar({ title, breadcrumb }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -297,10 +306,11 @@ function TopNavbar({ title, breadcrumb }) {
 
     // Tutor course inner: Content / My Courses / <Course Title>
     if (path.startsWith('/tutor/courses/') && path !== '/tutor/courses') {
+      const fullName = location.state?.courseTitle || breadcrumb || 'Course';
       return {
         parentName: 'Content / My Courses',
         parentLink: '/tutor/courses',
-        currentName: location.state?.courseTitle || breadcrumb || 'Course'
+        currentName: truncateBreadcrumbTitle(fullName)
       };
     }
 
@@ -366,7 +376,7 @@ function TopNavbar({ title, breadcrumb }) {
         <img src="/assets/images/icons/humber-menu.svg" alt="menu" />
       </button>
 
-      <span className="dashboard-title">
+      <span className="dashboard-title topbar-breadcrumb">
         {breadcrumbData ? (
           <>
             <a 
@@ -381,7 +391,7 @@ function TopNavbar({ title, breadcrumb }) {
               {breadcrumbData.parentName}
             </a>
             {" / "}
-            <span className="dashboard-link inner">{breadcrumbData.currentName}</span>
+            <span className="dashboard-link inner" title={location.state?.courseTitle || breadcrumbData.currentName}>{breadcrumbData.currentName}</span>
           </>
         ) : (
           title

@@ -55,7 +55,7 @@ function Editprofile() {
         dob: profile?.dob || ''
       });
 
-      // Set profile image — API returns full URL like http://10.0.0.178:8000/uploads/...
+      // Set profile image — API may return full URL or relative path; authSlice normalizes to full URL
       if (profile?.profile_image) {
         setProfileImage(profile.profile_image);
       } else {

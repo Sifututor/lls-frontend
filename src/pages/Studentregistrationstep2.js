@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { API_BASE } from '../config/apiConfig';
 import { useRegisterMutation, useGetFormsQuery, useGetSchoolsQuery } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import { showSuccess, showError, showWarning } from '../utils/toast';
@@ -82,7 +83,7 @@ function StudentRegistrationStep2() {
   // Function to call /me API
   const fetchUserData = async (token) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://10.0.0.232:8000'}/api/me`, {
+      const response = await fetch(`${API_BASE}/me`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

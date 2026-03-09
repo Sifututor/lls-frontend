@@ -16,7 +16,7 @@ function TutorCourseCard({ course }) {
         <p className="tutor-course-stats">{stats}</p>
         <div className="tutor-course-actions">
           <Link
-            to={`/tutor/courses/${course.id}`}
+            to={`/tutor/courses/${course.slug || course.id}`}
             state={{ courseTitle: course.title }}
             className="tutor-course-btn-see-details"
           >

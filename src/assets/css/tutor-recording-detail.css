@@ -14,6 +14,10 @@
   margin-bottom: 28px;
 }
 
+.tutor-rec-wrapper {
+  margin-top: 60px;
+}
+
 .tutor-rec-header-left {
   flex: 1;
   min-width: 0;
@@ -185,6 +189,66 @@
   font-weight: 500;
   color: #163300;
   cursor: pointer;
+}
+
+/* ===== UPLOAD RECORDING – SELECT CLASS (no classId) ===== */
+.tutor-recording-select .tutor-recording-select-title {
+  font-family: Inter, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 8px 0;
+}
+
+.tutor-recording-select .tutor-recording-select-desc {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  color: #9A9A9A;
+  margin: 0 0 20px 0;
+}
+
+.tutor-recording-class-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tutor-recording-class-item {
+  margin: 0;
+}
+
+.tutor-recording-class-link {
+  display: block;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #CFCFCF;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #163300;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.tutor-recording-class-link:hover {
+  background: #f5faf0;
+  border-color: #9FE870;
+}
+
+.tutor-recording-class-name {
+  display: block;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.tutor-recording-class-meta {
+  display: block;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  color: #9A9A9A;
 }
 
 /* ===== RESPONSIVE ===== */

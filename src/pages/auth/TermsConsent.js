@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { API_BASE } from '../../config/apiConfig';
 import { useRegisterMutation } from '../../store/api/authApi';
 import { setCredentials } from '../../store/slices/authSlice';
 import { useRegistration } from '../../context/RegistrationContext';
@@ -27,7 +28,7 @@ function TermsConsent() {
 
   const fetchUserData = async (token) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://10.0.0.178:8000/api'}/me`, {
+      const response = await fetch(`${API_BASE}/me`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,

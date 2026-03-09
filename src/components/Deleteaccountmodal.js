@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { API_BASE } from '../config/apiConfig';
 
 function Deleteaccountmodal({ isOpen, onClose }) {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ function Deleteaccountmodal({ isOpen, onClose }) {
       const token = localStorage.getItem('authToken') || Cookies.get('authToken');
       
       // API call to delete account
-      const response = await fetch('http://10.55.1.160:8000/api/account/delete', {
+      const response = await fetch(`${API_BASE}/account/delete`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

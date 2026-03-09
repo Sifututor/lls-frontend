@@ -2,11 +2,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
 
-// ===== IMAGE URL HELPER =====
-// POST /account-settings returns RELATIVE path: "uploads/profile_images/123.png"
-// GET  /account-settings returns FULL URL:      "http://10.0.0.178:8000/uploads/..."
-// This helper ensures we always store the full URL
-const IMAGE_SERVER = 'http://10.0.0.178:8000';
+import { FILE_SERVER_BASE } from '../../config/apiConfig';
+// POST /account-settings returns RELATIVE path; GET may return FULL URL. This helper normalizes to full URL.
+const IMAGE_SERVER = FILE_SERVER_BASE;
 
 const toFullUrl = (img) => {
   if (!img) return null;

@@ -3,8 +3,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
 import { updateUser, updateUserProfile } from '../slices/authSlice';
 
-// const BASE_URL = 'http://10.0.0.178:8000/api';
-const BASE_URL = 'https://lms-sifu.tutorla.tech/api';
+import { API_BASE } from '../../config/apiConfig';
+const BASE_URL = API_BASE;
 
 const cookieOptions = {
   expires: 7,
@@ -1034,7 +1034,15 @@ export const authApi = createApi({
       invalidatesTags: (result, error, questionId) => [{ type: 'Tutor', id: `VIDEO_QA_${questionId}` }, { type: 'Tutor', id: 'VIDEO_QA' }],
     }),
 
-    // Tutor courses list (paginated): GET /tutor/courses?page=1
+    getCoursesWithChapters: builder.query({
+      query: () => '/courses-with-chapters',
+      transformResponse: (res) => {
+        const list = res?.courses ?? res?.data?.courses ?? [];
+        return Array.isArray(list) ? list : [];
+      },
+      providesTags: ['Tutor', 'Courses'],
+    }),
+
     getTutorCourses: builder.query({
       query: (page = 1) => `/tutor/courses?page=${page}`,
       providesTags: (result) =>
@@ -1489,6 +1497,7 @@ export const {
   useToggleTutorVideoQAPinMutation,
   useFlagTutorVideoQAMutation,
   useUnflagTutorVideoQAMutation,
+  useGetCoursesWithChaptersQuery,
   useGetTutorCoursesQuery,
   useGetTutorCourseByIdQuery,
   useCreateTutorCourseMutation,

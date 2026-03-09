@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { API_BASE } from '../config/apiConfig';
 import { useRegisterMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import { showError, showWarning } from '../utils/toast';
@@ -39,7 +40,7 @@ function CreateAccountStep2({ signupData: propSignupData, childrenData: propChil
   // Function to call /me API
   const fetchUserData = async (token) => {
     try {
-      const response = await fetch('http://10.55.1.160:8000/api/me', {
+      const response = await fetch(`${API_BASE}/me`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

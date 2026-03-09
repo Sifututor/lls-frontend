@@ -1,6 +1,7 @@
 // src/pages/ForgotPassword.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config/apiConfig';
 import '../assets/css/auth.css';
 import authBg from '../assets/images/landing-page-bg.png';
 
@@ -17,7 +18,7 @@ function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://10.0.0.178:8000/api/forgot-password', {
+      const response = await fetch(`${API_BASE}/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

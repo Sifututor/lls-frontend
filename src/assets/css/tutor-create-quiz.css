@@ -13,6 +13,36 @@
   margin-bottom: 8px;
 }
 
+.tutor-create-quiz-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tutor-create-quiz-row.tutor-create-quiz-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .tutor-create-quiz-row.tutor-create-quiz-two-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tutor-create-quiz-desc-full {
+  width: 100%;
+}
+
+.tutor-create-quiz-desc-full .tutor-upload-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 80px;
+  resize: vertical;
+}
+
 /* ===== CHECKBOXES ===== */
 .tutor-create-quiz-checkbox-row {
   display: flex;

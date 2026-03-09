@@ -1,9 +1,6 @@
-/**
- * Create Quiz page – tutor. Dynamic: courses/chapters/lessons from API, create via POST /tutor/quizzes.
- */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetTutorCoursesQuery, useGetTutorCourseByIdQuery, useCreateTutorQuizMutation } from '../../store/api/authApi';
+import { useGetTutorLessonsQuery, useCreateTutorQuizMutation } from '../../store/api/authApi';
 import { showSuccess, showError } from '../../utils/toast';
 import '../../assets/css/tutor-upload-lesson.css';
 import '../../assets/css/tutor-create-quiz.css';
@@ -21,33 +18,20 @@ function TutorCreateQuiz() {
   const [testType, setTestType] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [chapterId, setChapterId] = useState('');
   const [lessonId, setLessonId] = useState('');
   const [topicsCovered, setTopicsCovered] = useState('');
   const [passingScore, setPassingScore] = useState('');
   const [timeAllowed, setTimeAllowed] = useState('');
   const [totalMarks, setTotalMarks] = useState('');
-  const [attemptsAllowed, setAttemptsAllowed] = useState('3');
   const [showResultsAfter, setShowResultsAfter] = useState(true);
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
   const [questions, setQuestions] = useState([defaultQuestion()]);
 
-  const { data: coursesRes } = useGetTutorCoursesQuery(1);
-  const [courseId, setCourseId] = useState('');
-  const { data: courseDetail } = useGetTutorCourseByIdQuery(courseId, { skip: !courseId });
+  const { data: lessonsData } = useGetTutorLessonsQuery({});
   const [createQuiz, { isLoading: createLoading }] = useCreateTutorQuizMutation();
 
-  const courses = coursesRes?.courses?.data ?? coursesRes?.data ?? [];
-  const course = courseDetail?.course ?? courseDetail;
-  const chapters = course?.chapters ?? [];
-  const lessons = chapters.flatMap((ch) => (ch.lessons ?? []).map((l) => ({ ...l, chapterId: ch.id })));
-
-  useEffect(() => {
-    if (!courseId) {
-      setChapterId('');
-      setLessonId('');
-    }
-  }, [courseId]);
+  const raw = lessonsData?.data ?? lessonsData?.lessons ?? lessonsData;
+  const lessonsList = Array.isArray(raw) ? raw : (raw?.data ? (Array.isArray(raw.data) ? raw.data : []) : []);
 
   const addQuestion = () => setQuestions((prev) => [...prev, defaultQuestion()]);
   const removeQuestion = (id) => {
@@ -66,9 +50,6 @@ function TutorCreateQuiz() {
 
   const buildCreatePayload = (status = 'submitted') => {
     const quizType = testType === 'practice' ? 'lesson_quiz' : testType === 'assessment' ? 'exam_quiz' : 'lesson_quiz';
-    const chapterIdsArray = chapterId
-      ? chapterId.split(',').map((id) => parseInt(id.trim(), 10)).filter((n) => !Number.isNaN(n))
-      : [];
     const questionsPayload = questions.map((q, i) => {
       const optionValues = q.type === 'mcq'
         ? [q.options.A, q.options.B, q.options.C, q.options.D].filter(Boolean)
@@ -89,13 +70,11 @@ function TutorCreateQuiz() {
     return {
       status,
       lesson_id: lessonId ? parseInt(lessonId, 10) : undefined,
-      chapter_ids: chapterIdsArray,
       title: title || 'Untitled Quiz',
       quiz_type: quizType,
       passing_score: passingScore ? parseInt(passingScore, 10) : 70,
       time_limit: timeAllowed ? parseInt(timeAllowed, 10) : 15,
       total_marks: totalMarks ? parseInt(totalMarks, 10) : 10,
-      attempts_allowed: Math.min(attemptsAllowed ? parseInt(attemptsAllowed, 10) : 3, 3),
       show_results: showResultsAfter,
       shuffle_questions: shuffleQuestions,
       questions: questionsPayload,
@@ -103,23 +82,23 @@ function TutorCreateQuiz() {
   };
 
   const handleSubmitApproval = async () => {
-    if (!chapterId && !lessonId) {
-      showError('Please select a chapter or lesson.');
+    if (!lessonId) {
+      showError('Please select a lesson.');
       return;
     }
     const emptyText = questions.find((q) => !(q.questionText && q.questionText.trim()));
     if (emptyText) {
-      showError('Har question ka text likhein (Question text required).');
+      showError('Question text is required for every question.');
       return;
     }
     const noCorrect = questions.find((q) => !(q.correctAnswer && q.correctAnswer.trim()));
     if (noCorrect) {
-      showError('Har question mein "Correct answer" select karein.');
+      showError('Please select the correct answer for every question.');
       return;
     }
     try {
       await createQuiz(buildCreatePayload('submitted')).unwrap();
-      showSuccess('Quiz submitted for approval. Admin will review and approve it.');
+      showSuccess('Quiz submitted for approval.');
       setTitle('');
       setQuestions([defaultQuestion()]);
     } catch (err) {
@@ -129,18 +108,19 @@ function TutorCreateQuiz() {
   };
 
   const handleSaveDraft = async () => {
-    if (!chapterId && !lessonId) {
-      showError('Please select a chapter or lesson.');
+    if (!lessonId) {
+      showError('Please select a lesson.');
       return;
     }
     try {
       await createQuiz(buildCreatePayload('draft')).unwrap();
-      showSuccess('Quiz saved as draft. You can submit for review later.');
+      showSuccess('Quiz saved as draft.');
     } catch (err) {
       const msg = err?.data?.message || (err?.data?.errors ? JSON.stringify(err.data.errors) : null) || err?.message || 'Failed to save draft.';
       showError(msg);
     }
   };
+
   const handleCancel = () => navigate('/tutor/courses');
 
   return (
@@ -152,90 +132,75 @@ function TutorCreateQuiz() {
         </p>
       </div>
 
-      {/* Quiz Details */}
       <section className="tutor-upload-card">
         <h2 className="tutor-upload-card-title">Quiz Details</h2>
 
-        <div className="tutor-upload-row">
-          <div className="tutor-upload-field">
-            <label className="tutor-create-quiz-label-required">Test Type *</label>
-            <select className="tutor-upload-select" value={testType} onChange={(e) => setTestType(e.target.value)}>
-              <option value="">Select Test Type</option>
-              <option value="practice">Practice</option>
-              <option value="assessment">Assessment</option>
-            </select>
+        <div className="tutor-create-quiz-form">
+          <div className="tutor-create-quiz-row tutor-create-quiz-two-cols">
+            <div className="tutor-upload-field">
+              <label className="tutor-create-quiz-label-required">Select Test Type *</label>
+              <select className="tutor-upload-select" value={testType} onChange={(e) => setTestType(e.target.value)}>
+                <option value="">Select Test Type</option>
+                <option value="practice">Practice</option>
+                <option value="assessment">Assessment</option>
+              </select>
+            </div>
+            <div className="tutor-upload-field">
+              <label className="tutor-create-quiz-label-required">Title *</label>
+              <input type="text" className="tutor-upload-input" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
           </div>
-          <div className="tutor-upload-field">
-            <label className="tutor-create-quiz-label-required">Title</label>
-            <input type="text" className="tutor-upload-input" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
-          </div>
-        </div>
 
-        <div className="tutor-upload-row">
-          <div className="tutor-upload-field">
-            <label className="tutor-create-quiz-label-required">Course</label>
-            <select className="tutor-upload-select" value={courseId} onChange={(e) => setCourseId(e.target.value)}>
-              <option value="">Select Course</option>
-              {courses.map((c) => (
-                <option key={c.id} value={c.id}>{c.title || `Course ${c.id}`}</option>
-              ))}
-            </select>
+          <div className="tutor-upload-field tutor-create-quiz-desc-full">
+            <label className="tutor-create-quiz-label-required">Description *</label>
+            <textarea className="tutor-upload-textarea" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
           </div>
-          <div className="tutor-upload-field">
-            <label className="tutor-create-quiz-label-required">Chapter</label>
-            <select className="tutor-upload-select" value={chapterId} onChange={(e) => setChapterId(e.target.value)} disabled={!courseId}>
-              <option value="">Select Chapter</option>
-              {chapters.map((ch) => (
-                <option key={ch.id} value={ch.id}>{ch.title || `Chapter ${ch.id}`}</option>
-              ))}
-            </select>
-          </div>
-          <div className="tutor-upload-field">
-            <label className="tutor-create-quiz-label-required">Lesson</label>
-            <select className="tutor-upload-select" value={lessonId} onChange={(e) => setLessonId(e.target.value)} disabled={!courseId}>
-              <option value="">Select Lesson (optional)</option>
-              {lessons.map((l) => (
-                <option key={l.id} value={l.id}>{l.title || `Lesson ${l.id}`}</option>
-              ))}
-            </select>
-          </div>
-        </div>
 
-        <div className="tutor-upload-row">
-          <div className="tutor-upload-field">
-            <label>Passing Score</label>
-            <select className="tutor-upload-select" value={passingScore} onChange={(e) => setPassingScore(e.target.value)}>
-              <option value="">Passing Score</option>
-              <option value="40">40%</option>
-              <option value="50">50%</option>
-              <option value="60">60%</option>
-            </select>
+          <div className="tutor-create-quiz-row tutor-create-quiz-two-cols">
+            <div className="tutor-upload-field">
+              <label className="tutor-create-quiz-label-required">Topics Covered *</label>
+              <select className="tutor-upload-select" value={topicsCovered} onChange={(e) => setTopicsCovered(e.target.value)}>
+                <option value="">Select topics</option>
+                <option value="Algebra">Algebra</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div className="tutor-upload-field">
+              <label className="tutor-create-quiz-label-required">Select Lesson *</label>
+              <select className="tutor-upload-select" value={lessonId} onChange={(e) => setLessonId(e.target.value)}>
+                <option value="">Select Lesson</option>
+                {lessonsList.map((l) => (
+                  <option key={l.id} value={l.id}>{l.title || `Lesson ${l.id}`}</option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="tutor-upload-field">
-            <label>Time Allowed</label>
-            <select className="tutor-upload-select" value={timeAllowed} onChange={(e) => setTimeAllowed(e.target.value)}>
-              <option value="">Time Allowed</option>
-              <option value="15">15 min</option>
-              <option value="30">30 min</option>
-              <option value="45">45 min</option>
-            </select>
+
+          <div className="tutor-create-quiz-row tutor-create-quiz-two-cols">
+            <div className="tutor-upload-field">
+              <label className="tutor-create-quiz-label-required">Time Allowed *</label>
+              <select className="tutor-upload-select" value={timeAllowed} onChange={(e) => setTimeAllowed(e.target.value)}>
+                <option value="">Time Allowed</option>
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="45">45 min</option>
+                <option value="60">60 min</option>
+              </select>
+            </div>
+            <div className="tutor-upload-field">
+              <label className="tutor-create-quiz-label-required">Passing Score *</label>
+              <input type="text" className="tutor-upload-input" placeholder="e.g. 70" value={passingScore} onChange={(e) => setPassingScore(e.target.value)} />
+            </div>
           </div>
-          <div className="tutor-upload-field">
-            <label>Total Marks</label>
-            <select className="tutor-upload-select" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)}>
-              <option value="">Total Marks</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-            </select>
-          </div>
-          <div className="tutor-upload-field">
-            <label>Attempts allowed</label>
-            <select className="tutor-upload-select" value={attemptsAllowed} onChange={(e) => setAttemptsAllowed(e.target.value)}>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-            </select>
+
+          <div className="tutor-create-quiz-row tutor-create-quiz-two-cols">
+            <div className="tutor-upload-field" />
+            <div className="tutor-upload-field">
+              <label className="tutor-create-quiz-label-required">Total Marks *</label>
+              <input type="text" className="tutor-upload-input" placeholder="e.g. 20" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} />
+            </div>
           </div>
         </div>
 
@@ -250,23 +215,20 @@ function TutorCreateQuiz() {
           </label>
         </div>
 
-        {/* Questions */}
         <h3 className="tutor-create-quiz-label-required" style={{ marginTop: 24 }}>Questions</h3>
         {questions.map((q) => (
           <div key={q.id} className="tutor-create-quiz-question-card">
-            <div className="tutor-create-quiz-question-header">
-              <div className="tutor-create-quiz-question-input-wrap">
-                <label className="tutor-create-quiz-label-required">Question text *</label>
-                <input type="text" className="tutor-upload-input" placeholder="Enter question" value={q.questionText} onChange={(e) => updateQuestion(q.id, 'questionText', e.target.value)} />
-              </div>
-              <div className="tutor-create-quiz-question-type">
-                <label className="tutor-create-quiz-checkbox-label">
-                  <input type="radio" name={`type-${q.id}`} checked={q.type === 'mcq'} onChange={() => updateQuestion(q.id, 'type', 'mcq')} /> MCQ
-                </label>
-                <label className="tutor-create-quiz-checkbox-label">
-                  <input type="radio" name={`type-${q.id}`} checked={q.type === 'truefalse'} onChange={() => updateQuestion(q.id, 'type', 'truefalse')} /> True/False
-                </label>
-              </div>
+            <div className="tutor-upload-field">
+              <label className="tutor-create-quiz-label-required">Type your question *</label>
+              <input type="text" className="tutor-upload-input" placeholder="Type your question" value={q.questionText} onChange={(e) => updateQuestion(q.id, 'questionText', e.target.value)} />
+            </div>
+            <div className="tutor-create-quiz-question-type" style={{ marginTop: 12, marginBottom: 16 }}>
+              <label className="tutor-create-quiz-checkbox-label">
+                <input type="radio" name={`type-${q.id}`} checked={q.type === 'mcq'} onChange={() => updateQuestion(q.id, 'type', 'mcq')} /> MCQs
+              </label>
+              <label className="tutor-create-quiz-checkbox-label">
+                <input type="radio" name={`type-${q.id}`} checked={q.type === 'truefalse'} onChange={() => updateQuestion(q.id, 'type', 'truefalse')} /> True & False
+              </label>
             </div>
 
             {q.type === 'mcq' && (
@@ -274,7 +236,7 @@ function TutorCreateQuiz() {
                 {['A', 'B', 'C', 'D'].map((letter) => (
                   <div key={letter} className="tutor-create-quiz-option-row">
                     <span className="tutor-create-quiz-option-letter">{letter}</span>
-                    <input type="text" className="tutor-create-quiz-option-input" placeholder={`Option ${letter}`} value={q.options[letter]} onChange={(e) => updateOption(q.id, letter, e.target.value)} />
+                    <input type="text" className="tutor-create-quiz-option-input" placeholder={`Type option ${letter}`} value={q.options[letter]} onChange={(e) => updateOption(q.id, letter, e.target.value)} />
                   </div>
                 ))}
               </div>
@@ -283,11 +245,11 @@ function TutorCreateQuiz() {
               <div className="tutor-create-quiz-options-grid">
                 <div className="tutor-create-quiz-option-row">
                   <span className="tutor-create-quiz-option-letter">T</span>
-                  <input type="text" className="tutor-create-quiz-option-input" placeholder="True" value={q.options.A} onChange={(e) => updateOption(q.id, 'A', e.target.value)} />
+                  <input type="text" className="tutor-create-quiz-option-input" placeholder="True" value="True" readOnly />
                 </div>
                 <div className="tutor-create-quiz-option-row">
                   <span className="tutor-create-quiz-option-letter">F</span>
-                  <input type="text" className="tutor-create-quiz-option-input" placeholder="False" value={q.options.B} onChange={(e) => updateOption(q.id, 'B', e.target.value)} />
+                  <input type="text" className="tutor-create-quiz-option-input" placeholder="False" value="False" readOnly />
                 </div>
               </div>
             )}
@@ -325,7 +287,7 @@ function TutorCreateQuiz() {
           <button type="button" className="tutor-upload-btn-draft" onClick={handleCancel}>Cancel</button>
           <button type="button" className="tutor-upload-btn-draft" onClick={handleSaveDraft} disabled={createLoading}>Save as Draft</button>
           <button type="button" className="tutor-upload-btn-submit" onClick={handleSubmitApproval} disabled={createLoading}>
-            {createLoading ? 'Submitting...' : 'Submit for Review'}
+            {createLoading ? 'Submitting...' : 'Submit for Approval'}
           </button>
         </div>
       </section>

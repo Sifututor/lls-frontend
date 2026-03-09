@@ -1,6 +1,7 @@
 // src/pages/ResetPassword.js
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { API_BASE } from '../config/apiConfig';
 import '../assets/css/auth.css';
 import authBg from '../assets/images/landing-page-bg.png';
 
@@ -39,7 +40,7 @@ function ResetPassword() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://10.0.0.178:8000/api/reset-password', {
+      const response = await fetch(`${API_BASE}/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
