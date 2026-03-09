@@ -448,8 +448,9 @@ p.tutors-class-meta {
   font-size: 18px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
   font-family: inherit;
+  display: inline-block;
+  text-align: center;
 }
 .btn-view-question:hover { background: #122A00; }
 
