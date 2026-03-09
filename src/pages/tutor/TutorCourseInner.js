@@ -4,7 +4,8 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useGetTutorCourseByIdQuery } from '../../store/api/authApi';
+import { useGetTutorCourseByIdQuery, usePublishTutorCourseMutation } from '../../store/api/authApi';
+import { showSuccess, showError, showInfo } from '../../utils/toast';
 import '../../assets/css/tutor-course-inner.css';
 
 function TutorCourseInner() {
@@ -57,12 +58,23 @@ function TutorCourseInner() {
     })),
   }));
 
+  const [publishCourse, { isLoading: publishing }] = usePublishTutorCourseMutation();
+
   const handleAddChapter = () => {
-    // Placeholder: open add chapter flow
+    showInfo('Add chapter is available via Course management. Contact admin for course structure updates.');
   };
 
   const handleAddMockTest = () => {
-    // Placeholder: open add mock test flow
+    showInfo('Create quizzes from Course > Create Quiz.');
+  };
+
+  const handlePublishCourse = async () => {
+    try {
+      await publishCourse(id).unwrap();
+      showSuccess('Course published.');
+    } catch (err) {
+      showError(err?.data?.message || err?.message || 'Failed to publish.');
+    }
   };
 
   if (isLoading) {
@@ -125,6 +137,7 @@ function TutorCourseInner() {
               {menuOpen && (
                 <div className="tutor-course-inner-dropdown">
                   <div className="tutor-course-inner-dropdown-item">Edit course</div>
+                  <div className="tutor-course-inner-dropdown-item" onClick={handlePublishCourse} role="button" tabIndex={0}>Publish course</div>
                   <div className="tutor-course-inner-dropdown-item">Settings</div>
                 </div>
               )}

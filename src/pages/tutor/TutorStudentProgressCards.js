@@ -3,32 +3,10 @@
  * Card: Avatar + Name/Company/Email inline, Enrolled in, course tags, See Details
  * URL: /tutor/engagement/progress-cards
  */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useGetTutorStudentsQuery } from '../../store/api/authApi';
 import '../../assets/css/tutor-student-progress-cards.css';
-
-const SAMPLE_STUDENTS = [
-  { id: 1, name: 'Bob Smith', company: 'Smith & Co.', email: 'bob@lms.my', avatar: '/assets/images/avatars/student1.jpg', courses: ['Data Structures', 'Algorithms', 'Algorithms'] },
-  { id: 2, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student2.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 3, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student3.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 4, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student4.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 5, name: 'Catherine Lee', company: 'Lee Holdings', email: 'catherine@lms.my', avatar: '/assets/images/avatars/student5.jpg', courses: ['Web Development', 'Database Management', 'Database Management'] },
-  { id: 6, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student6.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 7, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student7.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 8, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student8.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 9, name: 'David Kim', company: 'Kim Industries', email: 'david@lms.my', avatar: '/assets/images/avatars/student9.jpg', courses: ['Machine Learning', 'Artificial Intelligence', 'Artificial Intelligence'] },
-  { id: 10, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student10.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 11, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student11.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 12, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student12.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 13, name: 'Ella Thompson', company: 'Thompson Group', email: 'ella@lms.my', avatar: '/assets/images/avatars/student13.jpg', courses: ['Digital Marketing', 'SEO Basics', 'SEO Basics'] },
-  { id: 14, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student14.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 15, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student15.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 16, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student16.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 17, name: 'Frank White', company: 'White & Sons', email: 'frank@lms.my', avatar: '/assets/images/avatars/student17.jpg', courses: ['Cybersecurity', 'Network Security', 'Network Security'] },
-  { id: 18, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student18.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 19, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student19.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-  { id: 20, name: 'Alice Johnson', company: 'Johnson Dawson', email: 'alex@lms.my', avatar: '/assets/images/avatars/student20.jpg', courses: ['Additional Mathematics', 'Modern Physics', 'Modern Physics'] },
-];
 
 function TutorStudentProgressCards() {
   const [course, setCourse] = useState('');
@@ -37,7 +15,19 @@ function TutorStudentProgressCards() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filtered = SAMPLE_STUDENTS.filter(
+  const { data, isLoading, isError } = useGetTutorStudentsQuery(currentPage);
+  const rows = useMemo(() => {
+    const list = data?.data || [];
+    return list.map((s) => ({
+      id: s.id,
+      name: s.name || 'Student',
+      company: 'Student',
+      email: s.email || '—',
+      courses: Array.isArray(s.courses) ? s.courses : [],
+    }));
+  }, [data]);
+
+  const filtered = rows.filter(
     (s) =>
       !searchQuery ||
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -46,7 +36,7 @@ function TutorStudentProgressCards() {
   );
 
   const handleApplyFilters = () => {
-    console.log('Apply filters', { course, subject, formLevel });
+    setCurrentPage(1);
   };
 
   return (
@@ -102,6 +92,11 @@ function TutorStudentProgressCards() {
 
       {/* Cards Grid - 4 columns */}
       <div className="spc-cards-grid">
+        {isLoading && <p style={{ color: '#9A9A9A' }}>Loading students...</p>}
+        {isError && <p style={{ color: '#DD4040' }}>Failed to load students.</p>}
+        {!isLoading && !isError && filtered.length === 0 && (
+          <p style={{ color: '#9A9A9A' }}>No students found.</p>
+        )}
         {filtered.map((row) => (
           <div key={row.id} className="spc-card">
             {/* Top Row: Avatar + Info */}
@@ -137,18 +132,25 @@ function TutorStudentProgressCards() {
       {/* Footer */}
       <div className="spc-footer">
         <div className="spc-pagination">
-          <button type="button" className="spc-page-btn prev" disabled={currentPage === 1}>
+          <button
+            type="button"
+            className="spc-page-btn prev"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
             ← Previous
           </button>
           <div className="spc-page-numbers">
-            <button type="button" className="spc-page-num active">1</button>
-            <button type="button" className="spc-page-num">2</button>
-            <button type="button" className="spc-page-num">3</button>
-            <span className="spc-page-dots">...</span>
-            <button type="button" className="spc-page-num">67</button>
-            <button type="button" className="spc-page-num">68</button>
+            <button type="button" className="spc-page-num active">{data?.current_page || 1}</button>
+            <span className="spc-page-dots">of</span>
+            <button type="button" className="spc-page-num">{data?.last_page || 1}</button>
           </div>
-          <button type="button" className="spc-page-btn next">
+          <button
+            type="button"
+            className="spc-page-btn next"
+            disabled={(data?.last_page || 1) <= currentPage}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
             Next →
           </button>
         </div>

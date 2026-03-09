@@ -1,5 +1,6 @@
 // Tutor My Courses – dynamic from API GET /tutor/courses (paginated). Filter/search client-side.
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import TutorFilterBar from '../../components/tutor/TutorFilterBar';
 import TutorCourseCard from '../../components/tutor/TutorCourseCard';
 import { useGetTutorCoursesQuery } from '../../store/api/authApi';
@@ -120,12 +121,38 @@ function TutorMyCourses() {
       />
 
       <section className="tutor-course-welcome-stats-container tutor-course-section">
+        {filteredCourses.length === 0 ? (
+          <div className="tutor-courses-empty-state">
+            <div className="tutor-courses-empty-icon">📚</div>
+            <h3 className="tutor-courses-empty-title">
+              {rawList.length === 0
+                ? 'No courses yet'
+                : 'No courses match your filters'}
+            </h3>
+            <p className="tutor-courses-empty-desc">
+              {rawList.length === 0
+                ? 'You haven\'t been assigned any courses yet. Contact your admin or create content from Upload Lesson.'
+                : 'Try adjusting your search or filters to see more results.'}
+            </p>
+            {rawList.length === 0 && (
+              <Link to="/tutor/courses/upload" className="tutor-courses-empty-cta">
+                Upload Lesson
+              </Link>
+            )}
+            {rawList.length > 0 && showActiveFilters && (
+              <button type="button" onClick={handleClearAll} className="tutor-courses-empty-cta">
+                Clear Filters
+              </button>
+            )}
+          </div>
+        ) : (
         <div className="tutor-course-courses-grid">
           {filteredCourses.map((course) => (
             <TutorCourseCard key={course.id} course={course} />
           ))}
         </div>
-        {pagination && pagination.lastPage > 1 && (
+        )}
+        {pagination && pagination.lastPage > 1 && filteredCourses.length > 0 && (
           <div style={{ marginTop: 20, display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
               type="button"

@@ -39,7 +39,7 @@ function AssignedStudentsProgress({ students = defaultStudents }) {
     <div className="upcoming-classes-section">
       <div className="section-header">
         <h3 className="section-title">Assigned Students Progress</h3>
-        <Link to="/tutor/students" className="view-all-link">View all</Link>
+        <Link to="/tutor/engagement/progress-cards" className="view-all-link">View all</Link>
       </div>
       <div className="students-list">
         {list.map((student) => (

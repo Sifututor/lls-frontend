@@ -27,25 +27,14 @@ function QuizDetails() {
     isPremium
   } = useQuizLimit(id);
 
-  // ⚠️ BACKEND TODO: API should provide these fields in quiz overview response
-  // For now, using fallback data structure (backend team needs to add these fields)
   const staticData = {
-    // These should come from API: quiz.badges or quiz.course_info
     badges: quizData?.quiz?.badges || [],
-    
-    // Should come from API: quiz.instructor
     instructor: quizData?.quiz?.instructor || {
       name: 'Instructor',
       avatar: '/assets/images/icons/Ellipse 2.svg'
     },
-    
-    // Should come from API: quiz.description
     description: quizData?.quiz?.description || 'Complete this quiz to test your understanding of the topic.',
-    
-    // Should come from API: quiz.topics_covered
     topics: quizData?.quiz?.topics_covered || quizData?.quiz?.topics || [],
-    
-    // Should come from API: quiz.instructions
     instructions: quizData?.quiz?.instructions || {
       general: [
         'You must complete the test in one sitting',

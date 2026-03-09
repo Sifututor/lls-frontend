@@ -49,7 +49,6 @@ function CourseTabs({
     if (h > 0) return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-  // When API fails (404/500), treat as empty; show non-blocking toast once
   React.useEffect(() => {
     if (notesError && lessonId && !useCourseNotes && !notesErrorShownRef.current) {
       notesErrorShownRef.current = true;

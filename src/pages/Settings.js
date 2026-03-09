@@ -1,16 +1,66 @@
-// src/pages/Settings.js
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Privacysettingscard from '../components/Privacysettingscard';
 import Dataexportcard from '../components/Dataexportcard';
 import Parentaccesscard from '../components/Parentaccesscard';
 import Deleteaccountcard from '../components/Deleteaccountcard';
+import {
+  useGetParentAccessQuery,
+  useGenerateParentAccessMutation,
+  useRegenerateParentAccessMutation,
+} from '../store/api/authApi';
+import { selectCurrentUser } from '../store/slices/authSlice';
 
 const COMING_SOON = 'This feature is coming soon.';
 
+function extractLinkFromResponse(data) {
+  if (!data) return null;
+  const link = data?.data?.link ?? data?.link ?? data?.data?.url ?? data?.url;
+  if (link && typeof link === 'string') return link;
+  const token = data?.data?.token ?? data?.token ?? data?.data?.data?.token;
+  if (token && typeof window !== 'undefined') return `${window.location.origin}/student/activate/${token}`;
+  return null;
+}
+
+function buildParentLink(token) {
+  if (!token || typeof window === 'undefined') return null;
+  return `${window.location.origin}/student/activate/${token}`;
+}
+
 function Settings() {
-  const navigate = useNavigate();
+  const currentUser = useSelector(selectCurrentUser);
+  const isStudent = currentUser?.user_type === 'student';
+  const { data: parentAccessData, refetch: refetchParentAccess } = useGetParentAccessQuery(undefined, { skip: !isStudent });
+  const [generateLink, { isLoading: generating }] = useGenerateParentAccessMutation();
+  const [regenerateLink, { isLoading: regenerating }] = useRegenerateParentAccessMutation();
+  const [freshLink, setFreshLink] = useState(null);
+
+  const tokenFromApi = parentAccessData?.data?.token ?? parentAccessData?.token ?? parentAccessData?.data?.data?.token;
+  const linkFromApi = tokenFromApi ? buildParentLink(tokenFromApi) : null;
+  const parentAccessLink = linkFromApi || freshLink;
+
+  const handleRegenerate = useCallback(async () => {
+    try {
+      const result = parentAccessLink
+        ? await regenerateLink().unwrap()
+        : await generateLink().unwrap();
+      const link = extractLinkFromResponse(result);
+      if (link) setFreshLink(link);
+      refetchParentAccess();
+      toast.success(parentAccessLink ? 'Link regenerated' : 'Link generated');
+    } catch (err) {
+      toast.error(err?.data?.message || err?.message || 'Failed to generate link');
+    }
+  }, [parentAccessLink, generateLink, regenerateLink, refetchParentAccess]);
+
+  const handleCopy = () => {
+    if (parentAccessLink) {
+      navigator.clipboard.writeText(parentAccessLink).then(() => toast.success('Link copied')).catch(() => toast.error('Could not copy'));
+    } else {
+      toast.info('Generate a link first');
+    }
+  };
 
   return (
     <div className="settings-container">
@@ -22,7 +72,12 @@ function Settings() {
       </div>
       <Privacysettingscard />
       <Dataexportcard />
-      <Parentaccesscard link="" onRegenerate={() => toast.info(COMING_SOON)} onCopy={() => toast.info(COMING_SOON)} />
+      <Parentaccesscard
+        link={parentAccessLink}
+        onRegenerate={handleRegenerate}
+        onCopy={handleCopy}
+        isGenerating={generating || regenerating}
+      />
       <Deleteaccountcard onDownload={() => toast.info(COMING_SOON)} />
     </div>
   );

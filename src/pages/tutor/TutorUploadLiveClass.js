@@ -1,24 +1,20 @@
 /**
- * Upload Live Class – Dashboard Quick Actions wala form. (Upload Recording = sidebar detail.)
- * Content: Select Live Class, Description, Recording Details dropzone, Downloadable Material, Upload Live Class button.
- * URL: /tutor/live-classes/upload-live-class
+ * Upload Live Class – dynamic: live classes from API, upload via POST /tutor/live-classes/:id/upload-recording
  */
 import React, { useState, useRef } from 'react';
+import { useGetTutorLiveClassesQuery, useUploadTutorLiveClassRecordingMutation } from '../../store/api/authApi';
+import { showSuccess, showError } from '../../utils/toast';
 import '../../assets/css/tutor-upload-lesson.css';
 import '../../assets/css/tutor-upload-live-class.css';
 
-const LIVE_CLASSES_OPTIONS = [
-  { value: '', label: 'Select Live Class *' },
-  { value: '1', label: 'Probability Revision - Form 4 • Mathematics' },
-  { value: '2', label: 'Integration Techniques - Form 5 • Add Maths' },
-  { value: '3', label: 'Modern Maths - Form 4' },
-];
-
 function TutorUploadLiveClass() {
   const [liveClassId, setLiveClassId] = useState('');
-  const [description, setDescription] = useState('');
+  const [recordingAccess, setRecordingAccess] = useState('premium_only');
   const [recordingFiles, setRecordingFiles] = useState([]);
   const [materialFiles, setMaterialFiles] = useState([]);
+
+  const { data } = useGetTutorLiveClassesQuery();
+  const [uploadRecording, { isLoading: uploading }] = useUploadTutorLiveClassRecordingMutation();
 
   const recordingInputRef = useRef(null);
   const materialInputRef = useRef(null);
@@ -58,8 +54,31 @@ function TutorUploadLiveClass() {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  const handleUploadLiveClass = () => {
-    console.log('Upload Live Class', { liveClassId, description, recordingFiles, materialFiles });
+  const rawList = (data?.data ?? data) || [];
+  const liveClasses = Array.isArray(rawList) ? rawList : [];
+
+  const handleUploadLiveClass = async () => {
+    if (!liveClassId) {
+      showError('Please select a live class.');
+      return;
+    }
+    if (!recordingFiles.length) {
+      showError('Please upload at least one recording.');
+      return;
+    }
+    const fd = new FormData();
+    fd.append('recording', recordingFiles[0]);
+    fd.append('recording_access', recordingAccess);
+    if (materialFiles.length) fd.append('material', materialFiles[0]);
+    try {
+      await uploadRecording({ liveClassId, formData: fd }).unwrap();
+      showSuccess('Recording uploaded successfully.');
+      setLiveClassId('');
+      setRecordingFiles([]);
+      setMaterialFiles([]);
+    } catch (err) {
+      showError(err?.data?.message || err?.message || 'Upload failed.');
+    }
   };
 
   return (
@@ -73,24 +92,28 @@ function TutorUploadLiveClass() {
         <div className="tutor-live-class-form-fields">
           <div className="tutor-upload-field">
             <select
-            className="tutor-upload-select"
-            value={liveClassId}
-            onChange={(e) => setLiveClassId(e.target.value)}
-          >
-            {LIVE_CLASSES_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-        <div className="tutor-upload-field">
-          <textarea
-            className="tutor-upload-textarea"
-            placeholder="Description *"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-          />
-        </div>
+              className="tutor-upload-select"
+              value={liveClassId}
+              onChange={(e) => setLiveClassId(e.target.value)}
+            >
+              <option value="">Select Live Class *</option>
+              {liveClasses.map((lc) => (
+                <option key={lc.id} value={lc.id}>
+                  {lc.title} - {lc.course?.level ?? ''} • {lc.course?.subject ?? ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="tutor-upload-field">
+            <select
+              className="tutor-upload-select"
+              value={recordingAccess}
+              onChange={(e) => setRecordingAccess(e.target.value)}
+            >
+              <option value="premium_only">Premium Only</option>
+              <option value="all">All Students</option>
+            </select>
+          </div>
         </div>
 
         <section className="tutor-live-class-section">
@@ -186,8 +209,9 @@ function TutorUploadLiveClass() {
             type="button"
             className="tutor-live-class-btn-upload"
             onClick={handleUploadLiveClass}
+            disabled={uploading}
           >
-            Upload Live Class
+            {uploading ? 'Uploading...' : 'Upload Live Class'}
           </button>
         </div>
       </div>

@@ -1,28 +1,39 @@
 /**
- * Pending Approval page – tutor portal.
- * Content: title, subtitle, filter tabs (All Submissions, Pending, Approved, Rejected), dropdowns, table (Content, Type, Course, Requested date, Status, Action).
+ * Pending Approval page – dynamic from API GET /tutor/submissions
  */
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useGetTutorSubmissionsQuery } from '../../store/api/authApi';
 import '../../assets/css/tutor-course-inner.css';
 import '../../assets/css/tutor-pending-approval.css';
-
-const INITIAL_SUBMISSIONS = [
-  { id: 1, content: 'Chapter 5: Quadratic Equations', type: 'Lesson', course: 'Add Maths Form 4', requestedDate: '12 Jan 2025', status: 'pending' },
-  { id: 2, content: 'Chapter 3: Linear Equations', type: 'Lesson', course: 'Add Maths Form 4', requestedDate: '10 Jan 2025', status: 'approved' },
-  { id: 3, content: 'Algebra Basics Quiz', type: 'Quiz', course: 'Mathematics Form 5', requestedDate: '8 Jan 2025', status: 'rejected' },
-  { id: 4, content: 'Chapter 1: Number Base', type: 'Lesson', course: 'Mathematics Form 5', requestedDate: '5 Jan 2025', status: 'approved' },
-  { id: 5, content: 'Trigonometry Quiz', type: 'Quiz', course: 'Add Maths Form 4', requestedDate: '14 Jan 2025', status: 'pending' },
-];
-
-const STATUS_COUNTS = { all: INITIAL_SUBMISSIONS.length, pending: 3, approved: 18, rejected: 1 };
 
 function TutorPendingApproval() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('');
   const [courseFilter, setCourseFilter] = useState('');
   const [contentTypeFilter, setContentTypeFilter] = useState('');
-  const [submissions] = useState(INITIAL_SUBMISSIONS);
   const [actionOpenId, setActionOpenId] = useState(null);
+
+  const { data, isLoading, isError } = useGetTutorSubmissionsQuery();
+  const rawList = (data?.data ?? data) || [];
+  const submissions = useMemo(() => {
+    return Array.isArray(rawList)
+      ? rawList.map((s) => ({
+          id: s.id,
+          content: s.title ?? s.content ?? '—',
+          type: s.type ?? (s.quiz_id ? 'Quiz' : 'Lesson'),
+          course: s.course?.title ?? s.course_name ?? '—',
+          requestedDate: s.requested_at ?? s.created_at ? new Date(s.requested_at ?? s.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
+          status: (s.status || 'pending').toLowerCase(),
+        }))
+      : [];
+  }, [rawList]);
+
+  const statusCounts = useMemo(() => ({
+    all: submissions.length,
+    pending: submissions.filter((s) => s.status === 'pending').length,
+    approved: submissions.filter((s) => s.status === 'approved').length,
+    rejected: submissions.filter((s) => s.status === 'rejected').length,
+  }), [submissions]);
 
   const getStatusClass = (status) => {
     if (status === 'pending') return 'pending-status pending-status-pending';
@@ -43,6 +54,16 @@ function TutorPendingApproval() {
     if (contentTypeFilter && row.type !== contentTypeFilter) return false;
     return true;
   });
+
+  const uniqueCourses = [...new Set(submissions.map((s) => s.course).filter(Boolean))];
+
+  if (isLoading) {
+    return (
+      <div className="tutor-pending-approval-wrapper">
+        <p style={{ color: '#9A9A9A' }}>Loading submissions...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="tutor-pending-approval-wrapper">
@@ -68,7 +89,7 @@ function TutorPendingApproval() {
             onClick={() => setActiveFilter('pending')}
           >
             Pending
-            <span className="tutor-pending-approval-tab-badge">{STATUS_COUNTS.pending}</span>
+            <span className="tutor-pending-approval-tab-badge">{statusCounts.pending}</span>
           </button>
           <button
             type="button"
@@ -76,7 +97,7 @@ function TutorPendingApproval() {
             onClick={() => setActiveFilter('approved')}
           >
             Approved
-            <span className="tutor-pending-approval-tab-badge">{STATUS_COUNTS.approved}</span>
+            <span className="tutor-pending-approval-tab-badge">{statusCounts.approved}</span>
           </button>
           <button
             type="button"
@@ -84,7 +105,7 @@ function TutorPendingApproval() {
             onClick={() => setActiveFilter('rejected')}
           >
             Rejected
-            <span className="tutor-pending-approval-tab-badge">{STATUS_COUNTS.rejected}</span>
+            <span className="tutor-pending-approval-tab-badge">{statusCounts.rejected}</span>
           </button>
         </div>
         <div className="tutor-pending-approval-dropdowns">
@@ -104,8 +125,9 @@ function TutorPendingApproval() {
             onChange={(e) => setCourseFilter(e.target.value)}
           >
             <option value="">Course</option>
-            <option value="Add Maths Form 4">Add Maths Form 4</option>
-            <option value="Mathematics Form 5">Mathematics Form 5</option>
+            {uniqueCourses.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
           </select>
           <select
             className="tutor-pending-approval-select"

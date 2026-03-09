@@ -2,20 +2,17 @@
  * Quiz Results – Engagement. Filters (right of title), tabs (Mock Test / Quiz), table.
  * URL: /tutor/engagement/quiz-results
  */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useGetTutorStudentsQuizResultsQuery } from '../../store/api/authApi';
 import '../../assets/css/tutor-quiz-results.css';
 
-const SAMPLE_RESULTS = [
-  { id: 1, student: 'Alice Johnson', quiz: 'Quadratic Equations Quiz', score: 92, scoreType: 'green', attempts: '1/2', submittedOn: 'Today, 2:30 PM' },
-  { id: 2, student: 'Brian Smith', quiz: 'Trigonometry Basics', score: 95, scoreType: 'green', attempts: '2/2', submittedOn: 'Today, 1:15 PM' },
-  { id: 3, student: 'David Brown', quiz: 'Algebra Fundamentals', score: 75, scoreType: 'orange', attempts: '1/2', submittedOn: 'Yesterday, 4:00 PM' },
-  { id: 4, student: 'Catherine Lee', quiz: 'Quadratic Equations Quiz', score: 89, scoreType: 'green', attempts: '2/2', submittedOn: 'Yesterday, 11:20 AM' },
-  { id: 5, student: 'Henry Adams', quiz: 'Trigonometry Basics', score: 79, scoreType: 'orange', attempts: '1/2', submittedOn: 'Yesterday, 9:00 AM' },
-  { id: 6, student: 'Grace Hall', quiz: 'Algebra Fundamentals', score: 10, scoreType: 'red', attempts: '2/2', submittedOn: '15 Jan 2025' },
-  { id: 7, student: 'Frank King', quiz: 'Quadratic Equations Quiz', score: 92, scoreType: 'green', attempts: '1/2', submittedOn: '15 Jan 2025' },
-  { id: 8, student: 'Eva White', quiz: 'Trigonometry Basics', score: 83, scoreType: 'green', attempts: '2/2', submittedOn: '14 Jan 2025' },
-  { id: 9, student: 'Jack Taylor', quiz: 'Algebra Fundamentals', score: 55, scoreType: 'orange', attempts: '1/2', submittedOn: '14 Jan 2025' },
-];
+function scoreTypeFromValue(score) {
+  const n = Number(String(score || '').replace('%', ''));
+  if (Number.isNaN(n)) return 'orange';
+  if (n >= 80) return 'green';
+  if (n >= 50) return 'orange';
+  return 'red';
+}
 
 function TutorQuizResults() {
   const [activeTab, setActiveTab] = useState('mock');
@@ -27,7 +24,26 @@ function TutorQuizResults() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filtered = SAMPLE_RESULTS.filter(
+  const quizType = activeTab === 'quiz' ? 'lesson_quiz' : 'exam_quiz';
+  const { data, isLoading, isError, error } = useGetTutorStudentsQuizResultsQuery({
+    page: currentPage,
+    type: quizType,
+  });
+
+  const rows = useMemo(() => {
+    const list = data?.data || [];
+    return list.map((r, idx) => ({
+      id: idx + 1,
+      student: r.student_name || 'Student',
+      quiz: r.quiz_title || 'Quiz',
+      score: r.score || '0%',
+      scoreType: scoreTypeFromValue(r.score),
+      attempts: r.attempts || '—',
+      submittedOn: r.submitted_on || '—',
+    }));
+  }, [data]);
+
+  const filtered = rows.filter(
     (r) =>
       !searchQuery ||
       r.student.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,7 +51,7 @@ function TutorQuizResults() {
   );
 
   const handleApplyFilters = () => {
-    console.log('Apply filters', { course, chapter, lesson, score, submittedDate });
+    setCurrentPage(1);
   };
 
   return (
@@ -99,7 +115,10 @@ function TutorQuizResults() {
         <button
           type="button"
           className={`tqr-tab ${activeTab === 'mock' ? 'active' : ''}`}
-          onClick={() => setActiveTab('mock')}
+          onClick={() => {
+            setActiveTab('mock');
+            setCurrentPage(1);
+          }}
         >
           Mock Test
           <span className="tqr-tab-badge">3</span>
@@ -107,7 +126,10 @@ function TutorQuizResults() {
         <button
           type="button"
           className={`tqr-tab ${activeTab === 'quiz' ? 'active' : ''}`}
-          onClick={() => setActiveTab('quiz')}
+          onClick={() => {
+            setActiveTab('quiz');
+            setCurrentPage(1);
+          }}
         >
           Quiz
         </button>
@@ -115,6 +137,15 @@ function TutorQuizResults() {
 
       {/* Table – Student Progress jaisa */}
       <div className="tqr-table-wrapper">
+        {isLoading ? (
+          <p style={{ color: '#9A9A9A' }}>Loading quiz results...</p>
+        ) : isError ? (
+          <p style={{ color: '#DD4040' }}>
+            Failed to load quiz results. {error?.data?.message || error?.message || ''}
+          </p>
+        ) : filtered.length === 0 ? (
+          <p style={{ color: '#9A9A9A' }}>No quiz results found.</p>
+        ) : (
         <table className="tqr-table">
           <thead>
             <tr>
@@ -131,7 +162,7 @@ function TutorQuizResults() {
                 <td>{row.student}</td>
                 <td>{row.quiz}</td>
                 <td>
-                  <span className={`tqr-score tqr-score-${row.scoreType}`}>{row.score}%</span>
+                  <span className={`tqr-score tqr-score-${row.scoreType}`}>{row.score}</span>
                 </td>
                 <td>{row.attempts}</td>
                 <td>{row.submittedOn}</td>
@@ -139,23 +170,31 @@ function TutorQuizResults() {
             ))}
           </tbody>
         </table>
+        )}
       </div>
 
       {/* Footer: Pagination + Disclaimer – Student Progress jaisa */}
       <div className="tqr-footer">
         <div className="tqr-pagination">
-          <button type="button" className="tqr-page-btn prev" disabled={currentPage === 1}>
+          <button
+            type="button"
+            className="tqr-page-btn prev"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
             ← Previous
           </button>
           <div className="tqr-page-numbers">
-            <button type="button" className="tqr-page-num active">1</button>
-            <button type="button" className="tqr-page-num">2</button>
-            <button type="button" className="tqr-page-num">3</button>
-            <span className="tqr-page-dots">...</span>
-            <button type="button" className="tqr-page-num">67</button>
-            <button type="button" className="tqr-page-num">68</button>
+            <button type="button" className="tqr-page-num active">{data?.current_page || 1}</button>
+            <span className="tqr-page-dots">of</span>
+            <button type="button" className="tqr-page-num">{data?.last_page || 1}</button>
           </div>
-          <button type="button" className="tqr-page-btn next">
+          <button
+            type="button"
+            className="tqr-page-btn next"
+            disabled={(data?.last_page || 1) <= currentPage}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
             Next →
           </button>
         </div>

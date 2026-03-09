@@ -3,95 +3,51 @@
  * Layout: Header (full width top) → Left/Right columns below
  * URL: /tutor/engagement/progress-cards/student/:studentId
  */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useGetTutorStudentAnalyticsQuery } from '../../store/api/authApi';
 import '../../assets/css/tutor-student-profile.css';
 
-const SUBJECT_SECTIONS = [
-  {
-    id: 'ds',
-    title: 'Data Structures',
-    progress: {
-      videosWatched: 25,
-      quizzesAttempted: 36,
-      questionsAsked: 39,
-      timeSpent: '36 Hrs',
-    },
-    topScore: 82,
-    chapters: [
-      { id: 1, name: 'Chapter 1', date: '15 Jan 2025', progress: 82 },
-      { id: 2, name: 'Chapter 2', date: '15 Jan 2025', progress: 82 },
-      { id: 3, name: 'Chapter 3', date: '15 Jan 2025', progress: 82 },
-      { id: 4, name: 'Chapter 4', date: '15 Jan 2025', progress: 82 },
-    ],
-    mockTests: [
-      { id: 1, name: 'Chapter 1, Chapter 3', date: '15 Jan 2025', progress: 82 },
-      { id: 2, name: 'Chapter 2', date: '15 Jan 2025', progress: 82 },
-      { id: 3, name: 'Chapter 3', date: '15 Jan 2025', progress: 82 },
-      { id: 4, name: 'Chapter 4', date: '15 Jan 2025', progress: 82 },
-    ],
-  },
-  {
-    id: 'aa',
-    title: 'Algorithm Analysis',
-    progress: {
-      videosWatched: 25,
-      quizzesAttempted: 36,
-      questionsAsked: 39,
-      timeSpent: '36 Hrs',
-    },
-    topScore: 82,
-    chapters: [
-      { id: 1, name: 'Chapter 1', date: '15 Jan 2025', progress: 82 },
-      { id: 2, name: 'Chapter 2', date: '15 Jan 2025', progress: 82 },
-      { id: 3, name: 'Chapter 3', date: '15 Jan 2025', progress: 82 },
-      { id: 4, name: 'Chapter 4', date: '15 Jan 2025', progress: 82 },
-    ],
-    mockTests: [
-      { id: 1, name: 'Chapter 1', date: '15 Jan 2025', progress: 82 },
-      { id: 2, name: 'Chapter 2', date: '15 Jan 2025', progress: 82 },
-      { id: 3, name: 'Chapter 3', date: '15 Jan 2025', progress: 82 },
-      { id: 4, name: 'Chapter 4', date: '15 Jan 2025', progress: 82 },
-    ],
-  },
-  {
-    id: 'mm',
-    title: 'Modern Mathematics',
-    progress: {
-      videosWatched: 25,
-      quizzesAttempted: 36,
-      questionsAsked: 39,
-      timeSpent: '36 Hrs',
-    },
-    topScore: 82,
-    chapters: [
-      { id: 1, name: 'Chapter 1', date: '15 Jan 2025', progress: 82 },
-      { id: 2, name: 'Chapter 2', date: '15 Jan 2025', progress: 82 },
-      { id: 3, name: 'Chapter 3', date: '15 Jan 2025', progress: 82 },
-      { id: 4, name: 'Chapter 4', date: '15 Jan 2025', progress: 82 },
-    ],
-    mockTests: [
-      { id: 1, name: 'Chapter 1', date: '15 Jan 2025', progress: 82 },
-      { id: 2, name: 'Chapter 2', date: '15 Jan 2025', progress: 82 },
-      { id: 3, name: 'Chapter 3', date: '15 Jan 2025', progress: 82 },
-      { id: 4, name: 'Chapter 4', date: '15 Jan 2025', progress: 82 },
-    ],
-  },
-];
+function formatSecondsToHuman(seconds) {
+  const n = Number(seconds) || 0;
+  const h = Math.floor(n / 3600);
+  const m = Math.floor((n % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
 
 function TutorStudentProfile() {
   const { studentId } = useParams();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data, isLoading, isError, error } = useGetTutorStudentAnalyticsQuery(studentId, { skip: !studentId });
 
-  const student = {
-    name: 'Alex Student',
-    email: 'alex@lms.my',
-    avatar: '/assets/images/avatars/student1.jpg',
-    bio: 'A seasoned educator with 15 years experience at Crestwood High, specializing in advanced calculus and AP physics.',
-    location: 'San Francisco, CA',
-    contactEmail: 'alex@sifu.my',
-    timezone: 'Pakistan (GMT+5)',
-  };
+  const student = data?.student || {};
+  const sections = useMemo(() => {
+    const list = data?.courses || [];
+    return list.map((course) => ({
+      id: course.course_id,
+      title: course.course_title || 'Course',
+      progress: {
+        videosWatched: Number(course.videos_completed) || 0,
+        quizzesAttempted: Array.isArray(course.mock_exams) ? course.mock_exams.length : 0,
+        questionsAsked: 0,
+        timeSpent: formatSecondsToHuman(course.time_spent_seconds),
+      },
+      topScore: Number(course.overall_progress) || 0,
+      chapters: (course.chapters || []).map((ch) => ({
+        id: ch.chapter_id,
+        name: ch.chapter_title || 'Chapter',
+        date: '',
+        progress: Number(ch.progress) || 0,
+      })),
+      mockTests: (course.mock_exams || []).map((m, idx) => ({
+        id: m.id || idx + 1,
+        name: m.title || m.name || 'Mock Test',
+        date: m.submitted_on || '',
+        progress: Number(m.score) || 0,
+      })),
+    }));
+  }, [data]);
 
   return (
     <div className="tsp-wrapper">
@@ -125,27 +81,27 @@ function TutorStudentProfile() {
           <div className="tsp-student-card">
             <div className="tsp-avatar">
               <img 
-                src={student.avatar} 
-                alt={student.name}
+                src="/assets/images/icons/Ellipse 3.svg"
+                alt={student.name || 'Student'}
                 onError={(e) => { e.target.src = '/assets/images/icons/Ellipse 3.svg'; }}
               />
             </div>
-            <h2 className="tsp-name">{student.name}</h2>
-            <p className="tsp-email">{student.email}</p>
-            <p className="tsp-bio">{student.bio}</p>
+            <h2 className="tsp-name">{student.name || 'Student'}</h2>
+            <p className="tsp-email">{student.email || '—'}</p>
+            <p className="tsp-bio">{student.bio || '—'}</p>
             
             <div className="tsp-contact">
               <div className="tsp-contact-row">
                 <img src="/assets/images/icons/map.svg" alt="" className="tsp-contact-icon" />
-                <span>{student.location}</span>
+                <span>—</span>
               </div>
               <div className="tsp-contact-row">
                 <img src="/assets/images/icons/mail.svg" alt="" className="tsp-contact-icon" />
-                <span>{student.contactEmail}</span>
+                <span>{student.email || '—'}</span>
               </div>
               <div className="tsp-contact-row">
                 <img src="/assets/images/icons/time.svg" alt="" className="tsp-contact-icon" />
-                <span>{student.timezone}</span>
+                <span>—</span>
               </div>
             </div>
 
@@ -157,8 +113,17 @@ function TutorStudentProfile() {
 
         {/* Right Column - Subject Sections */}
         <div className="tsp-right">
+          {isLoading && <p style={{ color: '#9A9A9A' }}>Loading student analytics...</p>}
+          {isError && (
+            <p style={{ color: '#DD4040' }}>
+              Failed to load analytics. {error?.data?.message || error?.message || ''}
+            </p>
+          )}
           {/* Subject Sections */}
-          {SUBJECT_SECTIONS.map((section) => (
+          {!isLoading && !isError && sections.length === 0 && (
+            <p style={{ color: '#9A9A9A' }}>No course analytics found.</p>
+          )}
+          {sections.map((section) => (
             <div key={section.id} className="tsp-section">
               <h3 className="tsp-section-title">{section.title}</h3>
 

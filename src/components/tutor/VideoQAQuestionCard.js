@@ -1,7 +1,15 @@
 import React from 'react';
 
 function VideoQAQuestionCard({ question, onPin, onFlag, onAnswer }) {
-  const { urgency, studentName, courseDetail, questionText, videoContext } = question;
+  const {
+    urgency,
+    studentName = 'Student',
+    courseDetail,
+    questionText,
+    videoContext,
+    isPinned,
+    isFlagged,
+  } = question;
 
   return (
     <div className="tutor-video-qa-card">
@@ -29,10 +37,10 @@ function VideoQAQuestionCard({ question, onPin, onFlag, onAnswer }) {
       )}
       <div className="tutor-video-qa-card-actions">
         <button type="button" className="tutor-video-qa-btn-secondary" onClick={onPin}>
-          Pin Q&A
+          {isPinned ? 'Unpin' : 'Pin Q&A'}
         </button>
-        <button type="button" className="tutor-video-qa-btn-secondary" onClick={onFlag}>
-          Flag this Question
+        <button type="button" className={`tutor-video-qa-btn-secondary ${isFlagged ? 'flagged' : ''}`} onClick={onFlag}>
+          {isFlagged ? 'Unflag' : 'Flag this Question'}
         </button>
         <button type="button" className="tutor-video-qa-btn-primary" onClick={onAnswer}>
           Answer Question

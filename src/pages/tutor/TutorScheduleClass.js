@@ -1,8 +1,9 @@
 /**
- * Schedule Class page – tutor portal (Live Classes).
- * Content: title, subtitle, Class Details card (Select Course, Class Title, Date, Start Time, Class Duration, Description), Schedule Class button.
+ * Schedule Class page – dynamic: courses from API, create via POST /tutor/live-classes
  */
 import React, { useState } from 'react';
+import { useGetTutorCoursesQuery, useCreateTutorLiveClassMutation } from '../../store/api/authApi';
+import { showSuccess, showError } from '../../utils/toast';
 import '../../assets/css/tutor-upload-lesson.css';
 import '../../assets/css/tutor-schedule-class.css';
 
@@ -15,6 +16,10 @@ function TutorScheduleClass() {
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+
+  const { data: coursesRes } = useGetTutorCoursesQuery(1);
+  const [createLiveClass, { isLoading: submitting }] = useCreateTutorLiveClassMutation();
+  const courses = coursesRes?.courses?.data ?? coursesRes?.data ?? [];
 
   const validate = (name, value) => {
     switch (name) {
@@ -66,7 +71,25 @@ function TutorScheduleClass() {
     };
     setErrors(newErrors);
     if (Object.values(newErrors).every((err) => !err)) {
-      // TODO: API submit schedule
+      const dt = new Date(`${date}T${startTime}`);
+      createLiveClass({
+        title: classTitle,
+        course_id: parseInt(courseId, 10),
+        scheduled_at: dt.toISOString().slice(0, 19).replace('T', ' '),
+        duration: parseInt(classDuration, 10) || 60,
+        description,
+      })
+        .unwrap()
+        .then(() => {
+          showSuccess('Class scheduled successfully.');
+          setCourseId('');
+          setClassTitle('');
+          setDate('');
+          setStartTime('');
+          setClassDuration('');
+          setDescription('');
+        })
+        .catch((err) => showError(err?.data?.message || err?.message || 'Failed to schedule.'));
     }
   };
 
@@ -97,8 +120,9 @@ function TutorScheduleClass() {
                 required
               >
                 <option value="">Select Course</option>
-                <option value="1">Add Maths Form 4</option>
-                <option value="2">Mathematics Form 5</option>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>{c.title || `Course ${c.id}`}</option>
+                ))}
               </select>
               {errors.courseId && <span className="tutor-schedule-error-text">{errors.courseId}</span>}
             </div>
@@ -185,8 +209,8 @@ function TutorScheduleClass() {
         </section>
 
         <div className="tutor-schedule-actions">
-          <button type="submit" className="tutor-schedule-btn-submit">
-            Schedule Class
+          <button type="submit" className="tutor-schedule-btn-submit" disabled={submitting}>
+            {submitting ? 'Scheduling...' : 'Schedule Class'}
           </button>
         </div>
       </form>

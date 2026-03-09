@@ -1,9 +1,9 @@
 /**
- * Tutor Upload Lesson page – Exact Figma Design (Image 1)
- * Style Guide: #163300 (dark green), #9FE870 (light green), #9A9A9A (grey), #FAFAFA (bg)
- * Content: Lesson Details, Video Upload, Upload Guidelines, Additional Resources
+ * Tutor Upload Lesson page – Dynamic: courses/chapters from API, create via POST /tutor/lessons
  */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useGetTutorCoursesQuery, useGetTutorCourseByIdQuery, useCreateTutorLessonMutation } from '../../store/api/authApi';
+import { showSuccess, showError } from '../../utils/toast';
 import '../../assets/css/tutor-upload-lesson.css';
 
 function TutorUploadLesson() {
@@ -14,16 +14,38 @@ function TutorUploadLesson() {
   const [notes, setNotes] = useState('');
   const [videoFile, setVideoFile] = useState(null);
   const [resourceFiles, setResourceFiles] = useState([]);
-  
+  const [videoDuration, setVideoDuration] = useState(0);
+
   const videoInputRef = useRef(null);
   const resourceInputRef = useRef(null);
+
+  const { data: coursesRes } = useGetTutorCoursesQuery(1);
+  const { data: courseDetail } = useGetTutorCourseByIdQuery(courseId, { skip: !courseId });
+  const [createLesson, { isLoading: submitting }] = useCreateTutorLessonMutation();
+
+  const courses = coursesRes?.courses?.data ?? coursesRes?.data ?? [];
+  const course = courseDetail?.course ?? courseDetail;
+  const chapters = course?.chapters ?? [];
+
+  useEffect(() => {
+    setChapterId('');
+  }, [courseId]);
 
   const handleVideoClick = () => videoInputRef.current?.click();
   const handleResourceClick = () => resourceInputRef.current?.click();
 
   const handleVideoChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) setVideoFile(file);
+    if (file) {
+      setVideoFile(file);
+      const vid = document.createElement('video');
+      vid.preload = 'metadata';
+      vid.onloadedmetadata = () => {
+        setVideoDuration(Math.ceil(vid.duration) || 0);
+        vid.remove();
+      };
+      vid.src = URL.createObjectURL(file);
+    }
     e.target.value = '';
   };
 
@@ -36,7 +58,16 @@ function TutorUploadLesson() {
   const handleVideoDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file && /video\//.test(file.type)) setVideoFile(file);
+    if (file && /video\//.test(file.type)) {
+      setVideoFile(file);
+      const vid = document.createElement('video');
+      vid.preload = 'metadata';
+      vid.onloadedmetadata = () => {
+        setVideoDuration(Math.ceil(vid.duration) || 0);
+        vid.remove();
+      };
+      vid.src = URL.createObjectURL(file);
+    }
   };
 
   const handleResourceDrop = (e) => {
@@ -47,12 +78,57 @@ function TutorUploadLesson() {
 
   const handleDragOver = (e) => e.preventDefault();
 
-  const handleSaveDraft = () => {
-    console.log('Save as Draft', { courseId, chapterId, videoTitle, description, notes, videoFile, resourceFiles });
+  const buildFormData = (status = 'submitted') => {
+    const fd = new FormData();
+    fd.append('chapter_id', chapterId);
+    fd.append('title', videoTitle || 'Untitled');
+    fd.append('description', description || '');
+    fd.append('is_review', '0');
+    fd.append('video_duration', String(videoDuration));
+    fd.append('status', status);
+    if (videoFile) fd.append('video', videoFile);
+    resourceFiles.forEach((f) => fd.append('resource', f));
+    return fd;
   };
 
-  const handleSubmitApproval = () => {
-    console.log('Submit for Approval', { courseId, chapterId, videoTitle, description, notes, videoFile, resourceFiles });
+  const handleSaveDraft = async () => {
+    if (!chapterId || !videoTitle.trim()) {
+      showError('Please select chapter and enter video title.');
+      return;
+    }
+    try {
+      const fd = buildFormData('draft');
+      await createLesson(fd).unwrap();
+      showSuccess('Lesson saved as draft.');
+    } catch (err) {
+      showError(err?.data?.message || err?.message || 'Failed to save draft.');
+    }
+  };
+
+  const handleSubmitApproval = async () => {
+    if (!chapterId || !videoTitle.trim()) {
+      showError('Please select chapter and enter video title.');
+      return;
+    }
+    if (!videoFile) {
+      showError('Please upload a video file.');
+      return;
+    }
+    try {
+      const fd = buildFormData('submitted');
+      await createLesson(fd).unwrap();
+      showSuccess('Lesson submitted for approval.');
+      setCourseId('');
+      setChapterId('');
+      setVideoTitle('');
+      setDescription('');
+      setNotes('');
+      setVideoFile(null);
+      setResourceFiles([]);
+      setVideoDuration(0);
+    } catch (err) {
+      showError(err?.data?.message || err?.message || 'Failed to submit.');
+    }
   };
 
   return (
@@ -76,9 +152,9 @@ function TutorUploadLesson() {
               onChange={(e) => setCourseId(e.target.value)}
             >
               <option value="">Select Course *</option>
-              <option value="1">Mathematics Form 5</option>
-              <option value="2">Physics Form 4</option>
-              <option value="3">Additional Mathematics Form 4</option>
+              {courses.map((c) => (
+                <option key={c.id} value={c.id}>{c.title || `Course ${c.id}`}</option>
+              ))}
             </select>
           </div>
           <div className="tutor-upload-field">
@@ -86,11 +162,12 @@ function TutorUploadLesson() {
               className="tutor-upload-select"
               value={chapterId}
               onChange={(e) => setChapterId(e.target.value)}
+              disabled={!courseId}
             >
               <option value="">Select Chapter *</option>
-              <option value="1">Chapter 1: Number Base</option>
-              <option value="2">Chapter 2: Graphs of Functions</option>
-              <option value="3">Chapter 3: Transformations</option>
+              {chapters.map((ch) => (
+                <option key={ch.id} value={ch.id}>{ch.title || `Chapter ${ch.id}`}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -155,10 +232,12 @@ function TutorUploadLesson() {
         </div>
 
         {/* Duration Tag */}
-        <div className="tutor-upload-duration">
-          <span className="tutor-upload-duration-dot"></span>
-          <span className="tutor-upload-duration-text">Duration: 45Min</span>
-        </div>
+        {videoFile && (
+          <div className="tutor-upload-duration">
+            <span className="tutor-upload-duration-dot"></span>
+            <span className="tutor-upload-duration-text">Duration: {Math.floor(videoDuration / 60)}min {videoDuration % 60}s</span>
+          </div>
+        )}
       </section>
 
       {/* Upload Guidelines */}
@@ -225,15 +304,17 @@ function TutorUploadLesson() {
           type="button"
           className="tutor-upload-btn-draft"
           onClick={handleSaveDraft}
+          disabled={submitting}
         >
-          Save as Draft
+          {submitting ? 'Saving...' : 'Save as Draft'}
         </button>
         <button
           type="button"
           className="tutor-upload-btn-submit"
           onClick={handleSubmitApproval}
+          disabled={submitting}
         >
-          Submit for Approval
+          {submitting ? 'Submitting...' : 'Submit for Approval'}
         </button>
       </div>
     </div>

@@ -5,20 +5,21 @@ import RoleBasedRoute from './RoleBasedRoute';
 import AdminLayout from '../layouts/AdminLayout';
 import { ROLES } from '../utils/roleConfig';
 
-// Placeholder pages - TODO: Create these
-const AdminDashboard = () => <div className="dashboard-content"><h1>Admin Dashboard</h1><p>Coming soon...</p></div>;
-const UserManagement = () => <div className="dashboard-content"><h1>User Management</h1><p>Coming soon...</p></div>;
-const StudentManagement = () => <div className="dashboard-content"><h1>Student Management</h1><p>Coming soon...</p></div>;
-const TutorManagement = () => <div className="dashboard-content"><h1>Tutor Management</h1><p>Coming soon...</p></div>;
-const ParentManagement = () => <div className="dashboard-content"><h1>Parent Management</h1><p>Coming soon...</p></div>;
-const CourseManagement = () => <div className="dashboard-content"><h1>Course Management</h1><p>Coming soon...</p></div>;
-const LiveClassManagement = () => <div className="dashboard-content"><h1>Live Class Management</h1><p>Coming soon...</p></div>;
-const ContentModeration = () => <div className="dashboard-content"><h1>Content Moderation</h1><p>Coming soon...</p></div>;
-const PaymentManagement = () => <div className="dashboard-content"><h1>Payment Management</h1><p>Coming soon...</p></div>;
-const ReportsAnalytics = () => <div className="dashboard-content"><h1>Reports & Analytics</h1><p>Coming soon...</p></div>;
-const SystemSettings = () => <div className="dashboard-content"><h1>System Settings</h1><p>Coming soon...</p></div>;
-const AuditLogs = () => <div className="dashboard-content"><h1>Audit Logs</h1><p>Coming soon...</p></div>;
-const AdminNotifications = () => <div className="dashboard-content"><h1>Admin Notifications</h1><p>Coming soon...</p></div>;
+import ComingSoonPage from '../components/ComingSoonPage';
+
+const AdminDashboard = () => <ComingSoonPage title="Admin Dashboard" description="Manage users, courses, and platform settings." reason="Admin panel will be available in a future release." />;
+const UserManagement = () => <ComingSoonPage title="User Management" description="Manage platform users." reason="Admin features will be available in a future release." />;
+const StudentManagement = () => <ComingSoonPage title="Student Management" description="View and manage student accounts." reason="Admin features will be available in a future release." />;
+const TutorManagement = () => <ComingSoonPage title="Tutor Management" description="View and manage tutor accounts." reason="Admin features will be available in a future release." />;
+const ParentManagement = () => <ComingSoonPage title="Parent Management" description="View and manage parent accounts." reason="Admin features will be available in a future release." />;
+const CourseManagement = () => <ComingSoonPage title="Course Management" description="Manage courses and content." reason="Admin features will be available in a future release." />;
+const LiveClassManagement = () => <ComingSoonPage title="Live Class Management" description="Manage live class schedules." reason="Admin features will be available in a future release." />;
+const ContentModeration = () => <ComingSoonPage title="Content Moderation" description="Review and moderate platform content." reason="Admin features will be available in a future release." />;
+const PaymentManagement = () => <ComingSoonPage title="Payment Management" description="View payments and subscriptions." reason="Admin features will be available in a future release." />;
+const ReportsAnalytics = () => <ComingSoonPage title="Reports & Analytics" description="Platform analytics and reports." reason="Admin features will be available in a future release." />;
+const SystemSettings = () => <ComingSoonPage title="System Settings" description="Configure system preferences." reason="Admin features will be available in a future release." />;
+const AuditLogs = () => <ComingSoonPage title="Audit Logs" description="View system audit history." reason="Admin features will be available in a future release." />;
+const AdminNotifications = () => <ComingSoonPage title="Admin Notifications" description="Platform notifications." reason="Admin features will be available in a future release." />;
 
 const AdminRoutes = () => (
   <>

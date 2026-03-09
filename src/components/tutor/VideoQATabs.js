@@ -1,15 +1,14 @@
 import React from 'react';
 
-const TABS = [
-  { id: 'pending', label: 'Pending', badge: 3 },
-  { id: 'answered', label: 'Answered' },
-  { id: 'pinned', label: 'Pinned' },
+const DEFAULT_TABS = [
+  { id: 'pending', label: 'Pending' },
+  { id: 'all', label: 'All' },
 ];
 
-function VideoQATabs({ activeTab, onTabChange }) {
+function VideoQATabs({ activeTab, onTabChange, tabs = DEFAULT_TABS }) {
   return (
     <div className="tutor-video-qa-tabs">
-      {TABS.map((tab, index) => (
+      {tabs.map((tab) => (
         <button
           key={tab.id}
           type="button"

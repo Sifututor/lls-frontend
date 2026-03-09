@@ -1,9 +1,10 @@
-// src/pages/ChangePassword.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useChangePasswordMutation } from '../store/api/authApi';
 
 function ChangePassword() {
   const navigate = useNavigate();
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -14,10 +15,7 @@ function ChangePassword() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
   };
 
@@ -25,32 +23,29 @@ function ChangePassword() {
     e.preventDefault();
     setError('');
 
-    // Validation
     if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
       setError('All fields are required');
       return;
     }
-
     if (formData.newPassword !== formData.confirmPassword) {
       setError('New passwords do not match');
       return;
     }
-
     if (formData.newPassword.length < 8) {
       setError('New password must be at least 8 characters');
       return;
     }
 
     try {
-      // TODO: Call API to change password
-      // await changePasswordAPI(formData);
-      
+      await changePassword({
+        old_password: formData.currentPassword,
+        new_password: formData.newPassword,
+        new_password_confirmation: formData.confirmPassword
+      }).unwrap();
       setSuccess(true);
-      setTimeout(() => {
-        navigate('/student/settings');
-      }, 2000);
+      setTimeout(() => navigate('/student/settings'), 2000);
     } catch (err) {
-      setError(err.message || 'Failed to change password');
+      setError(err?.data?.message || err?.message || 'Failed to change password');
     }
   };
 
@@ -127,9 +122,10 @@ function ChangePassword() {
             <button 
               type="submit" 
               className="btn-primary"
-              style={{ padding: '12px 24px', background: '#10B981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+              disabled={isLoading}
+              style={{ padding: '12px 24px', background: '#10B981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: isLoading ? 0.7 : 1 }}
             >
-              Change Password
+              {isLoading ? 'Updating...' : 'Change Password'}
             </button>
             <button 
               type="button" 

@@ -157,7 +157,6 @@ function Aitutor() {
       chat_name: session.chat_name,
       subject: session.subject
     });
-    // TODO: Load chat history from API if needed
     setMessages(session.messages || []);
   };
 
@@ -635,7 +634,6 @@ function Aitutor() {
 
           <div className="relevant-courses-section">
             <h3 className="ai-tutor-title">Relevant Courses</h3>
-            {/* ✅ FIX 4: Remove fake courses - show empty state or API data */}
             <div className="courses-list">
               <div style={{ 
                 padding: '24px', 

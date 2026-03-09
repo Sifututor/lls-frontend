@@ -1,19 +1,24 @@
 /**
- * Edit Lesson modal – same design as Edit Chapter modal.
- * Content: title, subtitle, lesson description, video upload, duration, downloadable materials, Cancel + Send for Approval.
+ * Edit Lesson modal – wired to PUT /tutor/lessons/:id
  */
 import React, { useEffect, useState } from 'react';
+import { useUpdateTutorLessonMutation } from '../../store/api/authApi';
+import { showSuccess, showError } from '../../utils/toast';
 
 const DEFAULT_DESCRIPTION = `This lesson explores Big O notation, time complexity, and space complexity. By the end of this lesson, you'll be able to analyze algorithms and improve their efficiency.`;
 
 function EditLessonModal({ isOpen, onClose, lesson }) {
   const [description, setDescription] = useState(DEFAULT_DESCRIPTION);
-  const [duration, setDuration] = useState('15 mins');
+  const [duration, setDuration] = useState('15');
+  const [updateLesson, { isLoading }] = useUpdateTutorLessonMutation();
 
   useEffect(() => {
     if (lesson) {
       if (lesson.description) setDescription(lesson.description);
-      if (lesson.duration) setDuration(lesson.duration);
+      if (lesson.duration) {
+        const mins = String(lesson.duration).replace(/\D/g, '') || '15';
+        setDuration(mins);
+      }
     }
   }, [lesson]);
 
@@ -36,8 +41,26 @@ function EditLessonModal({ isOpen, onClose, lesson }) {
     if (e.target === e.currentTarget) onClose();
   };
 
-  const handleSendForApproval = () => {
-    onClose();
+  const handleSendForApproval = async () => {
+    if (!lesson?.id) {
+      showError('Lesson ID missing.');
+      return;
+    }
+    try {
+      const payload = {
+        id: lesson.id,
+        title: lesson.title || 'Lesson',
+        description,
+        video_duration: String(duration),
+        is_review: '0',
+      };
+      if (lesson.chapter_id) payload.chapter_id = String(lesson.chapter_id);
+      await updateLesson(payload).unwrap();
+      showSuccess('Lesson updated and sent for approval.');
+      onClose();
+    } catch (err) {
+      showError(err?.data?.message || err?.message || 'Update failed.');
+    }
   };
 
   return (
@@ -84,17 +107,17 @@ function EditLessonModal({ isOpen, onClose, lesson }) {
           </div>
 
           <div className="tutor-edit-chapter-modal-field">
-            <label className="tutor-edit-chapter-modal-field-label">Duration</label>
+            <label className="tutor-edit-chapter-modal-field-label">Duration (mins)</label>
             <select
               className="tutor-edit-chapter-modal-select"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
             >
-              <option value="15 mins">15 mins</option>
-              <option value="30 mins">30 mins</option>
-              <option value="45 mins">45 mins</option>
-              <option value="60 mins">60 mins</option>
-              <option value="90 mins">90 mins</option>
+              <option value="15">15 mins</option>
+              <option value="30">30 mins</option>
+              <option value="45">45 mins</option>
+              <option value="60">60 mins</option>
+              <option value="90">90 mins</option>
             </select>
           </div>
 
@@ -112,8 +135,9 @@ function EditLessonModal({ isOpen, onClose, lesson }) {
             type="button"
             className="tutor-edit-chapter-btn-submit"
             onClick={handleSendForApproval}
+            disabled={isLoading}
           >
-            Send for Approval
+            {isLoading ? 'Saving...' : 'Send for Approval'}
             <span className="tutor-edit-chapter-btn-arrow">→</span>
           </button>
         </div>

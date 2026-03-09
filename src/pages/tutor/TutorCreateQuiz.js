@@ -1,10 +1,9 @@
 /**
- * Create Quiz page – tutor. Dynamic: quiz list from API, create via POST /tutor/quizzes.
- * Backend expects: questions[].text, questions[].type, chapter_ids array, attempts_allowed max 3.
+ * Create Quiz page – tutor. Dynamic: courses/chapters/lessons from API, create via POST /tutor/quizzes.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetTutorQuizzesQuery, useCreateTutorQuizMutation, useDeleteTutorQuizMutation } from '../../store/api/authApi';
+import { useGetTutorCoursesQuery, useGetTutorCourseByIdQuery, useCreateTutorQuizMutation } from '../../store/api/authApi';
 import { showSuccess, showError } from '../../utils/toast';
 import '../../assets/css/tutor-upload-lesson.css';
 import '../../assets/css/tutor-create-quiz.css';
@@ -19,7 +18,6 @@ const defaultQuestion = () => ({
 
 function TutorCreateQuiz() {
   const navigate = useNavigate();
-  const [quizListPage, setQuizListPage] = useState(1);
   const [testType, setTestType] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -34,14 +32,22 @@ function TutorCreateQuiz() {
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
   const [questions, setQuestions] = useState([defaultQuestion()]);
 
-  const { data: quizzesData, isLoading: quizzesLoading } = useGetTutorQuizzesQuery(quizListPage);
+  const { data: coursesRes } = useGetTutorCoursesQuery(1);
+  const [courseId, setCourseId] = useState('');
+  const { data: courseDetail } = useGetTutorCourseByIdQuery(courseId, { skip: !courseId });
   const [createQuiz, { isLoading: createLoading }] = useCreateTutorQuizMutation();
-  const [deleteQuiz] = useDeleteTutorQuizMutation();
 
-  const quizList = (quizzesData?.success && quizzesData?.data?.data) ? quizzesData.data.data : [];
-  const pagination = quizzesData?.success && quizzesData?.data
-    ? { current: quizzesData.data.current_page, last: quizzesData.data.last_page, total: quizzesData.data.total }
-    : null;
+  const courses = coursesRes?.courses?.data ?? coursesRes?.data ?? [];
+  const course = courseDetail?.course ?? courseDetail;
+  const chapters = course?.chapters ?? [];
+  const lessons = chapters.flatMap((ch) => (ch.lessons ?? []).map((l) => ({ ...l, chapterId: ch.id })));
+
+  useEffect(() => {
+    if (!courseId) {
+      setChapterId('');
+      setLessonId('');
+    }
+  }, [courseId]);
 
   const addQuestion = () => setQuestions((prev) => [...prev, defaultQuestion()]);
   const removeQuestion = (id) => {
@@ -97,8 +103,8 @@ function TutorCreateQuiz() {
   };
 
   const handleSubmitApproval = async () => {
-    if (!lessonId) {
-      showError('Please select a lesson.');
+    if (!chapterId && !lessonId) {
+      showError('Please select a chapter or lesson.');
       return;
     }
     const emptyText = questions.find((q) => !(q.questionText && q.questionText.trim()));
@@ -123,8 +129,8 @@ function TutorCreateQuiz() {
   };
 
   const handleSaveDraft = async () => {
-    if (!lessonId) {
-      showError('Please select a lesson.');
+    if (!chapterId && !lessonId) {
+      showError('Please select a chapter or lesson.');
       return;
     }
     try {
@@ -137,16 +143,6 @@ function TutorCreateQuiz() {
   };
   const handleCancel = () => navigate('/tutor/courses');
 
-  const handleDeleteQuiz = async (id) => {
-    if (!window.confirm('Delete this quiz?')) return;
-    try {
-      await deleteQuiz(id).unwrap();
-      showSuccess('Quiz deleted.');
-    } catch (err) {
-      showError(err?.data?.message || err?.message || 'Failed to delete quiz.');
-    }
-  };
-
   return (
     <div className="tutor-upload-wrapper">
       <div className="tutor-upload-header">
@@ -155,56 +151,6 @@ function TutorCreateQuiz() {
           All quizzes require admin approval before students can attempt them.
         </p>
       </div>
-
-      {/* Your Quizzes */}
-      <section className="tutor-upload-card" style={{ marginBottom: 24 }}>
-        <h2 className="tutor-upload-card-title">Your Quizzes</h2>
-        {quizzesLoading ? (
-          <p style={{ color: '#9A9A9A' }}>Loading quizzes...</p>
-        ) : quizList.length === 0 ? (
-          <p style={{ color: '#9A9A9A' }}>No quizzes yet. Create one below.</p>
-        ) : (
-          <>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-                <thead>
-                  <tr style={{ borderBottom: '2px solid #CFCFCF' }}>
-                    <th style={{ textAlign: 'left', padding: '10px 8px' }}>Title</th>
-                    <th style={{ textAlign: 'left', padding: '10px 8px' }}>Lesson</th>
-                    <th style={{ textAlign: 'left', padding: '10px 8px' }}>Type</th>
-                    <th style={{ textAlign: 'left', padding: '10px 8px' }}>Status</th>
-                    <th style={{ textAlign: 'left', padding: '10px 8px' }}>Marks</th>
-                    <th style={{ textAlign: 'left', padding: '10px 8px' }}>Time</th>
-                    <th style={{ textAlign: 'left', padding: '10px 8px' }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {quizList.map((q) => (
-                    <tr key={q.id} style={{ borderBottom: '1px solid #CFCFCF' }}>
-                      <td style={{ padding: '10px 8px' }}>{q.title}</td>
-                      <td style={{ padding: '10px 8px' }}>{q.lesson?.title || '—'}</td>
-                      <td style={{ padding: '10px 8px' }}>{q.quiz_type || '—'}</td>
-                      <td style={{ padding: '10px 8px' }}>{q.status || '—'}</td>
-                      <td style={{ padding: '10px 8px' }}>{q.total_marks ?? '—'}</td>
-                      <td style={{ padding: '10px 8px' }}>{q.time_limit != null ? `${q.time_limit} min` : '—'}</td>
-                      <td style={{ padding: '10px 8px' }}>
-                        <button type="button" onClick={() => handleDeleteQuiz(q.id)} style={{ background: 'none', border: 'none', color: '#DD4040', cursor: 'pointer', fontSize: 13 }}>Delete</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {pagination && pagination.last > 1 && (
-              <div style={{ marginTop: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
-                <button type="button" disabled={pagination.current <= 1} onClick={() => setQuizListPage((p) => p - 1)} style={{ padding: '6px 12px' }}>← Previous</button>
-                <span style={{ color: '#9A9A9A', fontSize: 13 }}>Page {pagination.current} of {pagination.last}</span>
-                <button type="button" disabled={pagination.current >= pagination.last} onClick={() => setQuizListPage((p) => p + 1)} style={{ padding: '6px 12px' }}>Next →</button>
-              </div>
-            )}
-          </>
-        )}
-      </section>
 
       {/* Quiz Details */}
       <section className="tutor-upload-card">
@@ -227,19 +173,30 @@ function TutorCreateQuiz() {
 
         <div className="tutor-upload-row">
           <div className="tutor-upload-field">
-            <label className="tutor-create-quiz-label-required">Chapter</label>
-            <select className="tutor-upload-select" value={chapterId} onChange={(e) => setChapterId(e.target.value)}>
-              <option value="">Select Chapter</option>
-              <option value="1">Chapter 1</option>
-              <option value="2">Chapter 2</option>
+            <label className="tutor-create-quiz-label-required">Course</label>
+            <select className="tutor-upload-select" value={courseId} onChange={(e) => setCourseId(e.target.value)}>
+              <option value="">Select Course</option>
+              {courses.map((c) => (
+                <option key={c.id} value={c.id}>{c.title || `Course ${c.id}`}</option>
+              ))}
             </select>
           </div>
           <div className="tutor-upload-field">
-            <label className="tutor-create-quiz-label-required">Lesson *</label>
-            <select className="tutor-upload-select" value={lessonId} onChange={(e) => setLessonId(e.target.value)}>
-              <option value="">Select Lesson</option>
-              <option value="1">Lesson 1</option>
-              <option value="2">Lesson 2</option>
+            <label className="tutor-create-quiz-label-required">Chapter</label>
+            <select className="tutor-upload-select" value={chapterId} onChange={(e) => setChapterId(e.target.value)} disabled={!courseId}>
+              <option value="">Select Chapter</option>
+              {chapters.map((ch) => (
+                <option key={ch.id} value={ch.id}>{ch.title || `Chapter ${ch.id}`}</option>
+              ))}
+            </select>
+          </div>
+          <div className="tutor-upload-field">
+            <label className="tutor-create-quiz-label-required">Lesson</label>
+            <select className="tutor-upload-select" value={lessonId} onChange={(e) => setLessonId(e.target.value)} disabled={!courseId}>
+              <option value="">Select Lesson (optional)</option>
+              {lessons.map((l) => (
+                <option key={l.id} value={l.id}>{l.title || `Lesson ${l.id}`}</option>
+              ))}
             </select>
           </div>
         </div>

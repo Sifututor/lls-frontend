@@ -1,5 +1,9 @@
 /* ==================== TUTOR MY COURSES - tutor-course-* classes only (no conflict with student) ==================== */
 
+.tutor-course-dashboard-content {
+  margin-top: 60px;
+}
+
 .tutor-course-page-header-section {
   padding-bottom: 20px;
 }
@@ -196,6 +200,55 @@
 
 .tutor-course-filter-dropdown option:not(:disabled) {
   color: #000000;
+}
+
+/* ===== EMPTY STATE ===== */
+.tutor-courses-empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  background: #FAFAFA;
+  border-radius: 20px;
+  border: 1px dashed #E5E5E5;
+}
+
+.tutor-courses-empty-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.tutor-courses-empty-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.tutor-courses-empty-desc {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tutor-courses-empty-cta {
+  display: inline-block;
+  padding: 12px 24px;
+  background: #9FE870;
+  color: #163300;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.tutor-courses-empty-cta:hover {
+  background: #8CD75C;
 }
 
 /* ===== COURSE CARDS (no thumbnail) ===== */

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Profilecard from '../components/Profilecard';
 import Studentemailcard from '../components/Studentemailcard';
@@ -11,12 +12,38 @@ import Billinghistorycard from '../components/Billinghistorycard';
 import Parentaccesscard from '../components/Parentaccesscard';
 import Dataprivacycard from '../components/Dataprivacycard';
 import { premiumSubscriptionData } from '../data/Premiumsubscriptiondata';
+import { useGetParentAccessQuery, useGenerateParentAccessMutation, useRegenerateParentAccessMutation } from '../store/api/authApi';
+import { selectCurrentUser } from '../store/slices/authSlice';
 
 const COMING_SOON = 'This feature is coming soon.';
 const DEMO_NOTE = 'This page shows demo data. Real subscription features coming soon.';
 
+function extractLinkFromResponse(data) {
+  if (!data) return null;
+  const link = data?.data?.link ?? data?.link ?? data?.data?.url ?? data?.url;
+  if (link && typeof link === 'string') return link;
+  const token = data?.data?.token ?? data?.token ?? data?.data?.data?.token;
+  if (token && typeof window !== 'undefined') return `${window.location.origin}/student/activate/${token}`;
+  return null;
+}
+
+function buildParentLink(token) {
+  if (!token || typeof window === 'undefined') return null;
+  return `${window.location.origin}/student/activate/${token}`;
+}
+
 function Premiumsubscription() {
   const navigate = useNavigate();
+  const currentUser = useSelector(selectCurrentUser);
+  const isStudent = currentUser?.user_type === 'student';
+  const { data: parentAccessData, refetch: refetchParentAccess } = useGetParentAccessQuery(undefined, { skip: !isStudent });
+  const [generateLink, { isLoading: generating }] = useGenerateParentAccessMutation();
+  const [regenerateLink, { isLoading: regenerating }] = useRegenerateParentAccessMutation();
+  const [freshLink, setFreshLink] = useState(null);
+
+  const tokenFromApi = parentAccessData?.data?.token ?? parentAccessData?.token ?? parentAccessData?.data?.data?.token;
+  const linkFromApi = tokenFromApi ? buildParentLink(tokenFromApi) : null;
+  const parentAccessLink = linkFromApi || freshLink;
 
   const handleEditProfile = () => {
     navigate('/student/profile/edit');
@@ -39,16 +66,26 @@ function Premiumsubscription() {
     toast.info(COMING_SOON);
   };
 
-  const handleRegenerateLink = () => {
-    toast.info(COMING_SOON);
-  };
+  const handleRegenerateLink = useCallback(async () => {
+    try {
+      const result = parentAccessLink
+        ? await regenerateLink().unwrap()
+        : await generateLink().unwrap();
+      const link = extractLinkFromResponse(result);
+      if (link) setFreshLink(link);
+      refetchParentAccess();
+      toast.success(parentAccessLink ? 'Link regenerated' : 'Link generated');
+    } catch (err) {
+      toast.error(err?.data?.message || err?.message || 'Failed to generate link');
+    }
+  }, [parentAccessLink, generateLink, regenerateLink, refetchParentAccess]);
 
   const handleCopyLink = () => {
-    const link = premiumSubscriptionData?.parentAccessLink;
+    const link = parentAccessLink;
     if (link) {
       navigator.clipboard.writeText(link).then(() => toast.success('Link copied')).catch(() => toast.error('Could not copy'));
     } else {
-      toast.info(COMING_SOON);
+      toast.info('Generate a link first');
     }
   };
 
@@ -100,9 +137,10 @@ function Premiumsubscription() {
               />
 
               <Parentaccesscard
-                link={premiumSubscriptionData.parentAccessLink}
+                link={parentAccessLink}
                 onRegenerate={handleRegenerateLink}
                 onCopy={handleCopyLink}
+                isGenerating={generating || regenerating}
               />
 
               <Dataprivacycard

@@ -26,13 +26,8 @@ import TutorQuizResults from '../pages/tutor/TutorQuizResults';
 import TutorProfilePage from '../pages/tutor/TutorProfile';
 import TutorVerificationForm from '../pages/tutor/TutorVerificationForm';
 
-// Placeholder pages - extend as needed
-const Placeholder = ({ title }) => (
-  <div className="dashboard-content tutor-placeholder">
-    <h1>{title}</h1>
-    <p>Coming soon...</p>
-  </div>
-);
+import ComingSoonPage from '../components/ComingSoonPage';
+import Notifications from '../pages/Notifications';
 
 const TutorRoutes = () => (
   <>
@@ -67,18 +62,19 @@ const TutorRoutes = () => (
       <Route path="courses/pending" element={<TutorPendingApproval />} />
       <Route path="live-classes" element={<TutorMyLiveClasses />} />
       <Route path="live-classes/schedule" element={<TutorScheduleClass />} />
+      <Route path="live-classes/upload-recording/:classId" element={<TutorRecordingDetail />} />
       <Route path="live-classes/upload-recording" element={<TutorRecordingDetail />} />
       <Route path="live-classes/upload-live-class" element={<TutorUploadLiveClass />} />
-      <Route path="engagement" element={<Placeholder title="Engagement" />} />
+      <Route path="engagement" element={<ComingSoonPage title="Engagement" description="Select an option from the Engagement menu to manage Video Q&A, Student Progress, and Quiz Results." actionText="Go to Video Q&A" actionLink="/tutor/engagement/qna" />} />
       <Route path="engagement/qna" element={<TutorVideoQA />} />
       <Route path="engagement/progress" element={<TutorStudentProgress />} />
       <Route path="engagement/progress-cards" element={<TutorStudentProgressCards />} />
       <Route path="engagement/quiz-results" element={<TutorQuizResults />} />
-      <Route path="students" element={<Placeholder title="My Students" />} />
+      <Route path="students" element={<ComingSoonPage title="My Students" description="View your assigned students and their progress." reason="Use Engagement > Student Progress or Progress Cards to view student data." actionText="View Student Progress" actionLink="/tutor/engagement/progress" />} />
       <Route path="profile" element={<TutorProfilePage />} />
       <Route path="verification-form" element={<TutorVerificationForm />} />
-      <Route path="settings" element={<Placeholder title="Tutor Settings" />} />
-      <Route path="notifications" element={<Placeholder title="Tutor Notifications" />} />
+      <Route path="settings" element={<ComingSoonPage title="Tutor Settings" description="Account and notification preferences." reason="Settings will be available in a future release." />} />
+      <Route path="notifications" element={<Notifications />} />
     </Route>
   </>
 );

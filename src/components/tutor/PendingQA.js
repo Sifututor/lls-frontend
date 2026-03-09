@@ -53,7 +53,7 @@ function PendingQA({ questions = defaultQuestions }) {
               {q.upvotes > 0 && <span> • {q.upvotes} Upvoted</span>}
               <span className={`time-left ${q.urgent ? 'urgent' : ''}`}> • {q.timeLeft}</span>
             </div>
-            <button type="button" className="btn-view-question">View Question</button>
+            <Link to={`/tutor/engagement/qna?question=${q.id}`} className="btn-view-question">View Question</Link>
           </div>
         ))}
       </div>

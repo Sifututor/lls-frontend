@@ -1,21 +1,13 @@
-// src/routes/parentRoutes.js
 import React from 'react';
 import { Route } from 'react-router-dom';
 import ParentLayout from '../layouts/ParentLayout';
 import RoleBasedRoute from './RoleBasedRoute';
 import { ROLES } from '../utils/roleConfig';
-
-// Parent Pages
 import ParentDashboard from '../pages/parent/ParentDashboard';
-// Uncomment as you create these pages:
-// import ParentCourses from '../pages/parent/ParentCourses';
-// import ParentCourseDetails from '../pages/parent/ParentCourseDetails';
-// import ParentLiveClasses from '../pages/parent/ParentLiveClasses';
-// import ParentEngagement from '../pages/parent/ParentEngagement';
+import ComingSoonPage from '../components/ComingSoonPage';
 
 const ParentRoutes = () => (
   <>
-    {/* Parent Index Route */}
     <Route
       path="/parent"
       element={
@@ -26,8 +18,6 @@ const ParentRoutes = () => (
     >
       <Route index element={<ParentDashboard />} />
     </Route>
-    
-    {/* Parent Dashboard */}
     <Route
       path="/parent/dashboard"
       element={
@@ -38,8 +28,6 @@ const ParentRoutes = () => (
     >
       <Route index element={<ParentDashboard />} />
     </Route>
-    
-    {/* Courses - Placeholder */}
     <Route
       path="/parent/courses"
       element={
@@ -48,10 +36,8 @@ const ParentRoutes = () => (
         </RoleBasedRoute>
       }
     >
-      <Route index element={<div className="dashboard-content"><h1>Courses</h1><p>Coming soon...</p></div>} />
+      <Route index element={<ComingSoonPage title="Courses" description="View your children's enrolled courses and progress." reason="This feature will be available in a future release." />} />
     </Route>
-    
-    {/* Live Classes - Placeholder */}
     <Route
       path="/parent/live-classes"
       element={
@@ -60,10 +46,8 @@ const ParentRoutes = () => (
         </RoleBasedRoute>
       }
     >
-      <Route index element={<div className="dashboard-content"><h1>Live Classes</h1><p>Coming soon...</p></div>} />
+      <Route index element={<ComingSoonPage title="Live Classes" description="View and manage your children's live class schedules." reason="This feature will be available in a future release." />} />
     </Route>
-    
-    {/* Engagement - Placeholder */}
     <Route
       path="/parent/engagement"
       element={
@@ -72,7 +56,7 @@ const ParentRoutes = () => (
         </RoleBasedRoute>
       }
     >
-      <Route index element={<div className="dashboard-content"><h1>Engagement</h1><p>Coming soon...</p></div>} />
+      <Route index element={<ComingSoonPage title="Engagement" description="Monitor your children's learning engagement and activity." reason="This feature will be available in a future release." />} />
     </Route>
   </>
 );

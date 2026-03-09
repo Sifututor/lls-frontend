@@ -19,7 +19,7 @@ function TutorProfile() {
   const { data: profileRes, isLoading: profileLoading, isError: profileError } = useGetTutorProfileQuery(undefined, { skip: false });
   const [updateProfile, { isLoading: saveLoading, isError: saveError, error: saveErrData }] = useUpdateTutorProfileMutation();
 
-  const profile = profileRes?.success ? profileRes?.data : null;
+  const profile = profileRes?.profile || null;
   const apiErrors = (saveErrData?.data?.errors || saveErrData?.data?.message) ? (saveErrData?.data?.errors || { _: [saveErrData?.data?.message] }) : null;
 
   useEffect(() => {
@@ -28,7 +28,7 @@ function TutorProfile() {
       setEmail(profile.email ?? '');
       setContact(profile.phone ?? profile.contact ?? '');
       setBio(profile.bio ?? '');
-    } else if (profileError || (profileRes && !profileRes?.success)) {
+    } else if (profileError || (profileRes && profileRes?.ok === false)) {
       try {
         const stored = JSON.parse(localStorage.getItem('userData') || '{}');
         if (stored.name) setFullName(stored.name);
@@ -46,6 +46,7 @@ function TutorProfile() {
     try {
       await updateProfile({
         full_name: fullName,
+        first_name: fullName,
         email,
         phone: contact,
         bio,
@@ -130,7 +131,11 @@ function TutorProfile() {
       {/* Teaching Profile Card */}
       <div className="tp-teaching-card">
         <h3 className="tp-section-title">Teaching Profile</h3>
-        {profileError && <p style={{ color: '#DC2626', marginBottom: 12 }}>Failed to load profile. You can still edit and save.</p>}
+        {profileError && !profile && (
+          <p style={{ color: '#DC2626', marginBottom: 12 }}>
+            Failed to load profile. You can still edit and save.
+          </p>
+        )}
         {apiErrors && Object.keys(apiErrors).filter((k) => k !== '_').length > 0 && (
           <ul style={{ color: '#DC2626', marginBottom: 12, paddingLeft: 20 }}>
             {Object.entries(apiErrors).filter(([k]) => k !== '_').map(([key, msgs]) => (

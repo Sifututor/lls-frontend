@@ -12,9 +12,6 @@ import EndQuizModal from '../components/Endquizmodal';
 import { SectionLoader } from '../components/ui/LoadingSpinner';
 import { useGetQuizQuestionsQuery, useSubmitQuizAttemptMutation } from '../store/api/authApi';
 
-// ✅ REMOVED: Static quiz data import - now using API data only
-// import { quizQuestions as staticQuestions, quizSettings as staticSettings } from '../data/Quiztakedata';
-
 function mapApiQuestionToCard(q) {
   const options = q.options && typeof q.options === 'object'
     ? Object.entries(q.options).map(([key, text]) => ({

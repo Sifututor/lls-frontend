@@ -1,10 +1,10 @@
 // src/store/api/authApi.js
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
-import { updateUser } from '../slices/authSlice';
+import { updateUser, updateUserProfile } from '../slices/authSlice';
 
-const BASE_URL = 'http://10.0.0.178:8000/api';
-// const BASE_URL = 'https://lms-sifu.tutorla.tech/api';
+// const BASE_URL = 'http://10.0.0.178:8000/api';
+const BASE_URL = 'https://lms-sifu.tutorla.tech/api';
 
 const cookieOptions = {
   expires: 7,
@@ -13,6 +13,10 @@ const cookieOptions = {
   secure: typeof window !== 'undefined' && window.location?.protocol === 'https:',
 };
 
+const formDataEndpoints = new Set([
+  'updateAccountSettings', 'createTutorLesson', 'updateTutorLesson', 'uploadTutorLiveClassRecording', 'submitTutorVerification',
+]);
+
 const baseQueryWithAuth = fetchBaseQuery({
   baseUrl: BASE_URL,
   prepareHeaders: (headers, { getState, endpoint }) => {
@@ -20,7 +24,7 @@ const baseQueryWithAuth = fetchBaseQuery({
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
-    if (endpoint !== 'updateAccountSettings') {
+    if (!formDataEndpoints.has(endpoint)) {
       headers.set('Content-Type', 'application/json');
     }
     headers.set('Accept', 'application/json');
@@ -60,7 +64,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Auth', 'User', 'AI', 'Courses', 'Notes', 'LiveClasses', 'VideoQnA', 'Notifications', 'Quiz', 'Tutor'],
+  tagTypes: ['Auth', 'User', 'ParentAccess', 'AI', 'Courses', 'Notes', 'LiveClasses', 'VideoQnA', 'Notifications', 'Quiz', 'Tutor'],
   endpoints: (builder) => ({
     // Login
     login: builder.mutation({
@@ -467,12 +471,7 @@ export const authApi = createApi({
         return {
           url: `/lesson/${lessonId}/bookmark`,
           method: 'POST',
-          body: {
-            timestamp: secs,
-            timestamp_seconds: secs,
-            note: note || '',
-            content: note || '',
-          },
+          body: { timestamp: secs, note: note || '' },
         };
       },
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
@@ -805,6 +804,30 @@ export const authApi = createApi({
       providesTags: (result, error, attemptId) => [{ type: 'Quiz', id: `review-${attemptId}` }],
     }),
 
+    // Course overall progress: GET /courses/:id/overall-progress
+    getCourseOverallProgress: builder.query({
+      query: (courseId) => `/courses/${courseId}/overall-progress`,
+      providesTags: (result, error, courseId) => [{ type: 'Courses', id: courseId }, 'User'],
+    }),
+
+    // Parent Access Link (student): GET, POST generate, regenerate, revoke
+    getParentAccess: builder.query({
+      query: () => '/parent-access',
+      providesTags: ['User', 'ParentAccess'],
+    }),
+    generateParentAccess: builder.mutation({
+      query: () => ({ url: '/parent-access/generate', method: 'POST' }),
+      invalidatesTags: ['User', 'ParentAccess'],
+    }),
+    regenerateParentAccess: builder.mutation({
+      query: () => ({ url: '/parent-access/regenerate', method: 'POST' }),
+      invalidatesTags: ['User', 'ParentAccess'],
+    }),
+    revokeParentAccess: builder.mutation({
+      query: () => ({ url: '/parent-access/revoke', method: 'POST' }),
+      invalidatesTags: ['User'],
+    }),
+
     // ========== STUDENT DASHBOARD ==========
     getStudentDashboardAnalytics: builder.query({
       query: () => '/student/dashboard-analytics',
@@ -824,7 +847,11 @@ export const authApi = createApi({
 
     // ========== TUTOR ==========
     getTutorDashboard: builder.query({
-      query: () => '/tutor/dashboard',
+      async queryFn(_arg, _api, _extraOptions, baseQuery) {
+        let res = await baseQuery({ url: '/tutor/dashboard-stats', method: 'GET' });
+        if (res.error) res = await baseQuery({ url: '/tutor/dashboard', method: 'GET' });
+        return res.error ? { error: res.error } : { data: res.data };
+      },
       providesTags: ['Tutor'],
     }),
 
@@ -838,6 +865,34 @@ export const authApi = createApi({
       providesTags: ['Tutor'],
     }),
 
+    // Tutor students list (paginated): GET /tutor/students?page=1
+    getTutorStudents: builder.query({
+      query: (page = 1) => `/tutor/students?page=${page}`,
+      transformResponse: (response) => response?.data ?? response,
+      providesTags: ['Tutor'],
+    }),
+
+    // Tutor student analytics: GET /tutor/students/:id
+    getTutorStudentAnalytics: builder.query({
+      query: (studentId) => `/tutor/students/${studentId}`,
+      transformResponse: (response) => response?.data ?? response,
+      providesTags: (result, error, studentId) => [{ type: 'Tutor', id: `STUDENT_${studentId}` }],
+    }),
+
+    // Tutor student quiz results (paginated): GET /tutor/students/quiz-results?page=1&type=lesson_quiz|exam_quiz
+    getTutorStudentsQuizResults: builder.query({
+      query: (params = 1) => {
+        const p = typeof params === 'number' ? { page: params } : (params || {});
+        const { page = 1, type } = p;
+        const q = new URLSearchParams();
+        q.set('page', page);
+        if (type) q.set('type', type);
+        return `/tutor/students/quiz-results?${q.toString()}`;
+      },
+      transformResponse: (response) => response?.data ?? response,
+      providesTags: ['Tutor'],
+    }),
+
     getTutorPendingQnA: builder.query({
       query: () => '/tutor/qna/pending',
       providesTags: ['Tutor'],
@@ -846,6 +901,137 @@ export const authApi = createApi({
     getTutorSubmissions: builder.query({
       query: () => '/tutor/submissions',
       providesTags: ['Tutor'],
+    }),
+
+    // Tutor Video Q&A: GET /tutor/video-qa?page=&filter=&course_id=&subject_id=&form_level=
+    getTutorVideoQA: builder.query({
+      query: (params = {}) => {
+        const { page = 1, filter = 'all', course_id, subject_id, form_level, lesson_id } = params;
+        const q = new URLSearchParams();
+        q.set('page', page);
+        if (filter) q.set('filter', filter);
+        if (course_id) q.set('course_id', course_id);
+        if (subject_id) q.set('subject_id', subject_id);
+        if (form_level) q.set('form_level', form_level);
+        if (lesson_id) q.set('lesson_id', lesson_id);
+        return `/tutor/video-qa?${q.toString()}`;
+      },
+      transformResponse: (res) => res?.data ?? res,
+      providesTags: (result) =>
+        result?.data
+          ? [{ type: 'Tutor', id: 'VIDEO_QA' }, ...result.data.map((q) => ({ type: 'Tutor', id: `VIDEO_QA_${q.id}` }))]
+          : ['Tutor'],
+    }),
+
+    // Single question detail with answers: GET /tutor/video-qa/:id
+    getTutorVideoQADetail: builder.query({
+      query: (id) => `/tutor/video-qa/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Tutor', id: `VIDEO_QA_${id}` }],
+    }),
+
+    // Post tutor answer: POST /tutor/video-qa/:id/answer
+    postTutorVideoQAAnswer: builder.mutation({
+      query: ({ questionId, answer_text }) => ({
+        url: `/tutor/video-qa/${questionId}/answer`,
+        method: 'POST',
+        body: { answer_text },
+      }),
+      invalidatesTags: (result, error, { questionId }) => [{ type: 'Tutor', id: `VIDEO_QA_${questionId}` }, { type: 'Tutor', id: 'VIDEO_QA' }],
+    }),
+
+    // Update answer: PUT /tutor/video-qa/answers/:id
+    updateTutorVideoQAAnswer: builder.mutation({
+      query: ({ answerId, answer_text }) => ({
+        url: `/tutor/video-qa/answers/${answerId}`,
+        method: 'PUT',
+        body: { answer_text },
+      }),
+      invalidatesTags: (result, error, { questionId }) =>
+        questionId
+          ? [{ type: 'Tutor', id: `VIDEO_QA_${questionId}` }, { type: 'Tutor', id: 'VIDEO_QA' }]
+          : ['Tutor'],
+    }),
+
+    // Post reply: POST /tutor/video-qa/answers/:answerId/reply
+    postTutorVideoQAReply: builder.mutation({
+      query: ({ answerId, reply_text, answer_text }) => ({
+        url: `/tutor/video-qa/answers/${answerId}/reply`,
+        method: 'POST',
+        body: { reply_text: reply_text ?? answer_text },
+      }),
+      invalidatesTags: (result, error, { questionId }) =>
+        questionId
+          ? [{ type: 'Tutor', id: `VIDEO_QA_${questionId}` }, { type: 'Tutor', id: 'VIDEO_QA' }]
+          : ['Tutor'],
+    }),
+
+    // Flag question: POST /tutor/video-qa/flag
+    flagTutorVideoQA: builder.mutation({
+      query: ({ flaggable_id, reason }) => ({
+        url: '/tutor/video-qa/flag',
+        method: 'POST',
+        body: {
+          flaggable_type: 'video_question',
+          flaggable_id,
+          reason: reason || '',
+        },
+      }),
+      invalidatesTags: (result, error, { questionId }) =>
+        questionId
+          ? [{ type: 'Tutor', id: `VIDEO_QA_${questionId}` }, { type: 'Tutor', id: 'VIDEO_QA' }]
+          : ['Tutor'],
+    }),
+
+    // Unflag: backend route varies by environment, so try safe fallbacks
+    unflagTutorVideoQA: builder.mutation({
+      async queryFn({ flaggable_id }, _api, _extraOptions, baseQuery) {
+        const payload = {
+          flaggable_type: 'video_question',
+          flaggable_id,
+        };
+
+        // 1) Preferred: DELETE /tutor/video-qa/flag
+        let res = await baseQuery({
+          url: '/tutor/video-qa/flag',
+          method: 'DELETE',
+          body: payload,
+        });
+        if (!res.error) return { data: res.data };
+
+        // 2) Some backends expose POST /tutor/video-qa/unflag
+        res = await baseQuery({
+          url: '/tutor/video-qa/unflag',
+          method: 'POST',
+          body: payload,
+        });
+        if (!res.error) return { data: res.data };
+
+        // 3) Legacy fallback: GET /tutor/video-qa/unflag?flaggable_type=&flaggable_id=
+        const q = new URLSearchParams({
+          flaggable_type: 'video_question',
+          flaggable_id: String(flaggable_id),
+        }).toString();
+        res = await baseQuery({
+          url: `/tutor/video-qa/unflag?${q}`,
+          method: 'GET',
+        });
+        if (!res.error) return { data: res.data };
+
+        return { error: res.error };
+      },
+      invalidatesTags: (result, error, { questionId }) =>
+        questionId
+          ? [{ type: 'Tutor', id: `VIDEO_QA_${questionId}` }, { type: 'Tutor', id: 'VIDEO_QA' }]
+          : ['Tutor'],
+    }),
+
+    // Toggle pin: POST /tutor/video-qa/:id/toggle-pin
+    toggleTutorVideoQAPin: builder.mutation({
+      query: (questionId) => ({
+        url: `/tutor/video-qa/${questionId}/toggle-pin`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, questionId) => [{ type: 'Tutor', id: `VIDEO_QA_${questionId}` }, { type: 'Tutor', id: 'VIDEO_QA' }],
     }),
 
     // Tutor courses list (paginated): GET /tutor/courses?page=1
@@ -864,6 +1050,117 @@ export const authApi = createApi({
     getTutorCourseById: builder.query({
       query: (id) => `/tutor/courses/${id}`,
       providesTags: (result, error, id) => [{ type: 'Tutor', id: `COURSE_${id}` }],
+    }),
+
+    createTutorCourse: builder.mutation({
+      query: (body) => ({ url: '/tutor/courses', method: 'POST', body }),
+      invalidatesTags: ['Tutor'],
+    }),
+    updateTutorCourse: builder.mutation({
+      query: ({ id, ...body }) => ({ url: `/tutor/courses/${id}`, method: 'PUT', body }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Tutor', id: `COURSE_${id}` }, 'Tutor'],
+    }),
+    deleteTutorCourse: builder.mutation({
+      query: (id) => ({ url: `/tutor/courses/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Tutor'],
+    }),
+    publishTutorCourse: builder.mutation({
+      query: (id) => ({ url: `/tutor/courses/${id}/publish`, method: 'POST' }),
+      invalidatesTags: (result, error, id) => [{ type: 'Tutor', id: `COURSE_${id}` }, 'Tutor'],
+    }),
+
+    // Tutor lessons: GET /tutor/lessons, POST, PUT, DELETE, publish
+    getTutorLessons: builder.query({
+      query: (params) => {
+        const q = new URLSearchParams();
+        if (params?.course_id) q.set('course_id', params.course_id);
+        if (params?.chapter_id) q.set('chapter_id', params.chapter_id);
+        if (params?.page) q.set('page', params.page);
+        return `/tutor/lessons${q.toString() ? `?${q.toString()}` : ''}`;
+      },
+      transformResponse: (res) => res?.data ?? res,
+      providesTags: ['Tutor'],
+    }),
+    getTutorLessonById: builder.query({
+      query: (id) => `/tutor/lessons/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Tutor', id: `LESSON_${id}` }],
+    }),
+    createTutorLesson: builder.mutation({
+      query: (formData) => ({
+        url: '/tutor/lessons',
+        method: 'POST',
+        body: formData instanceof FormData ? formData : (() => {
+          const fd = new FormData();
+          Object.entries(formData || {}).forEach(([k, v]) => {
+            if (v != null && v !== '') fd.append(k, v instanceof File ? v : String(v));
+          });
+          return fd;
+        })(),
+      }),
+      invalidatesTags: ['Tutor'],
+    }),
+    updateTutorLesson: builder.mutation({
+      query: ({ id, ...formData }) => ({
+        url: `/tutor/lessons/${id}`,
+        method: 'PUT',
+        body: formData instanceof FormData ? formData : (() => {
+          const fd = new FormData();
+          Object.entries(formData || {}).forEach(([k, v]) => {
+            if (v != null && v !== '') fd.append(k, v instanceof File ? v : String(v));
+          });
+          return fd;
+        })(),
+      }),
+      invalidatesTags: ['Tutor'],
+    }),
+    deleteTutorLesson: builder.mutation({
+      query: (id) => ({ url: `/tutor/lessons/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Tutor'],
+    }),
+    publishTutorLesson: builder.mutation({
+      query: (id) => ({ url: `/tutor/lessons/${id}/publish`, method: 'POST' }),
+      invalidatesTags: ['Tutor'],
+    }),
+
+    // Live classes: GET, POST, upload-recording, join
+    getTutorLiveClasses: builder.query({
+      query: (params) => {
+        const q = new URLSearchParams();
+        if (params?.page) q.set('page', params.page);
+        return `/tutor/live-classes${q.toString() ? `?${q.toString()}` : ''}`;
+      },
+      transformResponse: (res) => res?.data ?? res,
+      providesTags: ['Tutor'],
+    }),
+    getTutorLiveClassById: builder.query({
+      query: (id) => `/tutor/live-classes/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Tutor', id: `LIVE_${id}` }],
+    }),
+    createTutorLiveClass: builder.mutation({
+      query: (body) => ({
+        url: '/tutor/live-classes',
+        method: 'POST',
+        body: {
+          title: body.title,
+          course_id: body.course_id,
+          scheduled_at: body.scheduled_at,
+          duration: body.duration ?? 60,
+          description: body.description ?? '',
+        },
+      }),
+      invalidatesTags: ['Tutor'],
+    }),
+    uploadTutorLiveClassRecording: builder.mutation({
+      query: ({ liveClassId, formData }) => ({
+        url: `/tutor/live-classes/${liveClassId}/upload-recording`,
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: (result, error, { liveClassId }) => [{ type: 'Tutor', id: `LIVE_${liveClassId}` }, 'Tutor'],
+    }),
+    joinTutorLiveClass: builder.query({
+      query: (id) => `/tutor/live-classes/${id}/join`,
+      providesTags: (result, error, id) => [{ type: 'Tutor', id: `LIVE_${id}` }],
     }),
 
     // Tutor quizzes list: GET /tutor/quizzes?page=1
@@ -912,18 +1209,152 @@ export const authApi = createApi({
       }),
       invalidatesTags: (result, error, id) => [{ type: 'Tutor', id: `QUIZ_${id}` }, { type: 'Tutor', id: 'QUIZZES_LIST' }],
     }),
+    publishTutorQuiz: builder.mutation({
+      query: (id) => ({ url: `/tutor/quizzes/${id}/publish`, method: 'POST' }),
+      invalidatesTags: (result, error, id) => [{ type: 'Tutor', id: `QUIZ_${id}` }, { type: 'Tutor', id: 'QUIZZES_LIST' }],
+    }),
+    requestTutorQuizUpdate: builder.mutation({
+      query: ({ id, update_request }) => ({
+        url: `/tutor/quizzes/${id}/request-update`,
+        method: 'POST',
+        body: { update_request: update_request || '' },
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Tutor', id: `QUIZ_${id}` }],
+    }),
 
-    // Tutor profile: GET /tutor/profile, PUT /tutor/profile
+    // Tutor profile: GET /tutor/profile (fallback /account-settings), PUT /tutor/profile
     getTutorProfile: builder.query({
-      query: () => '/tutor/profile',
+      async queryFn(_arg, _api, _extraOptions, baseQuery) {
+        const normalize = (response) => {
+          if (!response) return null;
+          const ok = response?.success === true || response?.status === true;
+          const data = response?.data ?? response;
+          const nestedProfile = data?.profile ?? data?.user?.profile ?? null;
+          const user = data?.user ?? {};
+          const firstName = nestedProfile?.first_name ?? '';
+          const lastName = nestedProfile?.last_name ?? '';
+          const fullName = [firstName, lastName].filter(Boolean).join(' ') || user?.name || '';
+          return {
+            ok,
+            raw: response,
+            profile: {
+              ...nestedProfile,
+              full_name: fullName,
+              name: fullName || user?.name || '',
+              email: nestedProfile?.email ?? user?.email ?? '',
+              phone: nestedProfile?.phone ?? '',
+              bio: nestedProfile?.bio ?? '',
+              profile_image: nestedProfile?.profile_image ?? null,
+            },
+            user,
+          };
+        };
+
+        // Primary route
+        let res = await baseQuery({ url: '/tutor/profile', method: 'GET' });
+        if (!res.error) return { data: normalize(res.data) };
+
+        // Fallback route used by account settings API
+        res = await baseQuery({ url: '/account-settings', method: 'GET' });
+        if (!res.error) return { data: normalize(res.data) };
+
+        return { error: res.error };
+      },
+      transformResponse: (response) => {
+        if (response?.profile) return response;
+        const ok = response?.success === true || response?.status === true;
+        const data = response?.data ?? response;
+        const nestedProfile = data?.profile ?? data?.user?.profile ?? null;
+        const user = data?.user ?? {};
+        const firstName = nestedProfile?.first_name ?? '';
+        const lastName = nestedProfile?.last_name ?? '';
+        const fullName = [firstName, lastName].filter(Boolean).join(' ') || user?.name || '';
+        return {
+          ok,
+          raw: response,
+          profile: {
+            ...nestedProfile,
+            full_name: fullName,
+            name: fullName || user?.name || '',
+            email: nestedProfile?.email ?? user?.email ?? '',
+            phone: nestedProfile?.phone ?? '',
+            bio: nestedProfile?.bio ?? '',
+            profile_image: nestedProfile?.profile_image ?? null,
+          },
+          user,
+        };
+      },
       providesTags: [{ type: 'Tutor', id: 'PROFILE' }],
     }),
     updateTutorProfile: builder.mutation({
-      query: (body) => ({
-        url: '/tutor/profile',
-        method: 'PUT',
-        body,
-      }),
+      async queryFn(body, _api, _extraOptions, baseQuery) {
+        const payload = {
+          full_name: body?.full_name,
+          first_name: body?.first_name ?? body?.full_name,
+          last_name: body?.last_name ?? '',
+          email: body?.email,
+          phone: body?.phone,
+          bio: body?.bio,
+          address: body?.address,
+          country: body?.country,
+          dob: body?.dob,
+          gender: body?.gender,
+        };
+
+        // Primary route
+        let res = await baseQuery({
+          url: '/tutor/profile',
+          method: 'PUT',
+          body: payload,
+        });
+        if (!res.error) return { data: res.data };
+
+        // Fallback route used by account settings
+        res = await baseQuery({
+          url: '/account-settings',
+          method: 'POST',
+          body: payload,
+        });
+        if (!res.error) return { data: res.data };
+
+        return { error: res.error };
+      },
+      transformResponse: (response) => {
+        const data = response?.data ?? response;
+        return {
+          ok: response?.success === true || response?.status === true,
+          message: response?.message,
+          profile: data,
+          raw: response,
+        };
+      },
+      async onQueryStarted(_body, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const p = data?.profile ?? data?.data ?? data ?? {};
+          const fullName = p?.full_name || [p?.first_name, p?.last_name].filter(Boolean).join(' ');
+          const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+          const firstName = p?.first_name ?? (parts[0] || '');
+          const lastName = p?.last_name ?? (parts.length > 1 ? parts.slice(1).join(' ') : '');
+
+          dispatch(updateUserProfile({
+            user_id: p?.user_id,
+            first_name: firstName,
+            last_name: lastName,
+            profile_image: p?.profile_image ?? null,
+            email: p?.email,
+            phone: p?.phone,
+            bio: p?.bio,
+            address: p?.address,
+            country: p?.country,
+            dob: p?.dob,
+          }));
+
+          setTimeout(() => {
+            dispatch(authApi.endpoints.getMe.initiate(undefined, { forceRefetch: true }));
+          }, 50);
+        } catch (_) {}
+      },
       invalidatesTags: [{ type: 'Tutor', id: 'PROFILE' }, 'User'],
     }),
 
@@ -938,7 +1369,28 @@ export const authApi = createApi({
         method: 'POST',
         body,
       }),
-      invalidatesTags: [{ type: 'Tutor', id: 'VERIFICATION' }],
+      async onQueryStarted(_body, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const p = data?.data ?? data ?? {};
+          const fullName = p?.full_name || '';
+          const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
+          const firstName = parts[0] || '';
+          const lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
+
+          dispatch(updateUserProfile({
+            first_name: firstName,
+            last_name: lastName,
+            email: p?.email,
+            phone: p?.phone,
+          }));
+
+          setTimeout(() => {
+            dispatch(authApi.endpoints.getMe.initiate(undefined, { forceRefetch: true }));
+          }, 50);
+        } catch (_) {}
+      },
+      invalidatesTags: [{ type: 'Tutor', id: 'VERIFICATION' }, { type: 'Tutor', id: 'PROFILE' }, 'User'],
     }),
   }),
 });
@@ -989,6 +1441,11 @@ export const {
   useDeleteNoteMutation,
   useCreateLessonNoteMutation,
   useSaveVideoProgressMutation,
+  useGetCourseOverallProgressQuery,
+  useGetParentAccessQuery,
+  useGenerateParentAccessMutation,
+  useRegenerateParentAccessMutation,
+  useRevokeParentAccessMutation,
   // Live Classes
   useGetBrowseLiveClassesQuery,
   useJoinLiveClassMutation,
@@ -1019,15 +1476,43 @@ export const {
   useGetTutorDashboardQuery,
   useGetTutorUpcomingClassesQuery,
   useGetTutorStudentsProgressQuery,
+  useGetTutorStudentsQuery,
+  useGetTutorStudentAnalyticsQuery,
+  useGetTutorStudentsQuizResultsQuery,
   useGetTutorPendingQnAQuery,
   useGetTutorSubmissionsQuery,
+  useGetTutorVideoQAQuery,
+  useGetTutorVideoQADetailQuery,
+  usePostTutorVideoQAAnswerMutation,
+  useUpdateTutorVideoQAAnswerMutation,
+  usePostTutorVideoQAReplyMutation,
+  useToggleTutorVideoQAPinMutation,
+  useFlagTutorVideoQAMutation,
+  useUnflagTutorVideoQAMutation,
   useGetTutorCoursesQuery,
   useGetTutorCourseByIdQuery,
+  useCreateTutorCourseMutation,
+  useUpdateTutorCourseMutation,
+  useDeleteTutorCourseMutation,
+  usePublishTutorCourseMutation,
+  useGetTutorLessonsQuery,
+  useGetTutorLessonByIdQuery,
+  useCreateTutorLessonMutation,
+  useUpdateTutorLessonMutation,
+  useDeleteTutorLessonMutation,
+  usePublishTutorLessonMutation,
+  useGetTutorLiveClassesQuery,
+  useGetTutorLiveClassByIdQuery,
+  useCreateTutorLiveClassMutation,
+  useUploadTutorLiveClassRecordingMutation,
+  useJoinTutorLiveClassQuery,
   useGetTutorQuizzesQuery,
   useGetTutorQuizByIdQuery,
   useCreateTutorQuizMutation,
   useUpdateTutorQuizMutation,
   useDeleteTutorQuizMutation,
+  usePublishTutorQuizMutation,
+  useRequestTutorQuizUpdateMutation,
   useGetTutorProfileQuery,
   useUpdateTutorProfileMutation,
   useGetTutorVerificationQuery,

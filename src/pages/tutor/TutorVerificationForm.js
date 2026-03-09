@@ -4,6 +4,8 @@
  * URL: /tutor/verification-form
  */
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from '../../store/slices/authSlice';
 import { useGetTutorVerificationQuery, useSubmitTutorVerificationMutation } from '../../store/api/authApi';
 import { showSuccess, showError } from '../../utils/toast';
 import '../../assets/css/tutor-verification-form.css';
@@ -15,6 +17,7 @@ const emptyEmergency = { name: '', relationship: '', number: '' };
 const emptyEducation = { highestEducation: '', fieldOfStudy: '', academicYear: '', institutionName: '' };
 
 function TutorVerificationForm() {
+  const currentUser = useSelector(selectCurrentUser);
   const [personal, setPersonal] = useState({ ...emptyPersonal });
   const [address, setAddress] = useState({ ...emptyAddress });
   const [service, setService] = useState({ ...emptyService });
@@ -24,21 +27,28 @@ function TutorVerificationForm() {
   const { data: verificationRes, isLoading: verificationLoading, isError: verificationError } = useGetTutorVerificationQuery();
   const [submitVerification, { isLoading: submitLoading, error: submitError }] = useSubmitTutorVerificationMutation();
 
-  const verification = verificationRes?.success ? verificationRes?.data : null;
+  const verificationOk = verificationRes?.success === true || verificationRes?.status === true;
+  const verification = verificationOk ? verificationRes?.data : null;
   const noVerificationMessage = !verificationLoading && (verificationError || verification == null) ? (verificationRes?.message || 'No verification found. Please submit your verification.') : null;
   const apiErrors = submitError?.data?.errors || {};
 
   useEffect(() => {
     if (!verification) return;
     const v = verification;
+    const reduxFullName = currentUser?.profile
+      ? `${currentUser.profile.first_name || ''} ${currentUser.profile.last_name || ''}`.trim()
+      : (currentUser?.name || '');
+    const reduxEmail = currentUser?.profile?.email ?? currentUser?.email ?? '';
+    const reduxPhone = currentUser?.profile?.phone ?? '';
     setPersonal({
-      fullName: v.full_name ?? '',
+      // Prefer latest profile name so verification reflects profile updates instantly
+      fullName: reduxFullName || v.full_name || '',
       gender: v.gender ?? '',
-      email: v.email ?? '',
+      email: reduxEmail || v.email || '',
       nric: v.nric ?? '',
       dob: v.dob ?? '',
       age: v.age ?? '',
-      phone: v.phone ?? '',
+      phone: reduxPhone || v.phone || '',
       whatsapp: v.whatsapp_number ?? v.whatsapp ?? '',
       maritalStatus: v.marital_status ?? '',
       bankName: v.bank_name ?? '',
@@ -48,7 +58,7 @@ function TutorVerificationForm() {
     setService({ levels: v.levels ?? '', modeOfTutoring: v.mode_of_tutoring ?? '', preferableLocation: v.preferable_location ?? '', teachingExperience: v.teaching_experience ?? '' });
     setEmergency({ name: v.emergency_contact_name ?? v.emergency_contact ?? '', relationship: v.relationship ?? '', number: v.emergency_contact_number ?? '' });
     setEducation({ highestEducation: v.highest_education ?? '', fieldOfStudy: v.field_of_study ?? '', academicYear: v.academic_year ?? '', institutionName: v.institution_name ?? '' });
-  }, [verification]);
+  }, [verification, currentUser]);
 
   const buildPayload = () => ({
     full_name: personal.fullName,

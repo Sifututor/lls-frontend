@@ -55,7 +55,7 @@ function LiveClassCard({ liveClass: cls, onCopyLink, onStartClass, onCancel, onE
             </button>
           )}
           {cls.actions.includes('uploadRecording') && (
-            <Link to="/tutor/live-classes/upload-recording" className="tutor-live-btn-upload">
+            <Link to={`/tutor/live-classes/upload-recording/${cls.id}`} className="tutor-live-btn-upload">
               Upload Recording
             </Link>
           )}

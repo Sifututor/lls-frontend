@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Parentaccesscard({ link, onRegenerate, onCopy }) {
+function Parentaccesscard({ link, onRegenerate, onCopy, isGenerating }) {
   return (
     <div className="profile-parent-access-box">
       <h3 className="profile-parent-title">Parent Access</h3>
@@ -12,12 +12,13 @@ function Parentaccesscard({ link, onRegenerate, onCopy }) {
           value={link || ''}
           readOnly
           className="profile-link-input"
+          placeholder={link ? '' : 'Click Generate to create a link'}
         />
       </div>
 
       <div className="profile-link-buttons">
-        <button className="profile-btn-link-action" onClick={onRegenerate}>
-          <span>Regenerate link</span>
+        <button className="profile-btn-link-action" onClick={onRegenerate} disabled={isGenerating}>
+          <span>{link ? 'Regenerate link' : 'Generate link'}</span>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C11.8365 3 13.5 3.73781 14.7322 4.94975L12 7.68198" stroke="#163300" strokeWidth="2" strokeLinecap="round"/>
             <path d="M17 4V8H13" stroke="#163300" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

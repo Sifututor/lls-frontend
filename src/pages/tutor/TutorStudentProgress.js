@@ -4,29 +4,52 @@
  * Card View: Grid layout with avatar, name, course, details
  * URL: /tutor/engagement/progress
  */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useGetTutorStudentsQuery } from '../../store/api/authApi';
 import '../../assets/css/tutor-student-progress.css';
 
-const SAMPLE_STUDENTS = [
-  { id: 1, name: 'Alice Johnson', avatar: '/assets/images/avatars/student1.jpg', course: 'Add Maths Form 4', progress: 82, progressColor: 'green', quizzes: '7/8', lastActive: '2 hrs ago' },
-  { id: 2, name: 'Brian Smith', avatar: '/assets/images/avatars/student2.jpg', course: 'Add Maths Form 4', progress: 82, progressColor: 'green', quizzes: '6/8', lastActive: '3.5 hrs ago' },
-  { id: 3, name: 'David Brown', avatar: '/assets/images/avatars/student3.jpg', course: 'Modern Maths Form 5', progress: 82, progressColor: 'green', quizzes: '7/8', lastActive: '3.8 hrs ago' },
-  { id: 4, name: 'Catherine Lee', avatar: '/assets/images/avatars/student4.jpg', course: 'Modern Maths Form 5', progress: 82, progressColor: 'green', quizzes: '7/8', lastActive: '4 hrs ago' },
-  { id: 5, name: 'Henry Adams', avatar: '/assets/images/avatars/student5.jpg', course: 'Modern Maths Form 5', progress: 82, progressColor: 'orange', quizzes: '5/8', lastActive: '4.1 hrs ago' },
-  { id: 6, name: 'Grace Hall', avatar: '/assets/images/avatars/student6.jpg', course: 'Modern Maths Form 5', progress: 82, progressColor: 'red', quizzes: '1/8', lastActive: '6 hrs ago' },
-  { id: 7, name: 'Frank King', avatar: '/assets/images/avatars/student7.jpg', course: 'Add Maths Form 4', progress: 82, progressColor: 'blue', quizzes: '6/8', lastActive: '9 hrs ago' },
-  { id: 8, name: 'Eva White', avatar: '/assets/images/avatars/student8.jpg', course: 'Add Maths Form 4', progress: 82, progressColor: 'green', quizzes: '8/8', lastActive: 'Yesterday' },
-  { id: 9, name: 'Jack Taylor', avatar: '/assets/images/avatars/student9.jpg', course: 'Modern Maths Form 5', progress: 82, progressColor: 'red', quizzes: '3/8', lastActive: 'Yesterday' },
-  { id: 10, name: 'Isabella Walker', avatar: '/assets/images/avatars/student10.jpg', course: 'Add Maths Form 4', progress: 82, progressColor: 'green', quizzes: '7/8', lastActive: 'Yesterday' },
-];
+function getProgressColor(progress) {
+  const p = Number(progress) || 0;
+  if (p >= 80) return 'green';
+  if (p >= 50) return 'orange';
+  return 'red';
+}
+
+function formatLastActive(value) {
+  if (!value) return '—';
+  try {
+    return new Date(value.replace(' ', 'T')).toLocaleString();
+  } catch {
+    return value;
+  }
+}
 
 function TutorStudentProgress() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState('table');
 
-  const filtered = SAMPLE_STUDENTS.filter(
-    (s) => !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.course.toLowerCase().includes(searchQuery.toLowerCase())
+  const { data, isLoading, isError, error } = useGetTutorStudentsQuery(currentPage);
+
+  const rows = useMemo(() => {
+    const list = data?.data || [];
+    return list.map((s) => ({
+      id: s.id,
+      name: s.name || 'Student',
+      course: Array.isArray(s.courses) ? s.courses.join(', ') : '—',
+      progress: Number(s.overall_progress) || 0,
+      progressColor: getProgressColor(s.overall_progress),
+      quizzes: '—',
+      lastActive: formatLastActive(s.last_active),
+    }));
+  }, [data]);
+
+  const filtered = rows.filter(
+    (s) =>
+      !searchQuery ||
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.course.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const toggleView = () => setViewMode((prev) => (prev === 'table' ? 'cards' : 'table'));
@@ -71,6 +94,15 @@ function TutorStudentProgress() {
       {/* Table View */}
       {viewMode === 'table' && (
         <div className="student-progress-table-wrapper">
+          {isLoading ? (
+            <p style={{ color: '#9A9A9A' }}>Loading students...</p>
+          ) : isError ? (
+            <p style={{ color: '#DD4040' }}>
+              Failed to load students. {error?.data?.message || error?.message || ''}
+            </p>
+          ) : filtered.length === 0 ? (
+            <p style={{ color: '#9A9A9A' }}>No students found.</p>
+          ) : (
           <table className="student-progress-table">
             <thead>
               <tr>
@@ -84,7 +116,11 @@ function TutorStudentProgress() {
             <tbody>
               {filtered.map((row) => (
                 <tr key={row.id}>
-                  <td>{row.name}</td>
+                  <td>
+                    <Link to={`/tutor/engagement/progress-cards/student/${row.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                      {row.name}
+                    </Link>
+                  </td>
                   <td>{row.course}</td>
                   <td>
                     <div className="progress-cell">
@@ -103,13 +139,18 @@ function TutorStudentProgress() {
               ))}
             </tbody>
           </table>
+          )}
         </div>
       )}
 
       {/* Card View */}
       {viewMode === 'cards' && (
         <div className="student-progress-cards-grid">
-          {filtered.map((row) => (
+          {isLoading ? (
+            <p style={{ color: '#9A9A9A' }}>Loading students...</p>
+          ) : filtered.length === 0 ? (
+            <p style={{ color: '#9A9A9A' }}>No students found.</p>
+          ) : filtered.map((row) => (
             <div key={row.id} className="student-progress-card">
               <div className="card-avatar">
                 <img
@@ -141,18 +182,25 @@ function TutorStudentProgress() {
       {/* Footer: Pagination + Disclaimer */}
       <div className="student-progress-footer">
         <div className="student-progress-pagination">
-          <button type="button" className="pagination-btn prev" disabled={currentPage === 1}>
+          <button
+            type="button"
+            className="pagination-btn prev"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
             ← Previous
           </button>
           <div className="pagination-numbers">
-            <button type="button" className="page-num active">1</button>
-            <button type="button" className="page-num">2</button>
-            <button type="button" className="page-num">3</button>
-            <span className="page-dots">...</span>
-            <button type="button" className="page-num">67</button>
-            <button type="button" className="page-num">68</button>
+            <button type="button" className="page-num active">{data?.current_page || 1}</button>
+            <span className="page-dots">of</span>
+            <button type="button" className="page-num">{data?.last_page || 1}</button>
           </div>
-          <button type="button" className="pagination-btn next">
+          <button
+            type="button"
+            className="pagination-btn next"
+            disabled={(data?.last_page || 1) <= currentPage}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
             Next →
           </button>
         </div>
