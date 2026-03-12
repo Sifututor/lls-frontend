@@ -47,9 +47,9 @@ const baseQueryParentAccessByToken = fetchBaseQuery({
 });
 
 const baseQueryWithReauth = async (args, api, extraOptions) => {
-  const req = typeof args === 'string' ? args : args?.url ?? '';
-  const isParentAccessByToken = String(req).startsWith('/parent-access/');
+  const isParentAccessByToken = api.endpoint === 'getParentAccessByToken';
   const result = await (isParentAccessByToken ? baseQueryParentAccessByToken(args, api, extraOptions) : baseQueryWithAuth(args, api, extraOptions));
+  const req = typeof args === 'string' ? args : args?.url ?? '';
   if (result.error && result.error.status === 401 && !isParentAccessByToken) {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('authToken');
