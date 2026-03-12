@@ -9,12 +9,8 @@ import Plansection from '../components/Plansection';
 import Parentaccesscard from '../components/Parentaccesscard';
 import Dataprivacycard from '../components/Dataprivacycard';
 import { logout, selectCurrentUser } from '../store/slices/authSlice';
-import {
-  useLogoutMutation,
-  useGetParentAccessQuery,
-  useGenerateParentAccessMutation,
-  useRegenerateParentAccessMutation,
-} from '../store/api/authApi';
+import { authApi } from '../store/api/authApi';
+const { useLogoutMutation, useGetParentAccessQuery, useGenerateParentAccessMutation, useRegenerateParentAccessMutation } = authApi;
 
 const COMING_SOON = 'This feature is coming soon.';
 

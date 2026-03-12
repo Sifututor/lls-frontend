@@ -5,12 +5,10 @@ import Privacysettingscard from '../components/Privacysettingscard';
 import Dataexportcard from '../components/Dataexportcard';
 import Parentaccesscard from '../components/Parentaccesscard';
 import Deleteaccountcard from '../components/Deleteaccountcard';
-import {
-  useGetParentAccessQuery,
-  useGenerateParentAccessMutation,
-  useRegenerateParentAccessMutation,
-} from '../store/api/authApi';
+import { authApi } from '../store/api/authApi';
 import { selectCurrentUser } from '../store/slices/authSlice';
+
+const { useGetParentAccessQuery, useGenerateParentAccessMutation, useRegenerateParentAccessMutation } = authApi;
 
 const COMING_SOON = 'This feature is coming soon.';
 

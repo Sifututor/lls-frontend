@@ -4,9 +4,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Cookies from "js-cookie";
 import { logout, selectCurrentUser } from "../store/slices/authSlice";
-import { useLogoutMutation, useGetMeQuery } from "../store/api/authApi";
-import { getUserType, isPremiumUser } from "../store/api/authApi";
+import { authApi, getUserType, isPremiumUser } from "../store/api/authApi";
 import { LayoutContext } from "../context/LayoutContext";
+
+const { useLogoutMutation, useGetMeQuery } = authApi;
 
 const BREADCRUMB_TITLE_MAX_LENGTH = 28;
 

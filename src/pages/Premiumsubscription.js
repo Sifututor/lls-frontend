@@ -12,8 +12,10 @@ import Billinghistorycard from '../components/Billinghistorycard';
 import Parentaccesscard from '../components/Parentaccesscard';
 import Dataprivacycard from '../components/Dataprivacycard';
 import { premiumSubscriptionData } from '../data/Premiumsubscriptiondata';
-import { useGetParentAccessQuery, useGenerateParentAccessMutation, useRegenerateParentAccessMutation } from '../store/api/authApi';
+import { authApi } from '../store/api/authApi';
 import { selectCurrentUser } from '../store/slices/authSlice';
+
+const { useGetParentAccessQuery, useGenerateParentAccessMutation, useRegenerateParentAccessMutation } = authApi;
 
 const COMING_SOON = 'This feature is coming soon.';
 const DEMO_NOTE = 'This page shows demo data. Real subscription features coming soon.';

@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
 import { updateUser, updateUserProfile } from '../slices/authSlice';
 
-import { API_BASE } from '../../config/apiConfig';
+import { API_BASE, API_BASE_ROOT } from '../../config/apiConfig';
 const BASE_URL = API_BASE;
 
 const cookieOptions = {
@@ -20,9 +20,11 @@ const formDataEndpoints = new Set([
 const baseQueryWithAuth = fetchBaseQuery({
   baseUrl: BASE_URL,
   prepareHeaders: (headers, { getState, endpoint }) => {
-    const token = localStorage.getItem('authToken') || Cookies.get('authToken');
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
+    if (endpoint !== 'getParentAccessByToken') {
+      const token = localStorage.getItem('authToken') || Cookies.get('authToken');
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
     }
     if (!formDataEndpoints.has(endpoint)) {
       headers.set('Content-Type', 'application/json');
@@ -32,9 +34,23 @@ const baseQueryWithAuth = fetchBaseQuery({
   },
 });
 
+/** Parent-access-by-token uses API root (no /parent) so URL is .../api/parent-access/:token */
+const baseQueryParentAccessByToken = fetchBaseQuery({
+  baseUrl: API_BASE_ROOT,
+  prepareHeaders: (headers, { endpoint }) => {
+    if (!formDataEndpoints.has(endpoint)) {
+      headers.set('Content-Type', 'application/json');
+    }
+    headers.set('Accept', 'application/json');
+    return headers;
+  },
+});
+
 const baseQueryWithReauth = async (args, api, extraOptions) => {
-  const result = await baseQueryWithAuth(args, api, extraOptions);
-  if (result.error && result.error.status === 401) {
+  const req = typeof args === 'string' ? args : args?.url ?? '';
+  const isParentAccessByToken = String(req).startsWith('/parent-access/');
+  const result = await (isParentAccessByToken ? baseQueryParentAccessByToken(args, api, extraOptions) : baseQueryWithAuth(args, api, extraOptions));
+  if (result.error && result.error.status === 401 && !isParentAccessByToken) {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('authToken');
       localStorage.removeItem('tokenExpiry');
@@ -49,11 +65,9 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
       Cookies.remove('userType', { path: '/' });
       Cookies.remove('isPremium', { path: '/' });
     } catch (_) {}
-    // Redirect to login when session expires (skip if already on any login page or request was login/register)
-    const req = typeof args === 'string' ? args : args?.url ?? '';
-    const isAuthRequest = String(req).includes('/login') || String(req).includes('/register');
     const path = typeof window !== 'undefined' ? window.location.pathname : '';
     const isOnLoginPage = path === '/login' || path.includes('/login') || path === '/tutor/login' || path === '/login/student' || path === '/login/parent';
+    const isAuthRequest = String(req).includes('/login') || String(req).includes('/register');
     if (typeof window !== 'undefined' && !isAuthRequest && !isOnLoginPage) {
       window.location.href = '/login';
     }
@@ -828,10 +842,21 @@ export const authApi = createApi({
       invalidatesTags: ['User'],
     }),
 
-    // Parent Access view (public): GET /parent/parent-access/:token — token from URL, no auth
+    // Parent Access view (public): GET /parent-access/:token — token from URL, no auth
     getParentAccessByToken: builder.query({
-      query: (token) => `/parent/parent-access/${token}`,
-      transformResponse: (response) => response?.data ?? response,
+      query: (token) => `/parent-access/${token}`,
+      transformResponse: (response) => {
+        const body = response?.data ?? response;
+        const inner = body?.data ?? body;
+        const payload = inner ?? body;
+        if (payload && (payload.status === false || payload.success === false)) {
+          throw Object.assign(new Error(payload.message || 'Link expired or revoked'), {
+            status: 'CUSTOM_ERROR',
+            data: { message: payload.message || 'Link expired or revoked' },
+          });
+        }
+        return payload;
+      },
     }),
 
     // ========== STUDENT DASHBOARD ==========
