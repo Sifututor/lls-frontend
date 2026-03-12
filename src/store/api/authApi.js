@@ -828,6 +828,12 @@ export const authApi = createApi({
       invalidatesTags: ['User'],
     }),
 
+    // Parent Access view (public): GET /parent/parent-access/:token — token from URL, no auth
+    getParentAccessByToken: builder.query({
+      query: (token) => `/parent/parent-access/${token}`,
+      transformResponse: (response) => response?.data ?? response,
+    }),
+
     // ========== STUDENT DASHBOARD ==========
     getStudentDashboardAnalytics: builder.query({
       query: () => '/student/dashboard-analytics',
@@ -1454,6 +1460,7 @@ export const {
   useGenerateParentAccessMutation,
   useRegenerateParentAccessMutation,
   useRevokeParentAccessMutation,
+  useGetParentAccessByTokenQuery,
   // Live Classes
   useGetBrowseLiveClassesQuery,
   useJoinLiveClassMutation,

@@ -409,6 +409,13 @@
     background: #E0E0E0;
 }
 
+/* Active state after Notify Me click */
+.btn-notify.btn-notify-active {
+    background: #163300;
+    color: #9FE870;
+    border-color: #163300;
+}
+
 
 /* ===== COURSE CARDS ===== */
 .course-card {

@@ -407,7 +407,7 @@ function Aitutor() {
             {sessions.today.length === 0 && sessions.yesterday.length === 0 && (
               <div className="sessions-empty">
                 <p>No sessions yet</p>
-                <p className="sessions-empty-hint">Start a new session to begin!</p>
+                <p className="sessions-empty-hint">Click &quot;+ New Session&quot; above or &quot;Start Learning&quot; in the center to begin.</p>
               </div>
             )}
           </div>
@@ -623,13 +623,20 @@ function Aitutor() {
         <div className="ai-info-sidebar">
           <div className="ai-usage-box">
             <div className="usage-row">
-              <div className="usage-label">Questions used:</div>
-              <div className="usage-value">{usedQuestions}/{maxQuestions}</div>
+              <span className="usage-label">Questions used:</span>
+              <span className="usage-value">
+                {isPremium ? 'Unlimited' : `${usedQuestions}/${maxQuestions}`}
+              </span>
             </div>
-            <div className="usage-row">
-              <div className="usage-reset">Reset in:</div>
-              <div className="usage-value">{hoursUntilReset}h</div>
-            </div>
+            {!isPremium && (
+              <>
+                <div className="usage-row">
+                  <span className="usage-reset">Reset in:</span>
+                  <span className="usage-value">{hoursUntilReset}h</span>
+                </div>
+                <p className="usage-hint">Free plan · resets daily</p>
+              </>
+            )}
           </div>
 
           <div className="relevant-courses-section">

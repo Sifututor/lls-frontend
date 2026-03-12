@@ -50,6 +50,12 @@ function BrowseCourseDetails() {
     }
 
     // Transform to component format with STATIC thumbnail/avatar
+    const isEnrolled =
+      course.is_enrolled === true ||
+      course.is_enrolled === 1 ||
+      course.enrolled === true ||
+      course.is_enrolled_by_user === true ||
+      course.is_enrolled_by_user === 1;
     return {
       // Header Data
       id: course.id,
@@ -87,7 +93,8 @@ function BrowseCourseDetails() {
         lessons: course.total_lessons || 0,
         quizzes: course.total_quizzes || 0,
         enrolledStudents: course.enrolled_count || 0,
-        learningHours: course.duration_hours || '0h'
+        learningHours: course.duration_hours || '0h',
+        isEnrolled,
       },
 
       // About section - No static fallbacks

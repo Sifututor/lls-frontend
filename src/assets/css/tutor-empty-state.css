@@ -1,0 +1,45 @@
+/**
+ * Shared empty state for tutor tables/lists – user-friendly when no data.
+ * Use: .tutor-table-empty-state with .tutor-table-empty-icon, .tutor-table-empty-title, .tutor-table-empty-desc
+ */
+
+.tutor-table-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  background: #FAFAFA;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  margin: 0;
+}
+
+.tutor-table-empty-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F1F1F1;
+  border-radius: 50%;
+  color: #9A9A9A;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.tutor-table-empty-title {
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #163300;
+  margin: 0 0 8px 0;
+}
+
+.tutor-table-empty-desc {
+  font-family: Inter, sans-serif;
+  font-size: 15px;
+  color: #6B7280;
+  margin: 0;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}

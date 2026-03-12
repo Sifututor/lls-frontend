@@ -7,6 +7,7 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetTutorStudentsQuery } from '../../store/api/authApi';
 import '../../assets/css/tutor-student-progress-cards.css';
+import '../../assets/css/tutor-empty-state.css';
 
 function TutorStudentProgressCards() {
   const [course, setCourse] = useState('');
@@ -95,9 +96,17 @@ function TutorStudentProgressCards() {
         {isLoading && <p style={{ color: '#9A9A9A' }}>Loading students...</p>}
         {isError && <p style={{ color: '#DD4040' }}>Failed to load students.</p>}
         {!isLoading && !isError && filtered.length === 0 && (
-          <p style={{ color: '#9A9A9A' }}>No students found.</p>
+          <div className="tutor-table-empty-state" style={{ gridColumn: '1 / -1' }}>
+            <div className="tutor-table-empty-icon" aria-hidden="true">👥</div>
+            <h3 className="tutor-table-empty-title">No students found</h3>
+            <p className="tutor-table-empty-desc">
+              {rows.length === 0
+                ? 'Assigned students will appear here once they are enrolled in your courses.'
+                : 'No students match your filters. Try adjusting search or filters.'}
+            </p>
+          </div>
         )}
-        {filtered.map((row) => (
+        {filtered.length > 0 && filtered.map((row) => (
           <div key={row.id} className="spc-card">
             {/* Top Row: Avatar + Info */}
             <div className="spc-card-top">

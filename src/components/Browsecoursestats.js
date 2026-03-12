@@ -8,7 +8,7 @@ function BrowseCourseStats({ stats, isSaved, onSave, onEnroll }) {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [enrollCourse, { isLoading: isEnrolling }] = useEnrollCourseMutation();
-  const [enrolled, setEnrolled] = useState(false);
+  const [enrolled, setEnrolled] = useState(Boolean(stats?.isEnrolled));
 
   const handleEnroll = async () => {
     try {

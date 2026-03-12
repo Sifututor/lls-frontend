@@ -2,9 +2,10 @@
  * Pending Approval page – dynamic from API GET /tutor/submissions
  */
 import React, { useState, useMemo } from 'react';
-import { useGetTutorSubmissionsQuery } from '../../store/api/authApi';
+import { useGetTutorSubmissionsQuery, useGetTutorQuizzesQuery } from '../../store/api/authApi';
 import '../../assets/css/tutor-course-inner.css';
 import '../../assets/css/tutor-pending-approval.css';
+import '../../assets/css/tutor-empty-state.css';
 
 function TutorPendingApproval() {
   const [activeFilter, setActiveFilter] = useState('all');
@@ -14,19 +15,58 @@ function TutorPendingApproval() {
   const [actionOpenId, setActionOpenId] = useState(null);
 
   const { data, isLoading, isError } = useGetTutorSubmissionsQuery();
+  const { data: quizzesResponse, isLoading: quizzesLoading } = useGetTutorQuizzesQuery(1);
+
   const rawList = (data?.data ?? data) || [];
   const submissions = useMemo(() => {
-    return Array.isArray(rawList)
+    const contentItems = Array.isArray(rawList)
       ? rawList.map((s) => ({
           id: s.id,
           content: s.title ?? s.content ?? '—',
           type: s.type ?? (s.quiz_id ? 'Quiz' : 'Lesson'),
           course: s.course?.title ?? s.course_name ?? '—',
-          requestedDate: s.requested_at ?? s.created_at ? new Date(s.requested_at ?? s.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
-          status: (s.status || 'pending').toLowerCase(),
+          requestedDate:
+            s.requested_at || s.created_at
+              ? new Date(s.requested_at ?? s.created_at).toLocaleDateString('en-GB', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })
+              : '—',
+          // Normalize status so tabs & filters work:
+          // backend uses 'pending' / 'published' / 'rejected'
+          status: (() => {
+            const rawStatus = (s.status || 'pending').toLowerCase();
+            if (rawStatus === 'published') return 'approved';
+            return rawStatus;
+          })(),
         }))
       : [];
-  }, [rawList]);
+
+    const quizzesData = quizzesResponse?.data?.data || [];
+    const quizItems = Array.isArray(quizzesData)
+      ? quizzesData.map((q) => ({
+          id: `quiz-${q.id}`,
+          content: q.title || 'Untitled quiz',
+          type: 'Quiz',
+          course: q.lesson?.title || '—',
+          requestedDate: q.created_at
+            ? new Date(q.created_at).toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })
+            : '—',
+          status: (() => {
+            const rawStatus = (q.status || 'pending').toLowerCase();
+            if (rawStatus === 'published') return 'approved';
+            return rawStatus;
+          })(),
+        }))
+      : [];
+
+    return [...contentItems, ...quizItems];
+  }, [rawList, quizzesResponse]);
 
   const statusCounts = useMemo(() => ({
     all: submissions.length,
@@ -57,7 +97,7 @@ function TutorPendingApproval() {
 
   const uniqueCourses = [...new Set(submissions.map((s) => s.course).filter(Boolean))];
 
-  if (isLoading) {
+  if (isLoading || quizzesLoading) {
     return (
       <div className="tutor-pending-approval-wrapper">
         <p style={{ color: '#9A9A9A' }}>Loading submissions...</p>
@@ -142,54 +182,67 @@ function TutorPendingApproval() {
       </div>
 
       <div className="tutor-pending-approval-table-wrapper">
-        <table className="tutor-pending-approval-table">
-          <thead>
-            <tr>
-              <th>Content</th>
-              <th>Type</th>
-              <th>Course</th>
-              <th>Requested date</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredSubmissions.map((row) => (
-              <tr key={row.id}>
-                <td>{row.content}</td>
-                <td>{row.type}</td>
-                <td>{row.course}</td>
-                <td>{row.requestedDate}</td>
-                <td>
-                  <span className={getStatusClass(row.status)}>
-                    {getStatusLabel(row.status)}
-                  </span>
-                </td>
-                <td style={{ position: 'relative' }}>
-                <button
-                    type="button"
-                    className="tutor-pending-approval-action-btn"
-                    onClick={() => setActionOpenId(actionOpenId === row.id ? null : row.id)}
-                    aria-label="More actions"
-                  >
-                    <img
-                      src="/assets/images/icons/simple-line-icons_options-vertical.svg"
-                      alt="more actions"
-                      className="comment-avatar-img"
-                    />
-                  </button>
-
-                  {actionOpenId === row.id && (
-                    <div className="tutor-course-inner-dropdown" style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, zIndex: 10 }}>
-                      <div className="tutor-course-inner-dropdown-item">Edit</div>
-                      <div className="tutor-course-inner-dropdown-item">View</div>
-                    </div>
-                  )}
-                </td>
+        {filteredSubmissions.length === 0 ? (
+          <div className="tutor-table-empty-state">
+            <div className="tutor-table-empty-icon" aria-hidden="true">📋</div>
+            <h3 className="tutor-table-empty-title">
+              {submissions.length === 0 ? 'No submissions yet' : 'No submissions match your filters'}
+            </h3>
+            <p className="tutor-table-empty-desc">
+              {submissions.length === 0
+                ? 'When you submit lessons or quizzes for approval, they will appear here. Upload content from Upload Lesson to get started.'
+                : 'Try changing the tabs or filters above to see more results.'}
+            </p>
+          </div>
+        ) : (
+          <table className="tutor-pending-approval-table">
+            <thead>
+              <tr>
+                <th>Content</th>
+                <th>Type</th>
+                <th>Course</th>
+                <th>Requested date</th>
+                <th>Status</th>
+                <th>Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredSubmissions.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.content}</td>
+                  <td>{row.type}</td>
+                  <td>{row.course}</td>
+                  <td>{row.requestedDate}</td>
+                  <td>
+                    <span className={getStatusClass(row.status)}>
+                      {getStatusLabel(row.status)}
+                    </span>
+                  </td>
+                  <td style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      className="tutor-pending-approval-action-btn"
+                      onClick={() => setActionOpenId(actionOpenId === row.id ? null : row.id)}
+                      aria-label="More actions"
+                    >
+                      <img
+                        src="/assets/images/icons/simple-line-icons_options-vertical.svg"
+                        alt="more actions"
+                        className="comment-avatar-img"
+                      />
+                    </button>
+                    {actionOpenId === row.id && (
+                      <div className="tutor-course-inner-dropdown" style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, zIndex: 10 }}>
+                        <div className="tutor-course-inner-dropdown-item">Edit</div>
+                        <div className="tutor-course-inner-dropdown-item">View</div>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import LessonInfoCard from '../../components/tutor/LessonInfoCard';
 import DownloadableMaterial from '../../components/tutor/DownloadableMaterial';
 import ScheduledTag from '../../components/tutor/ScheduledTag';
 import '../../assets/css/tutor-recording-detail.css';
+import '../../assets/css/tutor-empty-state.css';
 
 function TutorRecordingDetail() {
   const { classId } = useParams();
@@ -30,9 +31,13 @@ function TutorRecordingDetail() {
         {classesLoading ? (
           <p style={{ color: '#9A9A9A', marginTop: 16 }}>Loading live classes...</p>
         ) : pastClasses.length === 0 ? (
-          <p style={{ color: '#9A9A9A', marginTop: 16 }}>
-            No past classes yet. Go to <Link to="/tutor/live-classes">My Live Classes</Link> to see your schedule.
-          </p>
+          <div className="tutor-table-empty-state" style={{ marginTop: 16 }}>
+            <div className="tutor-table-empty-icon" aria-hidden="true">📅</div>
+            <h3 className="tutor-table-empty-title">No past classes yet</h3>
+            <p className="tutor-table-empty-desc">
+              Go to <Link to="/tutor/live-classes" style={{ color: '#163300', fontWeight: 600 }}>My Live Classes</Link> to see your schedule and past sessions.
+            </p>
+          </div>
         ) : (
           <ul className="tutor-recording-class-list" aria-label="Past live classes">
             {pastClasses.map((cls) => {
@@ -96,6 +101,12 @@ function TutorRecordingDetail() {
         <DownloadableMaterial files={files.map((f) => ({ name: f.name ?? f.file_name ?? 'File', size: f.size ?? '—', url: f.url ?? '#' }))} />
         <div className="tutor-rec-footer">
           <ScheduledTag time={scheduledTime} />
+          <Link
+            to={`/tutor/live-classes/upload-live-class?liveClassId=${liveClass.id}`}
+            className="tutor-live-class-btn-upload tutor-rec-upload-btn"
+          >
+            Upload Recording
+          </Link>
         </div>
       </div>
     </>

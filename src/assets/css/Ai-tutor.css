@@ -314,40 +314,51 @@
 
 
 .ai-usage-box {
-    background: #F1F1F1;
-    border-radius: 10px;
-    padding: 10px;
+  background: #F5F9F1;
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid #E5ECDF;
+}
 
+.usage-hint {
+  font-size: 12px;
+  color: #6B7280;
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #E5ECDF;
 }
 
 .usage-row {
   display: flex;
-  gap: 6px;
+  justify-content: space-between;
   align-items: center;
- 
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.usage-row:last-child {
+  margin-bottom: 0;
 }
 
 .usage-label {
-    font-size: 16px;
-    color: #9A9A9A;
-    margin-bottom: 8px;
-    font-weight: 500;
+  font-size: 15px;
+  color: #6B7280;
+  font-weight: 500;
+  flex-shrink: 0;
 }
 
-
-
-.usage-value, .usage-reset {
-  font-size: 16px;
-  font-weight: 500;
+.usage-value {
+  font-size: 15px;
+  font-weight: 600;
   color: #163300;
-
+  flex-shrink: 0;
 }
 
 .usage-reset {
-    font-size: 16px;
-    color: #9A9A9A;
-
-    font-weight: 500;
+  font-size: 15px;
+  color: #6B7280;
+  font-weight: 500;
+  flex-shrink: 0;
 }
 
 

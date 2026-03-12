@@ -47,7 +47,10 @@ function TutorUploadLesson() {
 
   const handleResourceChange = (e) => {
     const files = e.target.files;
-    if (files?.length) setResourceFiles((prev) => [...prev, ...Array.from(files)]);
+    if (files?.length) {
+      const newFiles = Array.from(files);
+      setResourceFiles((prev) => [...prev, ...newFiles]);
+    }
     e.target.value = '';
   };
 
@@ -73,6 +76,18 @@ function TutorUploadLesson() {
   };
 
   const handleDragOver = (e) => e.preventDefault();
+
+  const removeResourceFile = (index) => {
+    setResourceFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileTypeLabel = (file) => {
+    const name = (file.name || '').toLowerCase();
+    if (name.endsWith('.pdf')) return 'PDF';
+    if (name.endsWith('.doc') || name.endsWith('.docx')) return 'DOC';
+    if (name.endsWith('.xlsx') || name.endsWith('.xls')) return 'Excel';
+    return 'File';
+  };
 
   const buildFormData = (status = 'submitted') => {
     const fd = new FormData();
@@ -264,33 +279,59 @@ function TutorUploadLesson() {
         </div>
       </section>
 
-      {/* Upload Additional Learning Resources */}
+      {/* Upload Additional Learning Resources - same layout as video (dropzone + list below left) */}
       <section className="tutor-upload-resources">
         <h2 className="tutor-upload-resources-title">Upload Additional Learning Resources</h2>
-        <p className="tutor-upload-resources-subtitle">Upload video content to admin-created courses for approval</p>
-        
-        <div
-          className="tutor-upload-dropzone"
-          onClick={handleResourceClick}
-          onDrop={handleResourceDrop}
-          onDragOver={handleDragOver}
-        >
-          <input
-            ref={resourceInputRef}
-            type="file"
-            accept=".pdf,.doc,.docx,.avi,.xlsx"
-            multiple
-            onChange={handleResourceChange}
-            className="tutor-upload-hidden-input"
-          />
-          <div className="tutor-upload-dropzone-icon">
-            <img src="/assets/images/tutor/upload-lesson.svg" alt="" />
+        <p className="tutor-upload-resources-subtitle">Upload PDF, DOC, Excel to attach to the lesson</p>
+
+        <div className="tutor-upload-resources-dropzone-wrapper">
+          <div
+            className="tutor-upload-dropzone"
+            onClick={handleResourceClick}
+            onDrop={handleResourceDrop}
+            onDragOver={handleDragOver}
+          >
+            <input
+              ref={resourceInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,.xlsx,.xls,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              multiple
+              onChange={handleResourceChange}
+              className="tutor-upload-hidden-input"
+            />
+            <div className="tutor-upload-dropzone-icon">
+              <img src="/assets/images/tutor/upload-lesson.svg" alt="" />
+            </div>
+            <p className="tutor-upload-dropzone-text">
+              <span className="tutor-upload-link">Click to upload</span>
+              <span className="tutor-upload-or"> or drag and drop</span>
+            </p>
+            <p className="tutor-upload-dropzone-hint">PDF, DOC, DOCX, XLSX (max 2GB)</p>
           </div>
-          <p className="tutor-upload-dropzone-text">
-            <span className="tutor-upload-link">Click to upload</span>
-            <span className="tutor-upload-or"> or drag and drop</span>
-          </p>
-          <p className="tutor-upload-dropzone-hint">PDF, DOC, AVI, .xlsx (max 2GB)</p>
+
+          {/* Same style as video duration: left, grey box, show added PDF/DOC below */}
+          {resourceFiles.length > 0 && (
+            <div className="tutor-upload-resources-list">
+              {resourceFiles.map((file, index) => (
+                <div key={`${file.name}-${index}`} className="tutor-upload-resource-item">
+                  <span className="tutor-upload-resource-dot"></span>
+                  <span className="tutor-upload-resource-text">
+                    {getFileTypeLabel(file)}: {file.name}
+                  </span>
+                  <button
+                    type="button"
+                    className="tutor-upload-resource-remove"
+                    onClick={(e) => { e.stopPropagation(); removeResourceFile(index); }}
+                    aria-label="Remove"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

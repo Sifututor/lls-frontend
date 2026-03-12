@@ -8,7 +8,7 @@ import { showError, showInfo } from '../utils/toast';
 function BrowseCourseCard({ course, onClick }) {
   const navigate = useNavigate();
   const [enrollCourse, { isLoading: isEnrolling }] = useEnrollCourseMutation();
-  const [enrolled, setEnrolled] = useState(false);
+  const [enrolled, setEnrolled] = useState(Boolean(course?.isEnrolled));
 
   const handleCardClick = () => {
     if (onClick) onClick(course.slug);

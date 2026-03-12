@@ -9,6 +9,7 @@ function LiveClassCard({ classData, onJoin, onNotify }) {
   const navigate = useNavigate();
   const { isPremium } = usePremium();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [notified, setNotified] = useState(false);
 
   const handleButtonClick = () => {
     if (!isPremium) {
@@ -20,6 +21,7 @@ function LiveClassCard({ classData, onJoin, onNotify }) {
       onJoin && onJoin(classId);
     } else {
       onNotify && onNotify(classId);
+      setNotified(true);
     }
   };
 
@@ -93,10 +95,11 @@ function LiveClassCard({ classData, onJoin, onNotify }) {
           </button>
         ) : (
           <button
-            className="btn-notify"
+            className={`btn-notify ${notified ? 'btn-notify-active' : ''}`}
             onClick={handleButtonClick}
+            disabled={notified}
           >
-            Notify Me
+            {notified ? '✓ Notified' : 'Notify Me'}
           </button>
         )}
       </div>

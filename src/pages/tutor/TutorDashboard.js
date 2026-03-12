@@ -17,10 +17,10 @@ import {
 import './TutorDashboard.css';
 
 const DEFAULT_STATS = [
-  { id: 1, type: 'blue', label: '', icon: '/assets/images/icons/042-graduation.svg', value: 0, title: 'Assigned Students', progressText: 'Progress', progressValue: '—', progress: 0 },
-  { id: 2, type: 'purple', label: '', icon: '/assets/images/icons/140-video.svg', value: 0, title: 'Lessons Uploaded', progressText: 'Progress', progressValue: '—', progress: 0 },
-  { id: 3, type: 'green', label: '', icon: '/assets/images/icons/001-analytics.svg', value: 0, title: 'Quiz Created', progressText: 'Performance', progressValue: '—', progress: 0 },
-  { id: 4, type: 'orange', label: '', icon: '/assets/images/icons/127-time.svg', value: 0, title: 'Pending Q&A', progressText: 'Weekly Goal', progressValue: '—', progress: 0 },
+  { id: 1, type: 'blue', changeText: '—', icon: '/assets/images/icons/042-graduation.svg', value: 0, title: 'Assigned Students', progressText: 'Progress', progressValue: '—', progress: 0 },
+  { id: 2, type: 'purple', changeText: '—', icon: '/assets/images/icons/140-video.svg', value: 0, title: 'Lessons Uploaded', progressText: 'Progress', progressValue: '—', progress: 0 },
+  { id: 3, type: 'green', changeText: '—', icon: '/assets/images/icons/001-analytics.svg', value: 0, title: 'Quiz Created', progressText: 'Performance', progressValue: '—', progress: 0 },
+  { id: 4, type: 'orange', changeText: '—', icon: '/assets/images/icons/127-time.svg', value: 0, title: 'Pending Q&A', progressText: 'Weekly Goal', progressValue: '—', progress: 0 },
 ];
 
 function toNum(v) {
@@ -31,34 +31,38 @@ function toNum(v) {
 function mapDashboardToStats(d) {
   if (!d) return DEFAULT_STATS;
   const data = d?.data ?? d;
+  const progressPct = (val, total) => (total > 0 ? Math.min(100, Math.round((val / total) * 100)) : 0);
 
   const assigned = data.assigned_students;
   const assignedTotal = typeof assigned === 'object' && assigned !== null ? toNum(assigned.total) : toNum(assigned ?? data.students_count);
   const assignedWeek = typeof assigned === 'object' && assigned !== null ? toNum(assigned.this_week) : 0;
-  const assignedProgress = assignedWeek > 0 ? `${assignedWeek} this week` : '—';
+  const assignedChangeText = assignedWeek > 0 ? `${assignedWeek} this week` : '—';
+  const assignedFooter = assignedTotal > 0 ? `${assignedWeek} of ${assignedTotal}` : '—';
 
   const lessons = data.lessons_uploaded;
   const lessonsTotal = typeof lessons === 'object' && lessons !== null ? toNum(lessons.total) : toNum(lessons ?? data.lessons_count);
   const lessonsWeek = typeof lessons === 'object' && lessons !== null ? toNum(lessons.this_week) : 0;
-  const lessonsProgress = lessonsWeek > 0 ? `${lessonsWeek} this week` : '—';
+  const lessonsChangeText = lessonsWeek > 0 ? `${lessonsWeek} this week` : '—';
+  const lessonsFooter = lessonsTotal > 0 ? `${lessonsWeek} of ${lessonsTotal}` : '—';
 
   const quiz = data.quiz_created ?? data.quizzes_created;
   const quizTotal = typeof quiz === 'object' && quiz !== null ? toNum(quiz.total) : toNum(quiz ?? data.quizzes_count);
   const quizMonth = typeof quiz === 'object' && quiz !== null ? toNum(quiz.this_month) : 0;
-  const quizProgress = quizMonth > 0 ? `${quizMonth} this month` : '—';
+  const quizChangeText = quizMonth > 0 ? `${quizMonth} this month` : '—';
+  const quizPct = progressPct(quizMonth, quizTotal);
+  const quizFooter = quizPct >= 80 ? 'Excellent' : (quizTotal > 0 ? `${quizMonth} of ${quizTotal}` : '—');
 
   const qa = data.qa;
   const qaPending = typeof qa === 'object' && qa !== null ? toNum(qa.pending) : toNum(data.pending_qa ?? data.pending_qna_count);
   const qaAnswered = typeof qa === 'object' && qa !== null ? toNum(qa.answered) : 0;
-  const qaProgress = qaAnswered > 0 ? `${qaAnswered} answered` : '—';
-
-  const progressPct = (val, total) => (total > 0 ? Math.min(100, Math.round((val / total) * 100)) : 0);
+  const qaChangeText = qaAnswered > 0 ? `${qaAnswered} Answered` : '—';
+  const qaFooter = qaAnswered + qaPending > 0 ? `${qaAnswered} of ${qaAnswered + qaPending}` : '—';
 
   return [
-    { ...DEFAULT_STATS[0], value: assignedTotal, progressValue: assignedProgress, progress: progressPct(assignedWeek, assignedTotal) || 0 },
-    { ...DEFAULT_STATS[1], value: lessonsTotal, progressValue: lessonsProgress, progress: progressPct(lessonsWeek, lessonsTotal) || 0 },
-    { ...DEFAULT_STATS[2], value: quizTotal, progressValue: quizProgress, progress: progressPct(quizMonth, quizTotal) || 0 },
-    { ...DEFAULT_STATS[3], value: qaPending, progressValue: qaProgress, progress: progressPct(qaAnswered, qaAnswered + qaPending) || 0 },
+    { ...DEFAULT_STATS[0], value: assignedTotal, changeText: assignedChangeText, progressValue: assignedFooter, progress: progressPct(assignedWeek, assignedTotal) || 0 },
+    { ...DEFAULT_STATS[1], value: lessonsTotal, changeText: lessonsChangeText, progressValue: lessonsFooter, progress: progressPct(lessonsWeek, lessonsTotal) || 0 },
+    { ...DEFAULT_STATS[2], value: quizTotal, changeText: quizChangeText, progressValue: quizFooter, progress: quizPct || 0 },
+    { ...DEFAULT_STATS[3], value: qaPending, changeText: qaChangeText, progressValue: qaFooter, progress: progressPct(qaAnswered, qaAnswered + qaPending) || 0 },
   ];
 }
 

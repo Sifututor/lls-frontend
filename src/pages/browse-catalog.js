@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import FilterBar from '../components/FilterBar';
 import BrowseCourseCard from '../components/Browsecoursecard';
 import { SkeletonCard } from '../components/ui/LoadingSpinner';
-import { useGetBrowseCoursesQuery, useGetFormsQuery } from '../store/api/authApi';
+import { useGetBrowseCoursesQuery, useGetFormsQuery, useGetMyCoursesQuery } from '../store/api/authApi';
 
 function BrowseCourses() {
   const navigate = useNavigate();
@@ -19,6 +19,7 @@ function BrowseCourses() {
   // API Calls - Get courses and forms
   const { data: apiResponse, isLoading, isError, refetch } = useGetBrowseCoursesQuery({});
   const { data: formsDataDirect, isLoading: formsDirectLoading } = useGetFormsQuery();
+  const { data: myCoursesResponse } = useGetMyCoursesQuery({});
 
   // Process API data
   const { browseCourses, filterOptions } = useMemo(() => {
@@ -31,10 +32,35 @@ function BrowseCourses() {
 
     // Get courses array from API
     const coursesArray = apiResponse?.data?.data || [];
+
+    // Build set of enrolled course slugs/ids from My Courses API
+    let enrolledSlugs = new Set();
+    let enrolledIds = new Set();
+    // MyCourses API structure: { data: { courses: { data: [...] }, saved_courses: [...] }, filters: ... }
+    const myCoursesArray =
+      myCoursesResponse?.data?.courses?.data ||
+      myCoursesResponse?.data?.courses ||
+      [];
+    if (Array.isArray(myCoursesArray)) {
+      myCoursesArray.forEach((c) => {
+        if (c?.slug) enrolledSlugs.add(String(c.slug));
+        if (c?.id != null) enrolledIds.add(String(c.id));
+      });
+    }
     const filtersData = apiResponse?.filters || {};
 
     // Transform API course to component format
     const transformedCourses = coursesArray.map(course => {
+      const apiEnrolled =
+        course.is_enrolled === true ||
+        course.is_enrolled === 1 ||
+        course.enrolled === true ||
+        course.is_enrolled_by_user === true ||
+        course.is_enrolled_by_user === 1;
+      const viaMyCourses =
+        (course.slug && enrolledSlugs.has(String(course.slug))) ||
+        (course.id != null && enrolledIds.has(String(course.id)));
+      const isEnrolled = apiEnrolled || viaMyCourses;
       return {
         id: course.id,
         slug: course.slug,
@@ -47,6 +73,7 @@ function BrowseCourses() {
           // Use static fallback avatar
           avatar: '/assets/images/icons/Ellipse 2.svg'
         },
+        isEnrolled,
         title: course.title,
         description: course.description,
         lessons: course.level || 'Form 1',

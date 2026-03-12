@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetTutorLessonsQuery, useCreateTutorQuizMutation } from '../../store/api/authApi';
+import { useGetTutorLessonsQuery, useGetCoursesWithChaptersQuery, useCreateTutorQuizMutation } from '../../store/api/authApi';
 import { showSuccess, showError } from '../../utils/toast';
 import '../../assets/css/tutor-upload-lesson.css';
 import '../../assets/css/tutor-create-quiz.css';
@@ -19,6 +19,7 @@ function TutorCreateQuiz() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [lessonId, setLessonId] = useState('');
+  const [chapterIds, setChapterIds] = useState([]);
   const [topicsCovered, setTopicsCovered] = useState('');
   const [passingScore, setPassingScore] = useState('');
   const [timeAllowed, setTimeAllowed] = useState('');
@@ -28,10 +29,20 @@ function TutorCreateQuiz() {
   const [questions, setQuestions] = useState([defaultQuestion()]);
 
   const { data: lessonsData } = useGetTutorLessonsQuery({});
+  const { data: coursesWithChapters = [] } = useGetCoursesWithChaptersQuery();
   const [createQuiz, { isLoading: createLoading }] = useCreateTutorQuizMutation();
 
   const raw = lessonsData?.data ?? lessonsData?.lessons ?? lessonsData;
   const lessonsList = Array.isArray(raw) ? raw : (raw?.data ? (Array.isArray(raw.data) ? raw.data : []) : []);
+
+  const coursesList = Array.isArray(coursesWithChapters) ? coursesWithChapters : [];
+  const allChapters = coursesList.flatMap((course) =>
+    (course.chapters || []).map((ch) => ({
+      id: ch.id,
+      title: ch.title || `Chapter ${ch.id}`,
+      courseTitle: course.title || `Course ${course.id}`,
+    }))
+  );
 
   const addQuestion = () => setQuestions((prev) => [...prev, defaultQuestion()]);
   const removeQuestion = (id) => {
@@ -67,14 +78,33 @@ function TutorCreateQuiz() {
         order: i + 1,
       };
     });
+    const chapterIdNums =
+      quizType === 'exam_quiz'
+        ? chapterIds
+            .map((id) => parseInt(id, 10))
+            .filter((n) => Number.isFinite(n))
+        : [];
+
     return {
       status,
-      lesson_id: lessonId ? parseInt(lessonId, 10) : undefined,
+      // Backend rule:
+      // - lesson_quiz => uses lesson_id only
+      // - exam_quiz   => uses chapter_ids only
+      lesson_id:
+        quizType === 'lesson_quiz' && lessonId
+          ? parseInt(lessonId, 10)
+          : null,
+      chapter_ids:
+        quizType === 'exam_quiz' && chapterIdNums.length
+          ? chapterIdNums
+          : null,
       title: title || 'Untitled Quiz',
       quiz_type: quizType,
       passing_score: passingScore ? parseInt(passingScore, 10) : 70,
       time_limit: timeAllowed ? parseInt(timeAllowed, 10) : 15,
       total_marks: totalMarks ? parseInt(totalMarks, 10) : 10,
+      // Backend requires attempts_allowed; UI design did not include this field, so we default to 1 attempt.
+      attempts_allowed: 1,
       show_results: showResultsAfter,
       shuffle_questions: shuffleQuestions,
       questions: questionsPayload,
@@ -82,9 +112,17 @@ function TutorCreateQuiz() {
   };
 
   const handleSubmitApproval = async () => {
-    if (!lessonId) {
-      showError('Please select a lesson.');
-      return;
+    const quizType = testType === 'practice' ? 'lesson_quiz' : testType === 'assessment' ? 'exam_quiz' : 'lesson_quiz';
+    if (quizType === 'lesson_quiz') {
+      if (!lessonId) {
+        showError('Please select a lesson.');
+        return;
+      }
+    } else if (quizType === 'exam_quiz') {
+      if (!chapterIds.length) {
+        showError('Please select at least one chapter.');
+        return;
+      }
     }
     const emptyText = questions.find((q) => !(q.questionText && q.questionText.trim()));
     if (emptyText) {
@@ -108,9 +146,17 @@ function TutorCreateQuiz() {
   };
 
   const handleSaveDraft = async () => {
-    if (!lessonId) {
-      showError('Please select a lesson.');
-      return;
+    const quizType = testType === 'practice' ? 'lesson_quiz' : testType === 'assessment' ? 'exam_quiz' : 'lesson_quiz';
+    if (quizType === 'lesson_quiz') {
+      if (!lessonId) {
+        showError('Please select a lesson.');
+        return;
+      }
+    } else if (quizType === 'exam_quiz') {
+      if (!chapterIds.length) {
+        showError('Please select at least one chapter.');
+        return;
+      }
     }
     try {
       await createQuiz(buildCreatePayload('draft')).unwrap();
@@ -157,6 +203,42 @@ function TutorCreateQuiz() {
           </div>
 
           <div className="tutor-create-quiz-row tutor-create-quiz-two-cols">
+            {/* Left: Select Chapter (Assessment), hidden in Practice so layout same as design */}
+            <div className="tutor-upload-field">
+              <label className="tutor-create-quiz-label-required">Select Chapter *</label>
+              <select
+                className="tutor-upload-select"
+                value={chapterIds[0] || ''}
+                onChange={(e) => setChapterIds(e.target.value ? [e.target.value] : [])}
+              >
+                <option value="">Select Chapter *</option>
+                {allChapters.map((ch) => (
+                  <option key={`${ch.id}-${ch.courseTitle}`} value={ch.id}>
+                    {ch.courseTitle} – {ch.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Right: Select Lesson (Practice) */}
+            <div className="tutor-upload-field">
+              <label className="tutor-create-quiz-label-required">Select Lesson *</label>
+              <select
+                className="tutor-upload-select"
+                value={lessonId}
+                onChange={(e) => setLessonId(e.target.value)}
+              >
+                <option value="">Select Lesson *</option>
+                {lessonsList.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.title || `Lesson ${l.id}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="tutor-create-quiz-row tutor-create-quiz-two-cols">
             <div className="tutor-upload-field">
               <label className="tutor-create-quiz-label-required">Topics Covered *</label>
               <select className="tutor-upload-select" value={topicsCovered} onChange={(e) => setTopicsCovered(e.target.value)}>
@@ -168,13 +250,8 @@ function TutorCreateQuiz() {
               </select>
             </div>
             <div className="tutor-upload-field">
-              <label className="tutor-create-quiz-label-required">Select Lesson *</label>
-              <select className="tutor-upload-select" value={lessonId} onChange={(e) => setLessonId(e.target.value)}>
-                <option value="">Select Lesson</option>
-                {lessonsList.map((l) => (
-                  <option key={l.id} value={l.id}>{l.title || `Lesson ${l.id}`}</option>
-                ))}
-              </select>
+              <label className="tutor-create-quiz-label-required">Passing Score *</label>
+              <input type="text" className="tutor-upload-input" placeholder="e.g. 70" value={passingScore} onChange={(e) => setPassingScore(e.target.value)} />
             </div>
           </div>
 
@@ -189,14 +266,6 @@ function TutorCreateQuiz() {
                 <option value="60">60 min</option>
               </select>
             </div>
-            <div className="tutor-upload-field">
-              <label className="tutor-create-quiz-label-required">Passing Score *</label>
-              <input type="text" className="tutor-upload-input" placeholder="e.g. 70" value={passingScore} onChange={(e) => setPassingScore(e.target.value)} />
-            </div>
-          </div>
-
-          <div className="tutor-create-quiz-row tutor-create-quiz-two-cols">
-            <div className="tutor-upload-field" />
             <div className="tutor-upload-field">
               <label className="tutor-create-quiz-label-required">Total Marks *</label>
               <input type="text" className="tutor-upload-input" placeholder="e.g. 20" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} />

@@ -22,14 +22,23 @@ function extractLinkFromResponse(data) {
   if (!data) return null;
   const link = data?.data?.link ?? data?.link ?? data?.data?.url ?? data?.url;
   if (link && typeof link === 'string') return link;
-  const token = data?.data?.token ?? data?.token ?? data?.data?.data?.token;
-  if (token && typeof window !== 'undefined') return `${window.location.origin}/student/activate/${token}`;
-  return null;
+  const token =
+    data?.data?.token ??
+    data?.token ??
+    data?.data?.data?.token ??
+    data?.data?.accessToken ??
+    data?.accessToken ??
+    data?.data?.access_token ??
+    data?.access_token ??
+    data?.data?.data?.accessToken ??
+    data?.data?.data?.access_token;
+  if (!token || typeof window === 'undefined') return null;
+  return `${window.location.origin}/parent-access/${token}`;
 }
 
 function buildParentLink(token) {
   if (!token || typeof window === 'undefined') return null;
-  return `${window.location.origin}/student/activate/${token}`;
+  return `${window.location.origin}/parent-access/${token}`;
 }
 
 function Premiumsubscription() {
@@ -41,9 +50,25 @@ function Premiumsubscription() {
   const [regenerateLink, { isLoading: regenerating }] = useRegenerateParentAccessMutation();
   const [freshLink, setFreshLink] = useState(null);
 
-  const tokenFromApi = parentAccessData?.data?.token ?? parentAccessData?.token ?? parentAccessData?.data?.data?.token;
-  const linkFromApi = tokenFromApi ? buildParentLink(tokenFromApi) : null;
-  const parentAccessLink = linkFromApi || freshLink;
+  const tokenFromApi =
+    parentAccessData?.data?.token ??
+    parentAccessData?.token ??
+    parentAccessData?.data?.data?.token ??
+    parentAccessData?.data?.accessToken ??
+    parentAccessData?.accessToken ??
+    parentAccessData?.data?.access_token ??
+    parentAccessData?.access_token ??
+    parentAccessData?.data?.data?.accessToken ??
+    parentAccessData?.data?.data?.access_token;
+  const linkFromApi =
+    parentAccessData?.data?.link ??
+    parentAccessData?.link ??
+    (tokenFromApi ? buildParentLink(tokenFromApi) : null);
+
+  const storedLink =
+    typeof window !== 'undefined' ? window.localStorage.getItem('parentAccessLink') : null;
+
+  const parentAccessLink = linkFromApi || freshLink || storedLink;
 
   const handleEditProfile = () => {
     navigate('/student/profile/edit');
@@ -72,7 +97,12 @@ function Premiumsubscription() {
         ? await regenerateLink().unwrap()
         : await generateLink().unwrap();
       const link = extractLinkFromResponse(result);
-      if (link) setFreshLink(link);
+      if (link) {
+        setFreshLink(link);
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('parentAccessLink', link);
+        }
+      }
       refetchParentAccess();
       toast.success(parentAccessLink ? 'Link regenerated' : 'Link generated');
     } catch (err) {

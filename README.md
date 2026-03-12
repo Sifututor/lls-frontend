@@ -19,13 +19,24 @@ npm install
 npm start
 ```
 
-API base URL is set in `src/store/api/authApi.js` (default `http://10.0.0.178:8000/api`). To use an env-based URL, add:
+API base URL is configured via env + `src/config/apiConfig.js`.
 
-```
-REACT_APP_API_URL=http://10.0.0.178:8000/api
+1. Copy `.env.example` to `.env` (and/or `.env.production`) and set:
+
+```bash
+REACT_APP_API_URL=https://your-api.example.com/api
+REACT_APP_FILE_SERVER_BASE=https://your-cdn-or-files.example.com
 ```
 
-and in `authApi.js` replace the `BASE_URL` constant with `process.env.REACT_APP_API_URL || 'http://10.0.0.178:8000/api'`.
+2. `src/config/apiConfig.js` reads these values and exports:
+
+```js
+const API_BASE = process.env.REACT_APP_API_URL || 'https://lms-sifu.tutorla.tech/api';
+const FILE_SERVER_BASE = process.env.REACT_APP_FILE_SERVER_BASE || API_BASE.replace(/\/api\/?$/, '');
+export { API_BASE, FILE_SERVER_BASE };
+```
+
+3. All RTK Query endpoints use this base via `authApi.js`, so you should not hardcode IPs/URLs in components.
 
 ## Project Structure
 

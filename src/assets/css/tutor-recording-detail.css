@@ -175,7 +175,8 @@
 /* ===== FOOTER – Scheduled tag right ===== */
 .tutor-rec-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 20px;
 }
 
@@ -189,6 +190,13 @@
   font-weight: 500;
   color: #163300;
   cursor: pointer;
+}
+
+.tutor-rec-upload-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ===== UPLOAD RECORDING – SELECT CLASS (no classId) ===== */

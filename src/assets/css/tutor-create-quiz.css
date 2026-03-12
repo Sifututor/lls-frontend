@@ -13,10 +13,15 @@
   margin-bottom: 8px;
 }
 
+/* Top details form: hide inline labels, rely on placeholders (per design) */
+.tutor-create-quiz-form .tutor-upload-field > .tutor-create-quiz-label-required {
+  display: none;
+}
+
 .tutor-create-quiz-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .tutor-create-quiz-row.tutor-create-quiz-two-cols {
@@ -84,8 +89,8 @@
   background: #FAFAFA;
   border: 1px solid #CFCFCF;
   border-radius: 20px;
-  padding: 24px;
-  margin-bottom: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
 }
 
 .tutor-create-quiz-question-header {

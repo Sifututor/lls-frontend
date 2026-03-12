@@ -33,7 +33,8 @@ const defaultStudents = [
 ];
 
 function AssignedStudentsProgress({ students = defaultStudents }) {
-  const list = Array.isArray(students) ? students : defaultStudents;
+  const hasRealData = Array.isArray(students) && students.length > 0;
+  const list = hasRealData ? students : defaultStudents;
 
   return (
     <div className="upcoming-classes-section">
@@ -42,35 +43,39 @@ function AssignedStudentsProgress({ students = defaultStudents }) {
         <Link to="/tutor/engagement/progress-cards" className="view-all-link">View all</Link>
       </div>
       <div className="students-list">
-        {list.map((student) => (
-          <div key={student.id} className="student-card">
-            <div className="student-avatar">
-              <img
-                src={student.avatar}
-                alt={student.name}
-                onError={(e) => { e.target.src = '/assets/images/tutor/tutor.jpg'; }}
-              />
-            </div>
-            <div className="student-info">
-              <h4 className="student-name">{student.name}</h4>
-              <p className="student-meta">{student.form} • {student.subject}</p>
-            </div>
-            <div className="student-progress">
-              <div className="progress-header">
-                <span className="progress-label">Progress</span>
-                <span className="progress-percent">{student.progress}% Complete</span>
-              </div>
-
-              <div className="progress-bar">
-                <div
-                  className={`progress-fill progress-${student.progressColor}`}
-                  style={{ width: `${student.progress}%` }}
+        {hasRealData ? (
+          list.map((student) => (
+            <div key={student.id} className="student-card">
+              <div className="student-avatar">
+                <img
+                  src={student.avatar}
+                  alt={student.name}
+                  onError={(e) => { e.target.src = '/assets/images/tutor/tutor.jpg'; }}
                 />
               </div>
+              <div className="student-info">
+                <h4 className="student-name">{student.name}</h4>
+                <p className="student-meta">{student.form} • {student.subject}</p>
+              </div>
+              <div className="student-progress">
+                <div className="progress-header">
+                  <span className="progress-label">Progress</span>
+                  <span className="progress-percent">{student.progress}% Complete</span>
+                </div>
+                <div className="progress-bar">
+                  <div
+                    className={`progress-fill progress-${student.progressColor}`}
+                    style={{ width: `${student.progress}%` }}
+                  />
+                </div>
+              </div>
             </div>
-
-          </div>
-        ))}
+          ))
+        ) : (
+          <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>
+            No assigned students yet. Once students are enrolled, their progress will appear here.
+          </p>
+        )}
       </div>
     </div>
   );

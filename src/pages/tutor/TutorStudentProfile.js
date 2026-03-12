@@ -7,6 +7,7 @@ import React, { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGetTutorStudentAnalyticsQuery } from '../../store/api/authApi';
 import '../../assets/css/tutor-student-profile.css';
+import '../../assets/css/tutor-empty-state.css';
 
 function formatSecondsToHuman(seconds) {
   const n = Number(seconds) || 0;
@@ -121,7 +122,13 @@ function TutorStudentProfile() {
           )}
           {/* Subject Sections */}
           {!isLoading && !isError && sections.length === 0 && (
-            <p style={{ color: '#9A9A9A' }}>No course analytics found.</p>
+            <div className="tutor-table-empty-state">
+              <div className="tutor-table-empty-icon" aria-hidden="true">📊</div>
+              <h3 className="tutor-table-empty-title">No course analytics found</h3>
+              <p className="tutor-table-empty-desc">
+                Analytics for this student will appear here once they start watching videos and taking quizzes.
+              </p>
+            </div>
           )}
           {sections.map((section) => (
             <div key={section.id} className="tsp-section">

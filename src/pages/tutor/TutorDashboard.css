@@ -10,6 +10,37 @@
   margin-top: 60px;
 }
 
+/* Stats grid: top change pill (↑ X this week/month) - same as static design */
+.welcome-stats-container .stats-grid .stat-card .stat-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  background: rgba(5, 150, 105, 0.12);
+  color: #059669;
+  width: fit-content;
+}
+.welcome-stats-container .stats-grid .stat-card.purple .stat-change {
+  background: rgba(220, 38, 38, 0.1);
+  color: #DC2626;
+}
+.welcome-stats-container .stats-grid .stat-card.green .stat-change {
+  background: rgba(5, 150, 105, 0.12);
+  color: #059669;
+}
+.welcome-stats-container .stats-grid .stat-card.orange .stat-change {
+  background: rgba(217, 119, 6, 0.12);
+  color: #D97706;
+}
+.welcome-stats-container .stats-grid .stat-card .stat-change-arrow {
+  font-size: 10px;
+  line-height: 1;
+}
+
 /* Welcome Section */
 .tutor-dashboard-welcome {
   background: #FAFAFA;

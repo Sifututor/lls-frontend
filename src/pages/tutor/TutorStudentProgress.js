@@ -8,6 +8,7 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetTutorStudentsQuery } from '../../store/api/authApi';
 import '../../assets/css/tutor-student-progress.css';
+import '../../assets/css/tutor-empty-state.css';
 
 function getProgressColor(progress) {
   const p = Number(progress) || 0;
@@ -101,7 +102,15 @@ function TutorStudentProgress() {
               Failed to load students. {error?.data?.message || error?.message || ''}
             </p>
           ) : filtered.length === 0 ? (
-            <p style={{ color: '#9A9A9A' }}>No students found.</p>
+            <div className="tutor-table-empty-state">
+              <div className="tutor-table-empty-icon" aria-hidden="true">👥</div>
+              <h3 className="tutor-table-empty-title">No students found</h3>
+              <p className="tutor-table-empty-desc">
+                {rows.length === 0
+                  ? 'Assigned students will appear here once they are enrolled in your courses.'
+                  : 'No students match your search. Try a different search term.'}
+              </p>
+            </div>
           ) : (
           <table className="student-progress-table">
             <thead>
@@ -149,7 +158,15 @@ function TutorStudentProgress() {
           {isLoading ? (
             <p style={{ color: '#9A9A9A' }}>Loading students...</p>
           ) : filtered.length === 0 ? (
-            <p style={{ color: '#9A9A9A' }}>No students found.</p>
+            <div className="tutor-table-empty-state">
+              <div className="tutor-table-empty-icon" aria-hidden="true">👥</div>
+              <h3 className="tutor-table-empty-title">No students found</h3>
+              <p className="tutor-table-empty-desc">
+                {rows.length === 0
+                  ? 'Assigned students will appear here once they are enrolled in your courses.'
+                  : 'No students match your search. Try a different search term.'}
+              </p>
+            </div>
           ) : filtered.map((row) => (
             <div key={row.id} className="student-progress-card">
               <div className="card-avatar">

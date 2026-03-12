@@ -1,7 +1,7 @@
 /**
  * Upload Live Class – dynamic: live classes from API, upload via POST /tutor/live-classes/:id/upload-recording
  */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useGetTutorLiveClassesQuery, useUploadTutorLiveClassRecordingMutation } from '../../store/api/authApi';
 import { showSuccess, showError } from '../../utils/toast';
 import '../../assets/css/tutor-upload-lesson.css';
@@ -18,6 +18,15 @@ function TutorUploadLiveClass() {
 
   const recordingInputRef = useRef(null);
   const materialInputRef = useRef(null);
+
+  // Pre-select class when coming from Upload Recording detail page
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fromId = params.get('liveClassId');
+    if (fromId && !liveClassId) {
+      setLiveClassId(fromId);
+    }
+  }, [liveClassId]);
 
   const handleRecordingClick = () => recordingInputRef.current?.click();
   const handleMaterialClick = () => materialInputRef.current?.click();

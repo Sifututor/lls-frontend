@@ -17,6 +17,7 @@ import {
 import { SectionLoader } from '../../components/ui/LoadingSpinner';
 import { showSuccess, showError } from '../../utils/toast';
 import '../../assets/css/tutor-video-qa.css';
+import '../../assets/css/tutor-empty-state.css';
 
 const FILTER_MAP = { pending: 'unanswered', all: 'all', answered: 'answered' };
 
@@ -186,8 +187,12 @@ function TutorVideoQA() {
         ) : isError ? (
           <p style={{ color: '#DD4040' }}>Failed to load questions.</p>
         ) : cards.length === 0 ? (
-          <div className="tutor-courses-empty-state" style={{ padding: 48 }}>
-            <p style={{ color: '#6b7280', margin: 0 }}>No questions found.</p>
+          <div className="tutor-table-empty-state">
+            <div className="tutor-table-empty-icon" aria-hidden="true">💬</div>
+            <h3 className="tutor-table-empty-title">No questions found</h3>
+            <p className="tutor-table-empty-desc">
+              Video Q&amp;A from students will appear here. Try changing the tab or filters if you expect to see questions.
+            </p>
           </div>
         ) : (
           <>

@@ -8,7 +8,7 @@ import { ROLES } from '../utils/roleConfig';
 // Student Pages
 import Dashboard from '../pages/Dashboard';
 import MyCourses from '../pages/MyCourses';
-import BrowseCourses from '../pages/browse-catalog';
+import BrowseCourses from '../pages/BrowseCatalog';
 import BrowseCourseDetails from '../pages/Browsecoursedetails';
 import CourseDetails from '../pages/CourseDetails';
 import LiveClasses from '../pages/Liveclasses';

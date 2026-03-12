@@ -35,6 +35,7 @@ import RegistrationGuard from './RegistrationGuard';
 // Browse Course Details (Requires Auth but accessible from browse)
 import BrowseCourseDetails from '../pages/Browsecoursedetails';
 import TutorProfile from '../pages/Tutorprofile';
+import ParentAccessLanding from '../pages/parent/ParentAccessLanding';
 
 // Layout
 import StudentLayout from '../layouts/StudentLayout';
@@ -118,6 +119,9 @@ const AppRoutes = () => {
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
+      {/* Parent access link (public, no auth required) */}
+      <Route path="/parent-access/:token" element={<ParentAccessLanding />} />
 
       {/* ========== STUDENT REGISTRATION (Multi-Step) ========== */}
       {/* Step 1: Basic Info (Name, Email, Password) */}

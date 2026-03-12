@@ -52,7 +52,7 @@ function Newsessionmodal({ onClose, onStartSession }) {
         </div>
 
         <h2 className="modal-title">Start New Session</h2>
-        <p className="modal-subtitle">Choose a subject and topic to begin</p>
+        <p className="modal-subtitle">Pick a subject, then add an optional topic below</p>
 
         {/* Select Subject */}
         <div className="form-group">
@@ -71,7 +71,11 @@ function Newsessionmodal({ onClose, onStartSession }) {
                   onClick={() => setSelectedSubject(subject.title || subject.id)}
                 >
                   <div className="subject-name">{subject.title}</div>
-                  <div className="subject-topics">{subject.topics_count || subject.topics || 0} topics</div>
+                  <div className="subject-topics">
+                    {[subject.topics_count, subject.topics].some(n => typeof n === 'number' && n > 0)
+                      ? `${subject.topics_count ?? subject.topics ?? 0} topics`
+                      : 'Add topic below (optional)'}
+                  </div>
                 </button>
               ))}
             </div>

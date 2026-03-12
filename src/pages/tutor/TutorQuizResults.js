@@ -5,6 +5,7 @@
 import React, { useMemo, useState } from 'react';
 import { useGetTutorStudentsQuizResultsQuery } from '../../store/api/authApi';
 import '../../assets/css/tutor-quiz-results.css';
+import '../../assets/css/tutor-empty-state.css';
 
 function scoreTypeFromValue(score) {
   const n = Number(String(score || '').replace('%', ''));
@@ -144,7 +145,15 @@ function TutorQuizResults() {
             Failed to load quiz results. {error?.data?.message || error?.message || ''}
           </p>
         ) : filtered.length === 0 ? (
-          <p style={{ color: '#9A9A9A' }}>No quiz results found.</p>
+          <div className="tutor-table-empty-state">
+            <div className="tutor-table-empty-icon" aria-hidden="true">📝</div>
+            <h3 className="tutor-table-empty-title">No quiz results found</h3>
+            <p className="tutor-table-empty-desc">
+              {rows.length === 0
+                ? 'Student quiz attempts will show here once they complete your quizzes.'
+                : 'No results match your current filters. Try adjusting search or filters.'}
+            </p>
+          </div>
         ) : (
         <table className="tqr-table">
           <thead>

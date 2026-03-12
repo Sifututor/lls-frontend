@@ -50,7 +50,8 @@ function getStatusClass(color) {
 }
 
 function PendingSubmissions({ submissions = defaultSubmissions }) {
-  const list = Array.isArray(submissions) ? submissions : defaultSubmissions;
+  const hasRealData = Array.isArray(submissions) && submissions.length > 0;
+  const list = hasRealData ? submissions : defaultSubmissions;
 
   return (
     <div className="submissions-section">
@@ -59,18 +60,24 @@ function PendingSubmissions({ submissions = defaultSubmissions }) {
         <Link to="/tutor/courses/pending" className="view-all-link">View all</Link>
       </div>
       <div className="submissions-list">
-        {list.map((item) => (
-          <div key={item.id} className="submission-card">
-            <div className="submission-icon" />
-            <div className="submission-info">
-              <h4 className="submission-title">{item.title}</h4>
-              <p className="submission-meta">{item.meta}</p>
+        {hasRealData ? (
+          list.map((item) => (
+            <div key={item.id} className="submission-card">
+              <div className="submission-icon" />
+              <div className="submission-info">
+                <h4 className="submission-title">{item.title}</h4>
+                <p className="submission-meta">{item.meta}</p>
+              </div>
+              <span className={`submission-status ${getStatusClass(item.statusColor)}`}>
+                {item.status}
+              </span>
             </div>
-            <span className={`submission-status ${getStatusClass(item.statusColor)}`}>
-              {item.status}
-            </span>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>
+            No recent submissions yet. When you upload lessons, live classes, or quizzes, they will show here.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -51,7 +51,14 @@ function StatCard({ data }) {
 
   return (
     <div className={`stat-card ${data.type}`}>
-      <div className="stat-label">{data.label}</div>
+      {data.changeText != null && data.changeText !== '' && data.changeText !== '—' ? (
+        <div className="stat-change increase">
+          <span className="stat-change-arrow">↑</span>
+          <span>{data.changeText}</span>
+        </div>
+      ) : data.label ? (
+        <div className="stat-label">{data.label}</div>
+      ) : null}
 
       <div className="stat-header">
         <div className="stat-icon-wrapper">

@@ -11,6 +11,7 @@ build-*.zip
 .env
 .env.local
 .env.production.local
+.env.production
 
 # OS files
 .DS_Store
